@@ -6,8 +6,19 @@ export async function GET(request: Request) {
   const selectedYear = searchParams.get('year');
   const selectedMonth = searchParams.get('month');
 
-  const rawData = await getDashboardData();
-  if (!rawData || rawData.length < 5) return NextResponse.json({ error: 'ไม่สามารถดึงข้อมูล' }, { status: 500 });
+  const data = await getDashboardData();
+  if (!data) {
+    return NextResponse.json({
+      error: 'ไม่สามารถดึงข้อมูล'
+    });
+  } 
+  
+  const rawData = data.dashboard;
+  if (rawData.length < 5) {
+    return NextResponse.json({
+      error: 'ข้อมูลไม่พอ'
+    });
+  }
 
   const getNum = (r: number, c: number) => parseFloat(rawData[r]?.[c]?.toString().replace(/[^0-9.-]/g, '')) || 0;
 
