@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   // ถ้าเปิดหน้าจอปกติหรือ Refresh (ไม่มีพารามิเตอร์) จะให้อ่านตามที่ชีทเป็นอยู่
   if (selectedYear || selectedMonth) {
     const dataForInit = await getDashboardData();
-    const yearToUpdate = selectedYear || dataForInit?.info[1]?.[2]?.toString() || '2026';
+    const yearToUpdate = selectedYear || dataForInit?.info[1]?.[2]?.toString() || '2025';
     const monthToUpdate = selectedMonth || dataForInit?.info[2]?.[2]?.toString() || 'all';
     
     const success = await updateDashboardFilters(yearToUpdate, monthToUpdate);
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   console.log('------------------');
   
   // ใช้ค่าที่ User เลือกเป็นหลักในการส่งกลับ UI เพื่อป้องกัน Dropdown ดีดกลับ
-  const currentYear = selectedYear || rawData[1]?.[2]?.toString() || '2026';
+  const currentYear = selectedYear || rawData[1]?.[2]?.toString() || '2025';
   const currentMonthRaw = rawData[2]?.[2]?.toString() || 'all';
   const currentMonth = selectedMonth || (currentMonthRaw === 'รวมทุกเดือน' ? 'all' : currentMonthRaw);
 
@@ -54,7 +54,15 @@ export async function GET(request: Request) {
     W11: { entrance: getNum(0, 23), left: getNum(1, 23), finish: getNum(2, 23), otherFinish: getNum(3, 23), out: getNum(4, 23) },
     W12: { entrance: getNum(0, 27), left: getNum(1, 27), finish: getNum(2, 27), otherFinish: getNum(3, 27), out: getNum(4, 27) },
     W13: { entrance: getNum(0, 31), left: getNum(1, 31), finish: getNum(2, 31), otherFinish: getNum(3, 31), out: getNum(4, 31) },
-    W14: { entrance: getNum(7, 15), left: getNum(8, 15), finish: getNum(9, 15), otherFinish: getNum(10, 15), out: getNum(11, 15) },
+    W14: { entrance: getNum(0, 35), left: getNum(1, 35), finish: getNum(2, 35), otherFinish: getNum(3, 35), out: getNum(4, 35) },
+  };
+
+  groupStats.W_all = {
+    entrance: groupStats.W11.entrance + groupStats.W12.entrance + groupStats.W13.entrance + groupStats.W14.entrance,
+    left: groupStats.W11.left + groupStats.W12.left + groupStats.W13.left + groupStats.W14.left,
+    finish: groupStats.W11.finish + groupStats.W12.finish + groupStats.W13.finish + groupStats.W14.finish,
+    otherFinish: groupStats.W11.otherFinish + groupStats.W12.otherFinish + groupStats.W13.otherFinish + groupStats.W14.otherFinish,
+    out: groupStats.W11.out + groupStats.W12.out + groupStats.W13.out + groupStats.W14.out,
   };
 
   const wGauges: any = {
@@ -76,7 +84,7 @@ export async function GET(request: Request) {
   };
 
   const equipmentData = [];
-  for (let r = 1; r <= 6; r++) {
+  for (let r = 1; r <= 7; r++) {
     equipmentData.push({
       name: rawData[r]?.[5] || '',
       values: [getNum(r, 12), getNum(r, 13), getNum(r, 14), getNum(r, 15)],

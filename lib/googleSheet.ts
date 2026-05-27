@@ -55,7 +55,7 @@ export async function updateDashboardFilters(year: string, month: string) {
   } catch (error: any) {
     console.error('Google Sheets Update error:', error.message);
     return false;
-  }
+  } 
 }
 
 export async function getDashboardData() {

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     // ถ้าเปิดหน้าจอปกติหรือ Refresh (ไม่มีพารามิเตอร์) จะให้อ่านตามที่ชีทเป็นอยู่
     if (selectedYear || selectedMonth) {
       const dataForInit = await getDashboardData();
-      const yearToUpdate = selectedYear || dataForInit?.info[1]?.[2]?.toString() || '2026';
+      const yearToUpdate = selectedYear || dataForInit?.info[1]?.[2]?.toString() || '2025';
       const monthToUpdate = selectedMonth || dataForInit?.info[2]?.[2]?.toString() || 'all';
       
       const success = await updateDashboardFilters(yearToUpdate, monthToUpdate);
@@ -42,15 +42,17 @@ export async function GET(request: Request) {
     };
 
     // ใช้ค่าที่ User เลือกเป็นหลักในการส่งกลับ UI เพื่อป้องกัน Dropdown ดีดกลับ
-    const currentYear = selectedYear || infoData[1]?.[2]?.toString() || '2026';
+    const currentYear = selectedYear || infoData[1]?.[2]?.toString() || '2025';
     const currentMonthRaw = infoData[2]?.[2]?.toString() || 'all';
     const currentMonth = selectedMonth || (currentMonthRaw === 'รวมทุกเดือน' ? 'all' : currentMonthRaw);
 
-    // gauge
+    // gauge - Mapping based on Dashboard W10 All info
+    // Row 1: W11 (index 0 is Row 1?) No, infoData[0] is Row 1.
+    // Row 2: index 1
     const gauges = {
-      empNorm: getNum(3, 81),
-      empOT: getNum(4, 81),
-      w11_1: getNum(9, 74)
+      empNorm: getNum(1, 81),
+      empOT: getNum(2, 81),
+      w11_1: getNum(3, 81)
     };
 
     // =========================
@@ -104,14 +106,15 @@ export async function GET(request: Request) {
     // =========================
     // TABLE ใหญ่ด้านล่าง
     // ใช้ Dashboard W10 All
+    // ข้อมูลเริ่มแถว 32 (index 31)
     // =========================
     const purchaseList = [];
 
-    for (let r = 12; r < rawData.length; r++) {
+    for (let r = 31; r < rawData.length; r++) {
 
       const row = rawData[r] || [];
 
-      // เช็คว่ามีข้อมูล
+      // เช็คว่ามีข้อมูล (เช็ค ECM, W/O หรือ รายการ)
       if (
         row[6] ||
         row[7] ||
@@ -120,16 +123,16 @@ export async function GET(request: Request) {
 
         purchaseList.push({
 
-          ecm_buy: row[6] || '',
-          ecm: row[7] || '',
-          wo: row[8] || '',
-          item: row[9] || '',
-          equip: row[10] || '',
-          date_in: row[11] || '',
-          date_start: row[12] || '',
-          date_out: row[13] || '',
-          status: row[14] || '',
-          action: row[15] || ''
+          ecm_buy: row[5] || '',
+          ecm: row[6] || '',
+          wo: row[7] || '',
+          item: row[8] || '',
+          equip: row[9] || '',
+          date_in: row[10] || '',
+          date_start: row[11] || '',
+          date_out: row[12] || '',
+          status: row[13] || '',
+          action: row[14] || ''
 
         });
 

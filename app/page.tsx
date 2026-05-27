@@ -11,27 +11,50 @@ const GroupBlock = ({ name, stats, themeColor, isSummary = false }: any) => {
     yellow: 'bg-amber-50/80 border-amber-200', 
     green: 'bg-emerald-50/80 border-emerald-200', 
     pink: 'bg-rose-50/80 border-rose-200', 
-    blue: 'bg-sky-50/80 border-sky-200' 
+    blue: 'bg-sky-50/80 border-sky-200',
+    gray: 'bg-slate-50/80 border-slate-300'
   };
   
   const iconMap: any = {
     'W11': <Factory className="absolute -right-4 -bottom-4 w-32 h-32 text-amber-500/10 pointer-events-none" />,
     'W12': <Zap className="absolute -right-4 -bottom-4 w-32 h-32 text-emerald-500/10 pointer-events-none" />,
     'W13': <Shield className="absolute -right-4 -bottom-4 w-32 h-32 text-rose-500/10 pointer-events-none" />,
-    'W14': <HardHat className="absolute -right-4 -bottom-4 w-32 h-32 text-sky-500/10 pointer-events-none" />
+    'W14': <HardHat className="absolute -right-4 -bottom-4 w-32 h-32 text-sky-500/10 pointer-events-none" />,
+    'W_all': <LayoutDashboard className="absolute -right-4 -bottom-4 w-32 h-32 text-slate-500/10 pointer-events-none" />
   };
 
   return (
-    <div className={`flex flex-col rounded-2xl p-5 ${colors[themeColor]} border-2 shadow-sm relative overflow-hidden transition-all hover:shadow-md`}>
+    <div className={`flex flex-col rounded-2xl p-5 ${colors[themeColor]} border-2 shadow-sm relative overflow-hidden transition-all hover:shadow-md h-full`}>
       {iconMap[name]}
       <div className="text-[12px] font-black text-slate-500 uppercase tracking-widest mb-1.5 z-10">{name} {isSummary ? "" : "เข้า"}</div>
       <div className="text-5xl font-black text-slate-900 mb-5 z-10">{stats?.entrance || 0}</div>
       
-      <div className="text-[14px] font-bold text-slate-700 space-y-2.5 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/80 z-10">
-        <div className="flex justify-between"><span>ยังไม่เสร็จ</span><span className="text-slate-900">{stats?.left || 0}</span></div>
-        <div className="flex justify-between"><span>เสร็จ</span><span className="text-slate-900">{stats?.finish || 0}</span></div>
-        <div className="flex justify-between"><span>อื่น</span><span className="text-slate-900">{stats?.otherFinish || 0}</span></div>
-        <div className="flex justify-between font-black text-slate-950 pt-2.5 border-t-2 border-slate-200/50"><span>งานออก</span><span className="text-xl">{stats?.out || 0}</span></div>
+      {!isSummary && (
+        <div className="text-[14px] font-bold text-slate-700 space-y-2.5 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/80 z-10 mt-auto">
+          <div className="flex justify-between"><span>ยังไม่เสร็จ</span><span className="text-slate-900">{stats?.left || 0}</span></div>
+          <div className="flex justify-between"><span>เสร็จ</span><span className="text-slate-900">{stats?.finish || 0}</span></div>
+          <div className="flex justify-between"><span>อื่น</span><span className="text-slate-900">{stats?.otherFinish || 0}</span></div>
+          <div className="flex justify-between font-black text-slate-950 pt-2.5 border-t-2 border-slate-200/50"><span>งานออก</span><span className="text-xl">{stats?.out || 0}</span></div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const WOBlock = ({ statusData }: any) => {
+  const total = statusData?.total || 1;
+  const sapPct = Math.round(((statusData?.sap || 0) / total) * 100);
+  const pendingPct = Math.round(((statusData?.pending || 0) / total) * 100);
+  const finishPct = Math.round(((statusData?.finish || 0) / total) * 100);
+  return (
+    <div className="flex flex-col rounded-2xl p-5 bg-[#4A4A49] border-2 border-[#4A4A49] shadow-md relative overflow-hidden transition-all hover:shadow-lg h-full">
+      <Activity className="absolute -right-4 -bottom-4 w-32 h-32 text-white/5 pointer-events-none" />
+      <div className="text-[12px] font-black text-[#FFD100] uppercase tracking-widest mb-1.5 z-10">W/O</div>
+      <div className="text-5xl font-black text-white mb-5 z-10">{statusData?.total || 0}</div>
+      <div className="text-[14px] font-bold space-y-2.5 bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 z-10 mt-auto">
+        <div className="flex justify-between"><span className="text-emerald-300">SAP</span><span className="text-white font-black">{statusData?.sap || 0} <span className="text-emerald-400 text-xs">({sapPct}%)</span></span></div>
+        <div className="flex justify-between"><span className="text-red-300">Pending</span><span className="text-white font-black">{statusData?.pending || 0} <span className="text-red-400 text-xs">({pendingPct}%)</span></span></div>
+        <div className="flex justify-between pt-2.5 border-t border-white/10"><span className="text-yellow-300">Finish</span><span className="text-white font-black">{statusData?.finish || 0} <span className="text-yellow-400 text-xs">({finishPct}%)</span></span></div>
       </div>
     </div>
   );
@@ -42,8 +65,6 @@ const ModernGauge = ({ value, label, themeColor }: any) => {
   const colorMap: any = { yellow: '#FFEE57', green: '#57FF6B', pink: '#FF57E9', blue: '#57A0FF' };
   const color = colorMap[themeColor] || '#3b82f6';
   
-  // Center-zero logic: 0 is at the top (90 degrees)
-  // Total range is 10 units (-5 to 5)
   const chartData = v < 0 
     ? [
         { name: 'bg-left', value: 5 + v, color: '#f1f5f9' },
@@ -57,7 +78,7 @@ const ModernGauge = ({ value, label, themeColor }: any) => {
       ];
 
   return (
-    <div className="flex flex-col items-center p-3 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm w-full relative overflow-hidden group hover:border-[#FFD100] transition-all">
+    <div className="flex flex-col items-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm w-full relative overflow-hidden group hover:border-[#FFD100] transition-all">
        <div className="text-[10px] font-black text-slate-500 uppercase mb-1 tracking-widest z-10">{label}</div>
        <div className="h-20 w-24 z-10">
           <ResponsiveContainer width="100%" height="100%">
@@ -73,15 +94,30 @@ const ModernGauge = ({ value, label, themeColor }: any) => {
   );
 };
 
+const THAI_MONTHS = [
+  { value: '1', label: 'ม.ค.' },
+  { value: '2', label: 'ก.พ.' },
+  { value: '3', label: 'มี.ค.' },
+  { value: '4', label: 'เม.ย.' },
+  { value: '5', label: 'พ.ค.' },
+  { value: '6', label: 'มิ.ย.' },
+  { value: '7', label: 'ก.ค.' },
+  { value: '8', label: 'ส.ค.' },
+  { value: '9', label: 'ก.ย.' },
+  { value: '10', label: 'ต.ค.' },
+  { value: '11', label: 'พ.ย.' },
+  { value: '12', label: 'ธ.ค.' }
+];
+
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
-  const [year, setYear] = useState("2026");
+  const [year, setYear] = useState("2025");
   const [month, setMonth] = useState("all");
   const [modulesLoaded, setModulesLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const loadDashboard = (y: string, m: string, isInitial = false) => {
+  const loadDashboard = (y: string | null, m: string | null, isInitial = false) => {
     setError("");
     setIsLoading(true);
     const params = new URLSearchParams();
@@ -102,26 +138,38 @@ export default function DashboardPage() {
 
   useEffect(() => { 
     import('highcharts/highcharts-3d').then(() => setModulesLoaded(true)).catch(() => setModulesLoaded(true));
-    const savedYear = localStorage.getItem('dashboard_year');
-    const savedMonth = localStorage.getItem('dashboard_month');
-    const initialYear = savedYear || year;
-    const initialMonth = savedMonth || month;
-    if (savedYear) setYear(initialYear);
-    if (savedMonth) setMonth(initialMonth);
-    loadDashboard(initialYear, initialMonth, true);
+    let savedYear = null;
+    let savedMonth = null;
+    try {
+      savedYear = localStorage.getItem('dashboard_year');
+      savedMonth = localStorage.getItem('dashboard_month');
+    } catch (e) {
+      console.error('LocalStorage read error:', e);
+    }
+    if (savedYear) setYear(savedYear);
+    if (savedMonth) setMonth(savedMonth);
+    loadDashboard(savedYear, savedMonth, true);
   }, []);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setYear(val);
-    localStorage.setItem('dashboard_year', val);
+    try {
+      localStorage.setItem('dashboard_year', val);
+    } catch (e) {
+      console.error('LocalStorage write error:', e);
+    }
     loadDashboard(val, month);
   };
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setMonth(val);
-    localStorage.setItem('dashboard_month', val);
+    try {
+      localStorage.setItem('dashboard_month', val);
+    } catch (e) {
+      console.error('LocalStorage write error:', e);
+    }
     loadDashboard(year, val);
   };
 
@@ -136,7 +184,7 @@ export default function DashboardPage() {
   const { wGauges = {}, groupStats = {}, w_all = {}, statusData = {}, equipmentData = [] } = data;
 
   const statusChartOptions = {
-    chart: { type: 'pie', height: 320, backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 } },
+    chart: { type: 'pie', height: 400, backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 } },
     title: { text: '' },
     plotOptions: { pie: { innerSize: '60%', depth: 35, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.0f}%', style: { color: '#4A4A49', fontWeight: 'bold' } } } },
     series: [{ name: 'Status', data: [
@@ -152,10 +200,10 @@ export default function DashboardPage() {
     xAxis: { categories: ['W11', 'W12', 'W13', 'W14'], gridLineWidth: 0 },
     yAxis: { title: { text: '' }, gridLineWidth: 0 },
     plotOptions: { column: { borderRadius: 4, depth: 25, dataLabels: { enabled: true } } },
-    series: equipmentData.map((e: any) => ({
+    series: equipmentData.filter((e: any) => e.name !== 'All').map((e: any) => ({
         name: e.name, 
         data: e.values, 
-        color: (({'BEML': '#3b82f6', 'Conveyor': '#ef4444', 'สูบน้ำ': '#f59e0b', 'Moblie other': '#10b981', 'power plant': '#f97316', 'General': '#8b5cf6'} as any)[e.name] || '#94a3b8')
+        color: (({'BEML': '#3b82f6', 'Conveyor': '#ef4444', 'สูบน้ำ': '#f59e0b', 'Moblie other': '#10b981', 'Mobile other': '#10b981', 'power plant': '#f97316', 'General': '#94a3b8'} as any)[e.name] || '#94a3b8')
     }))
   };
 
@@ -175,16 +223,6 @@ export default function DashboardPage() {
             </h1>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">EGAT Maintenance Dashboard</p>
           </div>
-          <div className="flex gap-3">
-            <div className="flex flex-col items-center justify-center px-4 py-1.5 bg-[#4A4A49] text-white rounded-xl shadow-md min-w-[100px]">
-              <span className="text-[9px] font-black uppercase opacity-60 tracking-tighter">TOTAL W_ALL</span>
-              <span className="text-2xl font-black text-[#FFD100]">{w_all?.entrance || 0}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center px-4 py-1.5 bg-white border-2 border-[#4A4A49] text-[#4A4A49] rounded-xl shadow-sm min-w-[100px]">
-              <span className="text-[9px] font-black uppercase opacity-60 tracking-tighter">TOTAL W/O</span>
-              <span className="text-2xl font-black text-[#4A4A49]">{statusData?.total || 0}</span>
-            </div>
-          </div>
         </div>
         <div className="flex items-center gap-3">
             {isLoading && <span className="flex items-center text-xs font-black text-[#FFD100] animate-pulse mr-2 bg-yellow-50 px-2 py-1 rounded-lg uppercase">Updating...</span>}
@@ -194,7 +232,7 @@ export default function DashboardPage() {
               </select>
               <select className="px-4 py-2 rounded-xl bg-white text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={month} onChange={handleMonthChange}>
                 <option value="all">รวมทุกเดือน</option>
-                {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(m => <option key={m} value={m}>{m}</option>)}
+                {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
             </div>
             <a href="/purchasing" className="px-6 py-3 bg-[#FFD100] text-[#4A4A49] rounded-2xl text-sm font-black hover:bg-[#ffdb33] shadow-lg shadow-yellow-200/50 transition-all active:scale-95 flex items-center gap-2">
@@ -203,37 +241,40 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* W Group Blocks */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        {[
+          { id: 'W11', name: 'W11', color: 'yellow' },
+          { id: 'W12', name: 'W12', color: 'green' },
+          { id: 'W13', name: 'W13', color: 'pink' },
+          { id: 'W14', name: 'W14', color: 'blue' },
+          { id: 'W_all', name: 'W_all', color: 'gray' }
+        ].map((w) => (
+          <GroupBlock key={w.id} name={w.name} stats={groupStats[w.id]} themeColor={w.color} isSummary={w.id === 'W_all'} />
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
         <div className="bg-white border-b-4 border-slate-200 p-8 rounded-[2rem] shadow-sm relative overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-black text-[#4A4A49] uppercase text-sm tracking-widest flex items-center gap-2">
                 <div className="w-2 h-6 bg-[#FFD100] rounded-full"></div>
                 สถานะการดำเนินงาน
               </h3>
               <Info className="text-slate-300 w-5 h-5 cursor-help" />
             </div>
-            <div className="flex flex-col gap-6 flex-grow">
-                <HighchartsReact highcharts={Highcharts} options={statusChartOptions} />
-                <div className="overflow-hidden rounded-2xl border-2 border-slate-50">
+            <div className="flex flex-col flex-grow">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mb-8">
+                  <WOBlock statusData={statusData} />
+                  <div className="flex justify-center">
+                    <HighchartsReact highcharts={Highcharts} options={statusChartOptions} />
+                  </div>
+                </div>
+                <div className="overflow-hidden rounded-2xl border-2 border-slate-50 mt-auto">
                     <table className="w-full text-center text-xs font-black text-slate-500">
                         <thead className="bg-slate-50/80 border-b-2 border-slate-100"><tr><th className="p-4 uppercase tracking-tighter">SAP</th><th className="p-4 uppercase tracking-tighter">Pending</th><th className="p-4 uppercase tracking-tighter">Finish</th><th className="p-4 text-[#4A4A49] tracking-tighter bg-yellow-50/50">รวม (W/O)</th></tr></thead>
-                        <tbody className="divide-y divide-slate-50 bg-white"><tr><td className="p-4 text-slate-700">{statusData?.sap || 0}</td><td className="p-4 text-slate-700">{statusData?.pending || 0}</td><td className="p-4 text-slate-700">{statusData?.finish || 0}</td><td className="p-4 font-black text-[#4A4A49] text-2xl bg-yellow-50/30">{statusData?.total || 0}</td></tr></tbody>
+                        <tbody className="divide-y divide-slate-50 bg-white"><tr><td className="p-4 text-slate-700 text-lg">{statusData?.sap || 0}</td><td className="p-4 text-slate-700 text-lg">{statusData?.pending || 0}</td><td className="p-4 text-slate-700 text-lg">{statusData?.finish || 0}</td><td className="p-4 font-black text-[#4A4A49] text-3xl bg-yellow-50/30">{statusData?.total || 0}</td></tr></tbody>
                     </table>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3 mt-auto">
-                   <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-center shadow-sm">
-                      <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">SAP %</div>
-                      <div className="text-2xl font-black text-emerald-700">{sapPct}%</div>
-                   </div>
-                   <div className="bg-red-50 border border-red-100 p-4 rounded-2xl text-center shadow-sm">
-                      <div className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Pending %</div>
-                      <div className="text-2xl font-black text-red-700">{pendingPct}%</div>
-                   </div>
-                   <div className="bg-yellow-50 border border-yellow-100 p-4 rounded-2xl text-center shadow-sm">
-                      <div className="text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-1">Finish %</div>
-                      <div className="text-2xl font-black text-yellow-700">{finishPct}%</div>
-                   </div>
                 </div>
             </div>
         </div>
@@ -255,10 +296,10 @@ export default function DashboardPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-50 bg-white">
                             {equipmentData.map((e: any) => (
-                                <tr key={e.name} className="hover:bg-slate-50 transition-colors">
-                                    <td className="p-3 text-left font-black text-[#4A4A49] border-r border-slate-50">{e.name}</td>
+                                <tr key={e.name} className={`transition-colors ${e.name === 'All' ? 'bg-yellow-50/50 font-black' : 'hover:bg-slate-50'}`}>
+                                    <td className={`p-3 text-left font-black border-r border-slate-50 ${e.name === 'All' ? 'text-amber-700' : 'text-[#4A4A49]'}`}>{e.name === 'All' ? 'รวมทั้งหมด' : e.name}</td>
                                     <td className="p-3">{e.values[0]}</td><td className="p-3">{e.values[1]}</td><td className="p-3">{e.values[2]}</td><td className="p-3">{e.values[3]}</td>
-                                    <td className="p-3 font-black text-[#4A4A49] bg-slate-50/30">{e.total}</td>
+                                    <td className={`p-3 font-black ${e.name === 'All' ? 'text-amber-700 text-lg' : 'text-[#4A4A49] bg-slate-50/30'}`}>{e.total}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -266,18 +307,6 @@ export default function DashboardPage() {
                 </div>
             </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {[
-            { id: 'W11', name: 'W11', color: 'yellow' },
-            { id: 'W12', name: 'W12', color: 'green' },
-            { id: 'W13', name: 'W13', color: 'pink' },
-            { id: 'W14', name: 'W14', color: 'blue' }
-        ].map((w) => {
-          const stats = groupStats[w.id];
-          return <GroupBlock key={w.id} name={w.name} stats={stats} themeColor={w.color} />;
-        })}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

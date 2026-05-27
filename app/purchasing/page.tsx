@@ -59,9 +59,24 @@ const StatCard = ({ label, value, tone = 'slate' }: { label: string; value: stri
   );
 };
 
+const THAI_MONTHS = [
+  { value: '1', label: 'ม.ค.' },
+  { value: '2', label: 'ก.พ.' },
+  { value: '3', label: 'มี.ค.' },
+  { value: '4', label: 'เม.ย.' },
+  { value: '5', label: 'พ.ค.' },
+  { value: '6', label: 'มิ.ย.' },
+  { value: '7', label: 'ก.ค.' },
+  { value: '8', label: 'ส.ค.' },
+  { value: '9', label: 'ก.ย.' },
+  { value: '10', label: 'ต.ค.' },
+  { value: '11', label: 'พ.ย.' },
+  { value: '12', label: 'ธ.ค.' }
+];
+
 export default function PurchasingPage() {
   const [data, setData] = useState<PurchasingData | null>(null);
-  const [year, setYear] = useState("2026");
+  const [year, setYear] = useState("2025");
   const [month, setMonth] = useState("all");
   const [statusFilter, setStatusFilter] = useState('all');
   const [query, setQuery] = useState('');
@@ -71,16 +86,20 @@ export default function PurchasingPage() {
 
   useEffect(() => {
     import('highcharts/highcharts-3d').then(() => setModulesLoaded(true)).catch(() => setModulesLoaded(true));
-    const savedYear = localStorage.getItem('dashboard_year');
-    const savedMonth = localStorage.getItem('dashboard_month');
-    const initialYear = savedYear || year;
-    const initialMonth = savedMonth || month;
-    if (savedYear) setYear(initialYear);
-    if (savedMonth) setMonth(initialMonth);
-    loadData(initialYear, initialMonth, true);
+    let savedYear = null;
+    let savedMonth = null;
+    try {
+      savedYear = localStorage.getItem('dashboard_year');
+      savedMonth = localStorage.getItem('dashboard_month');
+    } catch (e) {
+      console.error('LocalStorage read error:', e);
+    }
+    if (savedYear) setYear(savedYear);
+    if (savedMonth) setMonth(savedMonth);
+    loadData(savedYear, savedMonth, true);
   }, []);
 
-  const loadData = (y: string, m: string, isInitial = false) => {
+  const loadData = (y: string | null, m: string | null, isInitial = false) => {
     setIsLoading(true);
     setError('');
     const params = new URLSearchParams();
@@ -89,8 +108,27 @@ export default function PurchasingPage() {
     fetch(`/api/purchasing?${params.toString()}`, { cache: 'no-store' }).then((res) => { if (!res.ok) throw new Error('โหลดข้อมูลจัดซื้อไม่สำเร็จ'); return res.json(); }).then((payload: PurchasingData) => { if (payload.error) throw new Error(payload.error); setData(payload); if (isInitial) { if (payload.currentYear) setYear(payload.currentYear); if (payload.currentMonth) setMonth(payload.currentMonth === 'รวมทุกเดือน' ? 'all' : payload.currentMonth); } }).catch((err: Error) => { setError(err.message); }).finally(() => setIsLoading(false));
   };
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => { const val = e.target.value; setYear(val); localStorage.setItem('dashboard_year', val); loadData(val, month); };
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => { const val = e.target.value; setMonth(val); localStorage.setItem('dashboard_month', val); loadData(year, val); };
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setYear(val);
+    try {
+      localStorage.setItem('dashboard_year', val);
+    } catch (e) {
+      console.error('LocalStorage write error:', e);
+    }
+    loadData(val, month);
+  };
+
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setMonth(val);
+    try {
+      localStorage.setItem('dashboard_month', val);
+    } catch (e) {
+      console.error('LocalStorage write error:', e);
+    }
+    loadData(year, val);
+  };
 
   const gauges = data?.gauges || {};
   const chartData = data?.chartData || [];
@@ -135,7 +173,7 @@ export default function PurchasingPage() {
             </select>
             <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={month} onChange={handleMonthChange}>
               <option value="all">รวมทุกเดือน</option>
-              {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(m => <option key={m} value={m}>{m}</option>)}
+              {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
           </div>
         </div>
@@ -152,18 +190,6 @@ export default function PurchasingPage() {
           <div className="mb-10 grid grid-cols-1 gap-8 xl:grid-cols-[280px_minmax(0,1fr)_minmax(0,1fr)]">
             <section className="grid grid-cols-1 gap-4">
               <StatCard label="W11-1" value={gauges.w11_1 || 0} tone="blue" />
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border-2 border-slate-100 bg-white p-4 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-                   <Package className="absolute -right-2 -bottom-2 w-16 h-16 text-slate-500/5" />
-                   <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">TOTAL</div>
-                   <div className="text-2xl font-black text-[#4A4A49] group-hover:scale-105 transition-transform">{purchaseList.length}</div>
-                </div>
-                <div className="rounded-2xl border-2 border-slate-100 bg-white p-4 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-                   <ShoppingBag className="absolute -right-2 -bottom-2 w-16 h-16 text-slate-500/5" />
-                   <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">DISPLAY</div>
-                   <div className="text-2xl font-black text-[#4A4A49] group-hover:scale-105 transition-transform">{filteredRows.length}</div>
-                </div>
-              </div>
               <div className="grid grid-cols-1 gap-4">
                 <ModernGauge value={gauges.empNorm} label="พนักงานปกติ" />
                 <ModernGauge value={gauges.empOT} label="ปกติ + OT" />
