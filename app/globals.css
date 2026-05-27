@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #1e293b; /* Darker slate-800 for better contrast */
@@ -10,7 +14,7 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Sarabun', sans-serif;
+  font-family: var(--font-prompt), sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

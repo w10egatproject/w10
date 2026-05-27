@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Sarabun } from "next/font/google";
+import { Prompt } from "next/font/google";
 import "./globals.css";
 
-const sarabun = Sarabun({
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
+const prompt = Prompt({
+  weight: ["300", "400", "500", "600", "700"],
   subsets: ["thai", "latin"],
-  variable: "--font-sarabun",
+  variable: "--font-prompt",
 });
 
 export const metadata: Metadata = {
@@ -24,9 +24,9 @@ export default function RootLayout({
   return (
     <html
       lang="th"
-      className={`${sarabun.variable} h-full antialiased`}
+      className={`${prompt.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
