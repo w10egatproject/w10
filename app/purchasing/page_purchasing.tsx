@@ -37,8 +37,6 @@ const ModernGauge = ({ value, label }: { value?: number; label: string }) => {
           endColor="#F87171"
           ringWidth={20}
           maxSegmentLabels={0}
-          hideCurrentValue={false}
-          currentValueText={`${safeValue.toFixed(2)}`}
           width={176}
           height={112}
         />
