@@ -35,8 +35,6 @@ const ModernGauge = ({ value, label }: { value?: number; label: string }) => {
           needleHeightRatio={0.6}
           startColor="#FCD34D"
           endColor="#F87171"
-          needleTransitionDuration={500}
-          needleTransition="easeLinear"
           ringWidth={20}
           maxSegmentLabels={0}
           hideCurrentValue={false}
