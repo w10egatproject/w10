@@ -42,13 +42,15 @@ export async function updateDashboardFilters(year: string, month: string) {
   try {
     // แปลง month เป็นข้อความที่ชีทต้องการถ้าเป็น 'all'
     const monthValue = month === 'all' ? 'รวมทุกเดือน' : month;
+    // แปลง year เป็นข้อความที่ชีทต้องการถ้าเป็น 'all'
+    const yearValue = year === 'all' ? 'All' : year;
 
     await client.sheets.spreadsheets.values.update({
       spreadsheetId: client.sheetId,
       range: "'Dashboard W10 All info'!C2:C3",
       valueInputOption: 'USER_ENTERED',
       requestBody: {
-        values: [[year], [monthValue]],
+        values: [[yearValue], [monthValue]],
       },
     });
     return true;

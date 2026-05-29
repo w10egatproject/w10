@@ -39,6 +39,9 @@ const ModernGauge = ({ value, label }: { value?: number; label: string }) => {
           maxSegmentLabels={0}
           width={176}
           height={112}
+          currentValueText={`${safeValue.toFixed(2)}`}
+          valueTextFontSize="14px"
+          textColor="#1e293b"
         />
       </div>
     </div>
@@ -62,7 +65,7 @@ const StatCard = ({ label, value, tone = 'slate' }: { label: string; value: stri
   };
 
   return (
-    <div className={`order-last rounded-2xl border-2 p-5 shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${toneClasses[tone]}`}>
+    <div className={`rounded-2xl border-2 p-5 shadow-sm relative overflow-hidden group hover:shadow-md transition-all ${toneClasses[tone]}`}>
       {iconMap[label]}
       <div className="whitespace-nowrap text-[11px] font-black uppercase tracking-widest text-slate-500 z-10">{label}</div>
       <div className="mt-2 text-4xl font-black z-10 text-[#4A4A49] group-hover:scale-105 transition-transform">{value}</div>
@@ -153,6 +156,24 @@ export default function PurchasingPage() {
   const secondaryChartData = secondChartData.map((item, index) => ({ name: item.name || '-', y: item.value || 0, color: chartColors[index % chartColors.length] })).filter((item) => item.name !== '-');
   const hasSecondaryChartData = secondaryChartData.length > 0;
   const filteredRows = useMemo(() => { const normalizedQuery = query.trim().toLowerCase(); return purchaseList.filter((row) => { const matchesStatus = statusFilter === 'all' || row.status === statusFilter; const matchesQuery = !normalizedQuery || Object.values(row).some((value) => value?.toString().toLowerCase().includes(normalizedQuery)); return matchesStatus && matchesQuery; }); }, [purchaseList, query, statusFilter]);
+  
+  const getStatusStyle = (status: string) => {
+    if (!status) return 'bg-slate-100 text-slate-400';
+    const s = status.trim();
+    if (s.includes('รอซื้อจ้าง')) return 'bg-[#8B4513] text-white'; // น้ำตาล
+    if (s.includes('กบย-ช')) return 'bg-slate-400 text-white'; // เทา
+    if (s.includes('หซ') || s.includes('หจ')) return 'bg-orange-200 text-orange-800'; // ส้มอ่อน
+    if (s.includes('เสนอราคา')) return 'bg-pink-300 text-pink-900'; // ชมพู
+    if (s.includes('ติดตามPO')) return 'bg-emerald-100 text-emerald-800'; // เขียวมิ้นอ่อน
+    if (s.includes('ส่งของ')) return 'bg-green-600 text-white'; // เขียว
+    if (s.includes('งานเข้า')) return 'bg-yellow-100 text-yellow-800'; // เหลืองอ่อน
+    if (s.includes('ดำเนินการ') && !s.includes('รอ')) return 'bg-green-200 text-green-900'; // เขียวอ่อน
+    if (s.includes('รอดำเนินการ')) return 'bg-red-200 text-red-900'; // แดงอ่อน
+    if (s.includes('เสร็จ')) return 'bg-yellow-400 text-slate-900'; // เหลือง
+    if (s.includes('ยกเลิก') || s.toLowerCase().includes('help me')) return 'bg-white text-slate-400 border border-slate-200'; // ขาว
+    return 'bg-[#FFD100] text-[#4A4A49]'; // default
+  };
+
   const chartOptions = { chart: { type: 'pie', backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 }, height: 280 }, colors: chartColors, credits: { enabled: false }, title: { text: '' }, plotOptions: { pie: { innerSize: '58%', depth: 38, colorByPoint: true, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.0f}%', style: { fontWeight: '700', textOutline: 'none', color: '#4A4A49' } } } }, series: [{ name: 'Purchasing', data: primaryChartData }] };
   const equipChartOptions = { chart: { type: 'column', backgroundColor: 'transparent', options3d: { enabled: true, alpha: 8, beta: 12, depth: 45 }, height: 280 }, credits: { enabled: false }, title: { text: '' }, xAxis: { categories: secondaryChartData.map((item) => item.name), lineColor: '#e2e8f0' }, yAxis: { title: { text: '' }, gridLineColor: '#f1f5f9' }, legend: { enabled: false }, plotOptions: { column: { borderRadius: 4, depth: 24, dataLabels: { enabled: true, style: { color: '#4A4A49' } } } }, series: [{ name: 'จำนวน', data: secondaryChartData }] };
   const totalSummary = summaryTableData.reduce((sum, row) => sum + (parseFloat(row.col2?.toString().replace(/[^0-9.-]/g, '')) || 0), 0);
@@ -161,9 +182,6 @@ export default function PurchasingPage() {
     <div className="min-h-screen bg-[#e2e2e2] p-6 text-slate-900 lg:p-8 font-sans">
       <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between bg-white p-6 rounded-3xl border-b-4 border-[#FFD100] shadow-sm">
         <div>
-          <a href="/" className="mb-4 inline-flex items-center gap-2 text-sm font-black text-slate-400 hover:text-[#4A4A49] transition-colors uppercase tracking-widest">
-            <ArrowLeft size={16} strokeWidth={3} /> กลับหน้าหลัก
-          </a>
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#4A4A49] text-[#FFD100] shadow-lg">
               <ShoppingCart size={28} strokeWidth={2.5} />
@@ -180,6 +198,7 @@ export default function PurchasingPage() {
           <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
             <Filter size={16} className="ml-2 text-slate-400" />
             <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={year} onChange={handleYearChange}>
+              <option value="all">รวมทุกปี</option>
               {['2023', '2024', '2025', '2026'].map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
             <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={month} onChange={handleMonthChange}>
@@ -187,6 +206,9 @@ export default function PurchasingPage() {
               {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
           </div>
+          <a href="/" className="px-4 md:px-6 py-2 md:py-3 bg-[#FFD100] text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-[#ffdb33] shadow-lg shadow-yellow-200/50 transition-all active:scale-95 flex items-center gap-2">
+            <ArrowLeft size={16} strokeWidth={3} /> กลับหน้าหลัก
+          </a>
         </div>
       </header>
 
@@ -301,7 +323,7 @@ export default function PurchasingPage() {
                         <td className="px-6 py-5 font-bold text-slate-500 whitespace-nowrap border border-slate-200">{row.date_start || '-'}</td>
                         <td className="px-6 py-5 font-bold text-slate-500 whitespace-nowrap border border-slate-200">{row.date_out || '-'}</td>
                         <td className="px-6 py-5 border border-slate-200">
-                          <span className={`inline-flex rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-sm ${row.status?.includes('Finish') ? 'bg-emerald-100 text-emerald-700' : 'bg-[#FFD100] text-[#4A4A49]'}`}>{row.status || '-'}</span>
+                          <span className={`inline-flex rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-sm ${getStatusStyle(row.status)}`}>{row.status || '-'}</span>
                         </td>
                         <td className="px-6 py-5 font-bold text-slate-500 border border-slate-200">{row.action || '-'}</td>
                       </tr>

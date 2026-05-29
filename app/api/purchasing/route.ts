@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDashboardData, updateDashboardFilters } from '@/lib/googleSheet';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -42,21 +45,22 @@ export async function GET(request: Request) {
     };
 
     // ใช้ค่าที่ User เลือกเป็นหลักในการส่งกลับ UI เพื่อป้องกัน Dropdown ดีดกลับ
-    const currentYear = selectedYear || infoData[1]?.[2]?.toString() || '2025';
+    const currentYearRaw = infoData[1]?.[2]?.toString() || '2025';
+    const currentYear = selectedYear || (currentYearRaw === 'All' ? 'all' : currentYearRaw);
     const currentMonthRaw = infoData[2]?.[2]?.toString() || 'all';
     const currentMonth = selectedMonth || (currentMonthRaw === 'รวมทุกเดือน' ? 'all' : currentMonthRaw);
 
     // gauge - Mapping based on Dashboard W10 All info
-    // Row 1: W11 (index 0 is Row 1?) No, infoData[0] is Row 1.
-    // Row 2: index 1
+    // Row 4: W11-1 (index 3)
     const gauges = {
-      empNorm: getNum(3, 81),
-      empOT: getNum(4, 81),
-      w11_1: getNum(15, 74)
+      empNorm: getNum(3, 81), // Row 4
+      empOT: getNum(4, 81), // Row 5
+      w11_1: getNum(11, 74) // Row 12 (W11 count)
     };
 
     // =========================
-    // PIE CHART
+    // PIE CHART (Purchasing by Group/หมวด)
+    // Rows 12-15 (index 11-14)
     // =========================
     const chartData = [];
 
@@ -68,11 +72,12 @@ export async function GET(request: Request) {
     }
 
     // =========================
-    // SUMMARY TABLE
+    // SUMMARY TABLE (Purchasing by Group/หมวด)
+    // Rows 12-15
     // =========================
     const summaryTableData = [];
 
-    for (let r = 11; r <= 15; r++) {
+    for (let r = 11; r <= 14; r++) {
       summaryTableData.push({
         col1: infoData[r]?.[73] || '',
         col2: infoData[r]?.[74] || ''
@@ -80,11 +85,12 @@ export async function GET(request: Request) {
     }
 
     // =========================
-    // SECOND CHART
+    // SECOND CHART (Purchasing by Category/สถานะ)
+    // Rows 2-8 (index 1-7)
     // =========================
     const secondChartData = [];
 
-    for (let r = 1; r <= 8; r++) {
+    for (let r = 1; r <= 7; r++) {
       secondChartData.push({
         name: infoData[r]?.[73] || '',
         value: getNum(r, 74)
@@ -92,11 +98,12 @@ export async function GET(request: Request) {
     }
 
     // =========================
-    // SECOND TABLE
+    // SECOND TABLE (Purchasing by Category/สถานะ)
+    // Rows 2-8
     // =========================
     const secondTableData = [];
 
-    for (let r = 1; r <= 9; r++) {
+    for (let r = 1; r <= 7; r++) {
       secondTableData.push({
         col1: infoData[r]?.[73] || '',
         col2: infoData[r]?.[74] || ''
