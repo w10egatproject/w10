@@ -53,11 +53,28 @@ export async function GET(request: Request) {
       return parseFloat(val.toString().replace(/[^0-9.-]/g, '')) || 0;
     };
 
+    const equipmentData = [];
+    for (let r = 1; r <= 7; r++) {
+      equipmentData.push({
+        name: rawData[r]?.[5] || '',
+        values: [getNum(r, 12), getNum(r, 13), getNum(r, 14), getNum(r, 15)],
+        total: getNum(r, 16),
+      });
+    }
+
+    const allEquipmentRow = equipmentData.find((e) => e.name === 'All');
+    const groupEntrances = allEquipmentRow?.values || [
+      getNum(0, 23),
+      getNum(0, 27),
+      getNum(0, 31),
+      getNum(0, 35),
+    ];
+
     const groupStats: any = {
-      W11: { entrance: getNum(0, 23), left: getNum(1, 23), finish: getNum(2, 23), otherFinish: getNum(3, 23), out: getNum(4, 23) },
-      W12: { entrance: getNum(0, 27), left: getNum(1, 27), finish: getNum(2, 27), otherFinish: getNum(3, 27), out: getNum(4, 27) },
-      W13: { entrance: getNum(0, 31), left: getNum(1, 31), finish: getNum(2, 31), otherFinish: getNum(3, 31), out: getNum(4, 31) },
-      W14: { entrance: getNum(0, 35), left: getNum(1, 35), finish: getNum(2, 35), otherFinish: getNum(3, 35), out: getNum(4, 35) },
+      W11: { entrance: groupEntrances[0], left: getNum(1, 23), finish: getNum(2, 23), otherFinish: getNum(3, 23), out: getNum(4, 23) },
+      W12: { entrance: groupEntrances[1], left: getNum(1, 27), finish: getNum(2, 27), otherFinish: getNum(3, 27), out: getNum(4, 27) },
+      W13: { entrance: groupEntrances[2], left: getNum(1, 31), finish: getNum(2, 31), otherFinish: getNum(3, 31), out: getNum(4, 31) },
+      W14: { entrance: groupEntrances[3], left: getNum(1, 35), finish: getNum(2, 35), otherFinish: getNum(3, 35), out: getNum(4, 35) },
     };
 
     groupStats.W_all = {
@@ -87,15 +104,6 @@ export async function GET(request: Request) {
       finish: getNum(7, 11),
       total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
     };
-
-    const equipmentData = [];
-    for (let r = 1; r <= 7; r++) {
-      equipmentData.push({
-        name: rawData[r]?.[5] || '',
-        values: [getNum(r, 12), getNum(r, 13), getNum(r, 14), getNum(r, 15)],
-        total: getNum(r, 16),
-      });
-    }
 
     return NextResponse.json({
       statusSummary: { total: w_all },

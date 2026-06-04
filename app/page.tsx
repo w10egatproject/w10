@@ -199,11 +199,11 @@ export default function DashboardPage() {
   const { wGauges = {}, groupStats = {}, w_all = {}, statusData = {}, equipmentData = [] } = data;
 
   const statusChartOptions = {
-    chart: { type: 'pie', height: 400, backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 } },
+    chart: { type: 'pie', height: 440, backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 } },
     title: { text: '' },
     credits: { enabled: false },
     accessibility: { enabled: false },
-    plotOptions: { pie: { innerSize: '60%', depth: 35, dataLabels: { enabled: true, format: '{point.name}: {point.y} ({point.percentage:.0f}%)', style: { color: '#4A4A49', fontWeight: 'bold' } } } },
+    plotOptions: { pie: { size: '78%', innerSize: '52%', depth: 38, dataLabels: { enabled: true, distance: 28, format: '{point.name}: {point.y} ({point.percentage:.0f}%)', style: { color: '#4A4A49', fontWeight: 'bold' } } } },
     series: [{ name: 'Status', data: [
         { name: 'SAP', y: statusData?.sap || 0, color: '#22c55e' },
         { name: 'Pending', y: statusData?.pending || 0, color: '#ef4444' },
@@ -273,12 +273,12 @@ export default function DashboardPage() {
             </h3>
             <Info className="text-slate-300 w-4 h-4 md:w-5 h-5 cursor-help" />
           </div>
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8 items-stretch">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(240px,0.68fr)_minmax(520px,1.55fr)_minmax(300px,0.9fr)] gap-5 md:gap-6 items-stretch">
               <div className="w-full">
                 <WOBlock statusData={statusData} />
               </div>
-              <div className="flex justify-center items-center bg-white/30 rounded-2xl p-4 border border-slate-100">
-                <div className="w-full max-w-[400px]">
+              <div className="flex justify-center items-center bg-white/30 rounded-2xl p-3 md:p-4 border border-slate-100">
+                <div className="w-full max-w-[680px]">
                   <HighchartsReact highcharts={Highcharts} options={statusChartOptions} />
                 </div>
               </div>
