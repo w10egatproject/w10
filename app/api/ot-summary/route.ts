@@ -16,12 +16,32 @@ const GROUP_BY_SEQUENCE = [
   { group: 'W14', start: 13, end: 16 },
 ];
 
+const CONTRACTOR_GROUP_BY_SEQUENCE = [
+  { group: 'W11', start: 1, end: 1 },
+  { group: 'W12', start: 2, end: 7 },
+  { group: 'W13', start: 8, end: 20 },
+  { group: 'W14', start: 21, end: 29 },
+];
+
+const otGroups = ['W11', 'W12', 'W13', 'W14'];
+
 const toNumber = (value: unknown) => {
   const normalized = value?.toString().replace(/[^0-9.-]/g, '') || '';
   return parseFloat(normalized) || 0;
 };
 
-const getGroup = (sequence: number) => GROUP_BY_SEQUENCE.find((item) => sequence >= item.start && sequence <= item.end)?.group || 'อื่น';
+const getGroup = (sequence: number, isEmployee: boolean) => {
+  const config = isEmployee ? GROUP_BY_SEQUENCE : CONTRACTOR_GROUP_BY_SEQUENCE;
+  return config.find((item) => sequence >= item.start && sequence <= item.end)?.group || 'อื่น';
+};
+
+const mapGroupValue = (val: string) => {
+  if (val === '1') return 'W11';
+  if (val === '2') return 'W12';
+  if (val === '3') return 'W13';
+  if (val === '4') return 'W14';
+  return val;
+};
 
 const parseOtRows = (rows: any[][], type: 'employee' | 'contractor') => {
   const title = rows.flat().find((cell) => cell?.toString().trim())?.toString() || (type === 'employee' ? 'สรุป OT พนักงาน' : 'สรุป OT ลูกจ้าง');
@@ -44,12 +64,20 @@ const parseOtRows = (rows: any[][], type: 'employee' | 'contractor') => {
         ? (toNumber(row[36]) || total)
         : (toNumber(row[38]) || total);
 
+      const groupVal = row[1]?.toString()?.trim() || '';
+      const mappedGroup = mapGroupValue(groupVal);
+      const groupFromSeq = getGroup(sequence, isEmployee);
+      
+      const group = isEmployee 
+        ? groupFromSeq 
+        : (otGroups.includes(mappedGroup) ? mappedGroup : groupFromSeq);
+
       return {
         sequence,
-        employeeId: isEmployee ? row[1]?.toString() || '' : '',
-        name: isEmployee ? row[2]?.toString() || '' : row[2]?.toString() || '',
+        employeeId: isEmployee ? row[1]?.toString() || '' : row[1]?.toString() || '',
+        name: row[2]?.toString() || '',
         position: isEmployee ? row[3]?.toString() || '' : '',
-        group: isEmployee ? getGroup(sequence) : (row[1]?.toString()?.trim() || 'อื่น'),
+        group,
         type,
         days,
         holidayHours: isEmployee ? 0 : toNumber(row[34]),
@@ -79,11 +107,20 @@ const parseOtErrorRows = (rows: any[][], type: 'employee' | 'contractor') => {
       });
       const total = toNumber(row[row.length - 1]);
 
+      const groupVal = row[1]?.toString()?.trim() || '';
+      const mappedGroup = mapGroupValue(groupVal);
+      const groupFromSeq = getGroup(sequence, isEmployee);
+      
+      const group = isEmployee 
+        ? groupFromSeq 
+        : (otGroups.includes(mappedGroup) ? mappedGroup : groupFromSeq);
+
       return {
         sequence,
         employeeId: isEmployee ? row[1]?.toString() || '' : row[1]?.toString() || '',
         name: row[2]?.toString() || '',
         position: isEmployee ? row[3]?.toString() || '' : '',
+        group,
         days,
         total,
       };
