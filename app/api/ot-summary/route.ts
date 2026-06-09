@@ -58,11 +58,11 @@ const parseOtRows = (rows: any[][], type: 'employee' | 'contractor') => {
 
       const total = isEmployee
         ? (toNumber(row[35]) || dayTotal)
-        : (toNumber(row[35]) || dayTotal);
+        : (toNumber(row[38]) || dayTotal);
 
       const total2 = isEmployee
         ? (toNumber(row[36]) || total)
-        : (toNumber(row[38]) || total);
+        : (toNumber(row[39]) || total);
 
       const groupVal = row[1]?.toString()?.trim() || '';
       const mappedGroup = mapGroupValue(groupVal);
@@ -75,7 +75,7 @@ const parseOtRows = (rows: any[][], type: 'employee' | 'contractor') => {
       return {
         sequence,
         employeeId: isEmployee ? row[1]?.toString() || '' : row[1]?.toString() || '',
-        name: row[2]?.toString() || '',
+        name: isEmployee ? row[2]?.toString() || '' : row[3]?.toString() || '',
         position: isEmployee ? row[3]?.toString() || '' : '',
         group,
         type,
@@ -85,7 +85,7 @@ const parseOtRows = (rows: any[][], type: 'employee' | 'contractor') => {
         oneTime: isEmployee ? 0 : toNumber(row[36]),
         oneHalfTime: isEmployee ? 0 : toNumber(row[37]),
         total2,
-        threeTime: isEmployee ? 0 : toNumber(row[39]),
+        threeTime: isEmployee ? 0 : toNumber(row[40]),
       };
     })
     .filter(Boolean);
