@@ -102,7 +102,7 @@ const parseOtRows = (rows: (string | number | boolean | null | undefined)[][], t
         threeTime: isEmployee ? 0 : toNumber(row[39]),
       };
     })
-    .filter(Boolean);
+    .filter((p): p is NonNullable<typeof p> => !!p);
 
   return { title, people };
 };
@@ -141,7 +141,7 @@ const parseOtErrorRows = (rows: (string | number | boolean | null | undefined)[]
         total,
       };
     })
-    .filter(Boolean);
+    .filter((p): p is NonNullable<typeof p> => !!p);
 
   return people;
 };
