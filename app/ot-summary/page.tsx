@@ -229,7 +229,6 @@ const renderOtErrorTable = (rows: OtErrorRow[], type: 'employee' | 'contractor')
       <table className="w-full min-w-[800px] table-fixed border-collapse border border-[#21324a] text-center text-[10px] md:text-[11px]">
         <colgroup>
           <col className="w-[30px]" />
-          <col className="w-[65px]" />
           <col className="w-[125px]" />
           {isEmployee && <col className="w-[80px]" />}
           {Array.from({ length: 31 }, (_, index) => (
@@ -239,12 +238,12 @@ const renderOtErrorTable = (rows: OtErrorRow[], type: 'employee' | 'contractor')
         </colgroup>
         <thead className="text-[9px] md:text-[10px] font-black text-slate-900">
           <tr className="bg-red-500 text-white">
-            <th colSpan={isEmployee ? 36 : 35} className="border border-slate-700 px-1 py-1 font-black text-sm uppercase tracking-wider">
+            <th colSpan={isEmployee ? 35 : 34} className="border border-slate-700 px-1 py-1 font-black text-sm uppercase tracking-wider">
               Check OT Error {isEmployee ? 'พนักงาน' : 'ลูกจ้าง'}
             </th>
           </tr>
           <tr>
-            {['ลำดับ', 'เลขประจำตัว', 'ชื่อ', ...(isEmployee ? ['ตำแหน่ง'] : []), ...Array.from({ length: 31 }, (_, index) => `${index + 1}`), 'รวม'].map((header, index) => (
+            {['ลำดับ', 'ชื่อ', ...(isEmployee ? ['ตำแหน่ง'] : []), ...Array.from({ length: 31 }, (_, index) => `${index + 1}`), 'รวม'].map((header, index) => (
               <th key={`error-header-${header}-${index}`} className="border border-slate-700 bg-[#d9d9d9] px-0.5 py-1 font-black whitespace-nowrap">{header}</th>
             ))}
           </tr>
@@ -253,7 +252,6 @@ const renderOtErrorTable = (rows: OtErrorRow[], type: 'employee' | 'contractor')
           {rows.map((row, index) => (
             <tr key={`error-row-${row.sequence}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-[#fff5f5]'}>
               <td className="border border-slate-700 px-0.5 py-1 font-bold">{row.sequence}</td>
-              <td className="border border-slate-700 px-0.5 py-1 font-bold">{row.employeeId}</td>
               <td className="truncate border border-slate-700 px-1 py-1 text-left font-bold whitespace-nowrap" title={row.name}>{row.name}</td>
               {isEmployee && <td className="border border-slate-700 px-0.5 py-1 font-bold">{row.position}</td>}
               {row.days.map((isError, dayIndex) => (
