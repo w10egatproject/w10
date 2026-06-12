@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { 
   getContractorOtSheetData, 
+  getContractorEtasSheetData,
+  getEmployeeEtasSheetData,
   getEmployeeOtSheetData,
   getEmployeeOtErrorSheetData,
   getContractorOtErrorSheetData
@@ -107,6 +109,61 @@ const parseOtRows = (rows: (string | number | boolean | null | undefined)[][], t
   return { title, people };
 };
 
+const parseContractorEtasRows = (rows: (string | number | boolean | null | undefined)[][]) => {
+  const title = rows.flat().find((cell) => cell?.toString().includes('ข้อมูลจาก'))?.toString() || 'ข้อมูลสแกนลายนิ้วมือลูกจ้าง';
+  let contractorIndex = 0;
+
+  const people = rows
+    .map((row) => {
+      // ETAS_dataลจ: B=ลำดับ, C=เลขประจำตัว, D=ชื่อ, E:AI=วันที่ 1-31, AJ=รวม
+      const sequence = toNumber(row[1]);
+      if (!sequence) return null;
+      contractorIndex += 1;
+
+      const days = Array.from({ length: 31 }, (_, index) => toNumber(row[index + 4]));
+      const dayTotal = days.reduce((sum, value) => sum + value, 0);
+
+      return {
+        sequence,
+        employeeId: row[2]?.toString() || '',
+        name: row[3]?.toString() || '',
+        group: getGroup(contractorIndex, false),
+        days,
+        total: toNumber(row[35]) || dayTotal,
+      };
+    })
+    .filter((p): p is NonNullable<typeof p> => !!p);
+
+  return { title, people };
+};
+
+const parseEmployeeEtasRows = (rows: (string | number | boolean | null | undefined)[][]) => {
+  const title = 'ข้อมูลสแกนลายนิ้วมือพนักงาน';
+
+  const people = rows
+    .map((row) => {
+      // ETAS_data: AL=ลำดับ, AM=เลขประจำตัว, AN=ชื่อ, AO=ตำแหน่ง, AP:BT=วันที่ 1-31, BU=รวม
+      const sequence = toNumber(row[0]);
+      if (!sequence) return null;
+
+      const days = Array.from({ length: 31 }, (_, index) => toNumber(row[index + 4]));
+      const dayTotal = days.reduce((sum, value) => sum + value, 0);
+
+      return {
+        sequence,
+        employeeId: row[1]?.toString() || '',
+        name: row[2]?.toString() || '',
+        position: row[3]?.toString() || '',
+        group: getGroup(sequence, true),
+        days,
+        total: toNumber(row[35]) || dayTotal,
+      };
+    })
+    .filter((p): p is NonNullable<typeof p> => !!p);
+
+  return { title, people };
+};
+
 const parseOtErrorRows = (rows: (string | number | boolean | null | undefined)[][], type: 'employee' | 'contractor', nameGroupMap?: Map<string, string>) => {
   const people = rows
     .map((row) => {
@@ -160,11 +217,13 @@ const summarizeGroup = (group: string, people: { group: string; total: number; t
 
 export async function GET() {
   try {
-    const [employeeRows, contractorRows, employeeErrorRows, contractorErrorRows] = await Promise.all([
+    const [employeeRows, contractorRows, employeeErrorRows, contractorErrorRows, contractorEtasRows, employeeEtasRows] = await Promise.all([
       getEmployeeOtSheetData(),
       getContractorOtSheetData(),
       getEmployeeOtErrorSheetData(),
       getContractorOtErrorSheetData(),
+      getContractorEtasSheetData(),
+      getEmployeeEtasSheetData(),
     ]);
 
     if (!employeeRows) {
@@ -177,8 +236,12 @@ export async function GET() {
 
     const employeeData = parseOtRows(employeeRows, 'employee');
     const contractorData = parseOtRows(contractorRows, 'contractor');
+    const contractorEtasData = contractorEtasRows ? parseContractorEtasRows(contractorEtasRows) : { title: 'ข้อมูลสแกนลายนิ้วมือลูกจ้าง', people: [] };
+    const employeeEtasData = employeeEtasRows ? parseEmployeeEtasRows(employeeEtasRows) : { title: 'ข้อมูลสแกนลายนิ้วมือพนักงาน', people: [] };
     const employees = employeeData.people;
     const contractors = contractorData.people;
+    const contractorEtas = contractorEtasData.people;
+    const employeeEtas = employeeEtasData.people;
 
     // สร้าง Map ชื่อ -> กลุ่ม เพื่อให้หน้า Error แสดงกลุ่มตรงกับหน้าสรุป (ใช้ trim() เพื่อความแม่นยำ)
     const employeeNameMap = new Map<string, string>();
@@ -240,8 +303,12 @@ export async function GET() {
     return NextResponse.json({
       employeeTitle: employeeData.title,
       contractorTitle: contractorData.title,
+      employeeEtasTitle: employeeEtasData.title,
+      contractorEtasTitle: contractorEtasData.title,
       employees,
       contractors,
+      employeeEtas,
+      contractorEtas,
       employeeErrors,
       contractorErrors,
       groupSummary,

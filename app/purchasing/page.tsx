@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, CalendarDays, ChevronDown, ClipboardList, Clock, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ChevronDown, ClipboardList, Clock, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle, UserRound } from 'lucide-react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -456,7 +456,10 @@ export default function PurchasingPage() {
                     <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
                   </Link>
                   <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
-                    <Clock size={18} className="text-sky-500" /> สรุปโอทีลูกจ้างและพนักงาน
+                    <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
+                  </Link>
+                  <Link href="/ot-employee" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-amber-50">
+                    <UserRound size={18} className="text-amber-500" /> สรุป OT พนักงาน
                   </Link>
                 </motion.div>
               )}

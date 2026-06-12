@@ -179,6 +179,44 @@ export async function getContractorOtSheetData() {
   }
 }
 
+export async function getContractorEtasSheetData() {
+  const sheetId = '1ucCTBZBLF8tkTWyuIE46_aRx0vUwen382wWokuR55UQ';
+  const tabName = 'ETAS_dataลจ';
+  const client = getSheetsClientForSheet(sheetId);
+  if (!client) return null;
+
+  try {
+    const response = await client.sheets.spreadsheets.values.get({
+      spreadsheetId: client.sheetId,
+      range: `'${tabName}'!A1:AJ100`,
+    });
+
+    return response.data.values || [];
+  } catch (error: unknown) {
+    console.error('Google Sheets Contractor ETAS API error:', getErrorMessage(error));
+    return null;
+  }
+}
+
+export async function getEmployeeEtasSheetData() {
+  const sheetId = '1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA';
+  const tabName = 'ETAS_data';
+  const client = getSheetsClientForSheet(sheetId);
+  if (!client) return null;
+
+  try {
+    const response = await client.sheets.spreadsheets.values.get({
+      spreadsheetId: client.sheetId,
+      range: `'${tabName}'!AL1:BU19`,
+    });
+
+    return response.data.values || [];
+  } catch (error: unknown) {
+    console.error('Google Sheets Employee ETAS API error:', getErrorMessage(error));
+    return null;
+  }
+}
+
 export async function getEmployeeOtErrorSheetData() {
   const sheetId = process.env.GOOGLE_OT_EMPLOYEE_SHEET_ID;
   if (!sheetId) {

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, ChevronDown, Clock, Filter, RefreshCw, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Clock, Filter, RefreshCw, ShoppingCart, UserRound } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 type EmployeeOtRow = {
@@ -30,11 +30,25 @@ type OtErrorRow = {
   total: number;
 };
 
+type EtasRow = {
+  sequence: number;
+  employeeId: string;
+  name: string;
+  position?: string;
+  group: string;
+  days: number[];
+  total: number;
+};
+
 type OtSummaryData = {
   employeeTitle?: string;
   contractorTitle?: string;
+  employeeEtasTitle?: string;
+  contractorEtasTitle?: string;
   employees?: EmployeeOtRow[];
   contractors?: EmployeeOtRow[];
+  employeeEtas?: EtasRow[];
+  contractorEtas?: EtasRow[];
   employeeErrors?: OtErrorRow[];
   contractorErrors?: OtErrorRow[];
   officialContractorTotals?: {
@@ -93,6 +107,13 @@ const getContractorTotals = (rows: EmployeeOtRow[]) => rows.reduce(
     threeTime: sum.threeTime + (contractor.threeTime || 0),
   }),
   { ...emptyContractorTotals },
+);
+
+const getEtasTotals = (rows: EtasRow[]) => rows.reduce(
+  (sum, row) => ({
+    total: sum.total + row.total,
+  }),
+  { total: 0 },
 );
 
 const containerVariants = {
@@ -248,6 +269,69 @@ const renderContractorTable = (rows: EmployeeOtRow[], totals: typeof emptyContra
   </div>
 );
 
+const renderEtasTable = (
+  rows: EtasRow[],
+  totals: { total: number },
+  group: string,
+  options: { title: string; showPosition?: boolean },
+) => {
+  const fixedColumnCount = options.showPosition ? 3 : 2;
+  const totalColumnIndex = options.showPosition ? 34 : 33;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className={`${options.showPosition ? 'min-w-[1240px]' : 'min-w-[1180px]'} w-full table-fixed border-collapse border border-[#21324a] text-center text-[10px] md:text-[11px]`}>
+        <colgroup>
+          <col className="w-[42px]" />
+          <col className="w-[170px]" />
+          {options.showPosition && <col className="w-[70px]" />}
+          {Array.from({ length: 31 }, (_, index) => (
+            <col key={`${group}-etas-day-col-${index}`} className="w-[24px]" />
+          ))}
+          <col className="w-[60px]" />
+        </colgroup>
+        <thead className="text-[9px] md:text-[10px] font-black text-slate-900">
+          <tr>
+            <th colSpan={fixedColumnCount} className="border border-slate-700 bg-white px-1 py-1 font-black text-[11px] md:text-[12px]">{options.title}</th>
+            <th colSpan={31} className="border border-slate-700 bg-white px-1 py-1 font-black text-[11px] md:text-[12px]">วันที่</th>
+            <th className="border border-slate-700 bg-white px-1 py-1 font-black">รวม</th>
+          </tr>
+          <tr>
+            {['ลำดับ', 'ชื่อ', ...(options.showPosition ? ['ตำแหน่ง'] : []), ...Array.from({ length: 31 }, (_, index) => `${index + 1}`), 'รวม'].map((header, index) => (
+              <th key={`${group}-etas-${header}-${index}`} className={`border border-slate-700 bg-[#d9d9d9] px-0.5 py-1 font-black leading-tight ${index === 1 ? 'text-left' : ''} ${index === totalColumnIndex ? 'bg-[#bae6fd] text-[#075985]' : ''}`}>{header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <motion.tr
+              key={`${group}-etas-${row.sequence}-${row.name}-${index}`}
+              className={index % 2 === 0 ? 'bg-white' : 'bg-[#e0f2fe]'}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.01 }}
+            >
+              <td className="border border-slate-700 px-0.5 py-1 font-bold">{row.sequence}</td>
+              <td className="truncate border border-slate-700 px-1 py-1 text-left font-bold" title={row.name}>{row.name}</td>
+              {options.showPosition && <td className="border border-slate-700 px-0.5 py-1 font-bold">{row.position}</td>}
+              {row.days.map((value, dayIndex) => (
+                <td key={`${group}-etas-${row.sequence}-${dayIndex}`} className="border border-slate-700 px-0.5 py-1 font-bold">
+                  {value ? formatNumber(value) : '-'}
+                </td>
+              ))}
+              <td className="border border-slate-700 bg-[#bae6fd] px-0.5 py-1 font-black text-[#075985]">{formatNumber(row.total)}</td>
+            </motion.tr>
+          ))}
+          <tr className="bg-[#e0f2fe]">
+            <td colSpan={totalColumnIndex} className="border border-slate-700 px-2 py-2 text-right font-black text-[#075985]">ยอดรวมข้อมูลสแกน</td>
+            <td className="border border-slate-700 bg-[#bae6fd] px-0.5 py-2 font-black text-[#075985]">{formatNumber(totals.total)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 /**
  * renderOtErrorTable: แสดงตารางตรวจสอบข้อผิดพลาด (Check OT Error)
  */
@@ -313,11 +397,18 @@ const renderOtErrorTable = (rows: OtErrorRow[], type: 'employee' | 'contractor')
 };
 
 
-export default function OtSummaryPage() {
+type OtWorkerType = 'contractor' | 'employee';
+
+export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: OtWorkerType }) {
   const [data, setData] = useState<OtSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const isEmployeePage = workerType === 'employee';
+  const pageTitle = isEmployeePage ? 'สรุป OT พนักงาน' : 'สรุป OT ลูกจ้าง';
+  const pageSubtitle = isEmployeePage ? 'EGAT Employee OT Summary' : 'EGAT Contractor OT Summary';
+  const rangeLabel = isEmployeePage ? 'พนง B2:AL20' : 'ลจ B2:AO34';
+  const HeaderIcon = isEmployeePage ? UserRound : Clock;
 
   const loadData = useCallback(() => {
     setIsLoading(true);
@@ -342,22 +433,30 @@ export default function OtSummaryPage() {
 
   const employees = data?.employees || [];
   const contractors = data?.contractors || [];
+  const employeeEtas = data?.employeeEtas || [];
+  const contractorEtas = data?.contractorEtas || [];
   const employeeErrors = data?.employeeErrors || [];
   const contractorErrors = data?.contractorErrors || [];
   const allContractorTotals = getContractorTotals(contractors);
+  const allEmployeeEtasTotals = getEtasTotals(employeeEtas);
+  const allContractorEtasTotals = getEtasTotals(contractorEtas);
   
   const employeeSections = otGroups.map((group) => {
     const rows = employees.filter((employee) => employee.group === group);
     const errors = employeeErrors.filter((err) => err.group === group);
     const totals = getEmployeeTotals(rows);
-    return { group, rows, errors, totals };
+    const employeeEtasRows = employeeEtas.filter((row) => row.group === group);
+    const employeeEtasTotals = getEtasTotals(employeeEtasRows);
+    return { group, rows, errors, totals, employeeEtasRows, employeeEtasTotals };
   });
 
   const contractorSections = otGroups.map((group) => {
     const rows = contractors.filter((contractor) => contractor.group === group);
     const errors = contractorErrors.filter((err) => err.group === group);
     const totals = getContractorTotals(rows);
-    return { group, rows, errors, totals };
+    const etasRows = contractorEtas.filter((row) => row.group === group);
+    const etasTotals = getEtasTotals(etasRows);
+    return { group, rows, errors, totals, etasRows, etasTotals };
   });
 
   return (
@@ -372,11 +471,11 @@ export default function OtSummaryPage() {
             className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5c607f] text-[#ffef9a] shadow-lg"
             whileHover={{ rotate: 10, scale: 1.1 }}
           >
-            <Clock size={28} strokeWidth={2.5} />
+            <HeaderIcon size={28} strokeWidth={2.5} />
           </motion.div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">สรุปโอทีลูกจ้างและพนักงาน</h1>
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">EGAT OT Summary</p>
+            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">{pageTitle}</h1>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
           </div>
         </div>
 
@@ -395,7 +494,7 @@ export default function OtSummaryPage() {
           </AnimatePresence>
           <div className="flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm font-black text-[#4A4A49] shadow-inner">
             <Filter size={16} className="text-slate-400" />
-            พนง B2:AL20 · ลจ B2:AO34
+            {rangeLabel}
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -434,7 +533,10 @@ export default function OtSummaryPage() {
                     <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
                   </Link>
                   <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
-                    <Clock size={18} className="text-sky-500" /> สรุปโอทีลูกจ้างและพนักงาน
+                    <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
+                  </Link>
+                  <Link href="/ot-employee" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-amber-50">
+                    <UserRound size={18} className="text-amber-500" /> สรุป OT พนักงาน
                   </Link>
                 </motion.div>
               )}
@@ -471,7 +573,7 @@ export default function OtSummaryPage() {
             initial="hidden"
             animate="visible"
           >
-            {contractorSections.map(({ group, rows, errors, totals }) => (
+            {!isEmployeePage && contractorSections.map(({ group, rows, errors, totals, etasRows, etasTotals }) => (
               <motion.section 
                 key={group} 
                 variants={itemVariants}
@@ -506,6 +608,13 @@ export default function OtSummaryPage() {
                   </aside>
                   <div className="min-w-0">
                     {renderContractorTable(rows, totals, group)}
+                    <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <h3 className="text-lg font-black text-[#0284c7] mb-3 flex items-center gap-2">
+                        <div className="w-2 h-5 bg-[#38bdf8] rounded-full"></div>
+                        ข้อมูลสแกนลายนิ้วมือลูกจ้าง {group}
+                      </h3>
+                      {renderEtasTable(etasRows, etasTotals, group, { title: `ข้อมูลสแกนลายนิ้วมือลูกจ้าง ${group}` })}
+                    </motion.div>
                     {errors.length > 0 && (
                       <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                         <h3 className="text-lg font-black text-red-600 mb-3 flex items-center gap-2">
@@ -520,6 +629,7 @@ export default function OtSummaryPage() {
               </motion.section>
             ))}
 
+            {!isEmployeePage && (
             <motion.section 
               variants={itemVariants}
               className="overflow-hidden rounded-3xl border border-[#f4bfd2] border-b-[5px] border-b-[#f1a9c4] bg-[#fff0f6] shadow-[0_8px_18px_rgba(244,114,182,0.12)]"
@@ -533,6 +643,13 @@ export default function OtSummaryPage() {
               </div>
               <div className="p-4 md:p-8">
                 {renderContractorTable(contractors, data.officialContractorTotals || allContractorTotals, 'ALL-CONTRACTORS')}
+                <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
+                    <div className="w-2 h-6 bg-[#38bdf8] rounded-full"></div>
+                    ข้อมูลสแกนลายนิ้วมือลูกจ้าง (ทั้งหมด)
+                  </h3>
+                  {renderEtasTable(contractorEtas, allContractorEtasTotals, 'ALL-CONTRACTOR-ETAS', { title: 'ข้อมูลสแกนลายนิ้วมือลูกจ้าง (ทั้งหมด)' })}
+                </motion.div>
                 {contractorErrors.length > 0 && (
                   <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <h3 className="text-xl font-black text-red-600 mb-4 flex items-center gap-2">
@@ -544,8 +661,9 @@ export default function OtSummaryPage() {
                 )}
               </div>
             </motion.section>
+            )}
 
-            {employeeSections.map(({ group, rows, errors, totals }) => (
+            {isEmployeePage && employeeSections.map(({ group, rows, errors, totals, employeeEtasRows, employeeEtasTotals }) => (
               <motion.section 
                 key={group} 
                 variants={itemVariants}
@@ -575,6 +693,13 @@ export default function OtSummaryPage() {
                   </aside>
                   <div className="min-w-0">
                     {renderEmployeeTable(rows, group)}
+                    <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <h3 className="text-lg font-black text-[#0284c7] mb-3 flex items-center gap-2">
+                        <div className="w-2 h-5 bg-[#38bdf8] rounded-full"></div>
+                        ข้อมูลสแกนลายนิ้วมือพนักงาน {group}
+                      </h3>
+                      {renderEtasTable(employeeEtasRows, employeeEtasTotals, group, { title: `ข้อมูลสแกนลายนิ้วมือพนักงาน ${group}`, showPosition: true })}
+                    </motion.div>
                     {errors.length > 0 && (
                       <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                         <h3 className="text-lg font-black text-red-600 mb-3 flex items-center gap-2">
@@ -589,6 +714,7 @@ export default function OtSummaryPage() {
               </motion.section>
             ))}
 
+            {isEmployeePage && (
             <motion.section 
               variants={itemVariants}
               className="overflow-hidden rounded-3xl border border-[#efd58d] border-b-[5px] border-b-[#eecb70] bg-[#fff8da] shadow-[0_8px_18px_rgba(234,179,8,0.12)]"
@@ -602,6 +728,13 @@ export default function OtSummaryPage() {
               </div>
               <div className="p-4 md:p-8">
                 {renderEmployeeTable(employees, 'ALL-EMPLOYEES')}
+                <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
+                    <div className="w-2 h-6 bg-[#38bdf8] rounded-full"></div>
+                    ข้อมูลสแกนลายนิ้วมือพนักงาน (ทั้งหมด)
+                  </h3>
+                  {renderEtasTable(employeeEtas, allEmployeeEtasTotals, 'ALL-EMPLOYEE-ETAS', { title: 'ข้อมูลสแกนลายนิ้วมือพนักงาน (ทั้งหมด)', showPosition: true })}
+                </motion.div>
                 {employeeErrors.length > 0 && (
                   <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <h3 className="text-xl font-black text-red-600 mb-4 flex items-center gap-2">
@@ -613,9 +746,14 @@ export default function OtSummaryPage() {
                 )}
               </div>
             </motion.section>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+}
+
+export default function OtSummaryPage() {
+  return <OtSummaryContent />;
 }
