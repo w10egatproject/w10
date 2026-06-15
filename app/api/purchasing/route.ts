@@ -4,6 +4,12 @@ import { getDashboardData, updateDashboardFilters } from '@/lib/googleSheet';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+const noStoreHeaders = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -157,7 +163,7 @@ export async function GET(request: Request) {
       currentYear,
       currentMonth
 
-    });
+    }, { headers: noStoreHeaders });
 
   } catch (error: any) {
 
@@ -171,7 +177,8 @@ export async function GET(request: Request) {
         error: error.message
       },
       {
-        status: 500
+        status: 500,
+        headers: noStoreHeaders
       }
     );
   }

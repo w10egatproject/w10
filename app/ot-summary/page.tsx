@@ -458,7 +458,7 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
   const loadData = useCallback(() => {
     setIsLoading(true);
     setError('');
-    fetch('/api/ot-summary', { cache: 'no-store' })
+    fetch(`/api/ot-summary?workerType=${workerType}`, { cache: 'no-store' })
       .then(async (res) => {
         const payload = await res.json();
         if (!res.ok || payload.error) throw new Error(payload.error || 'โหลดข้อมูลโอทีไม่สำเร็จ');
@@ -466,7 +466,7 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [workerType]);
 
   useEffect(() => {
     void Promise.resolve().then(loadData);

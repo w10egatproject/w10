@@ -4,6 +4,12 @@ import { getDashboardData, updateDashboardFilters } from '@/lib/googleSheet';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+const noStoreHeaders = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 interface GroupStats {
   entrance: number;
   left: number;
@@ -140,9 +146,9 @@ export async function GET(request: Request) {
       currentMonth,
       debugInfo: rawData.slice(0, 10), // Expose first 10 rows
       timestamp: new Date().toISOString()
-    });
+    }, { headers: noStoreHeaders });
   } catch (error: any) {
     console.error('Dashboard API Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500, headers: noStoreHeaders });
   }
 }

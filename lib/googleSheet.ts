@@ -97,6 +97,63 @@ export async function updateDashboardFilters(year: string, month: string) {
   } 
 }
 
+async function updateSheetFilters(sheetId: string, tabName: string, year: string, month: string) {
+  const client = getSheetsClientForSheet(sheetId);
+  if (!client) return null;
+
+  try {
+    const monthValue = month === 'all' ? 'รวมทุกเดือน' : month;
+    const yearValue = year === 'all' ? 'All' : year;
+
+    await client.sheets.spreadsheets.values.update({
+      spreadsheetId: client.sheetId,
+      range: `'${tabName}'!C2:C3`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [[yearValue], [monthValue]],
+      },
+    });
+    return true;
+  } catch (error: unknown) {
+    console.error('Google Sheets filter update error:', getErrorMessage(error));
+    return false;
+  }
+}
+
+async function getSheetTabData(sheetId: string, tabName: string) {
+  const client = getSheetsClientForSheet(sheetId);
+  if (!client) return null;
+
+  try {
+    const response = await client.sheets.spreadsheets.values.get({
+      spreadsheetId: client.sheetId,
+      range: `'${tabName}'!A1:CZ1000`,
+    });
+
+    return response.data.values || [];
+  } catch (error: unknown) {
+    console.error('Google Sheets tab read error:', getErrorMessage(error));
+    return null;
+  }
+}
+
+const PURCHASING_ALL_SHEET_ID = '1gAFNW67DyQjzPUBRLclT3fG-QvMVop-msOguZCEw-JY';
+const PURCHASING_ALL_TAB_NAME = 'Dashboard W11 PRPO infoAll';
+
+export async function updatePurchasingAllFilters(year: string, month: string) {
+  return updateSheetFilters(PURCHASING_ALL_SHEET_ID, PURCHASING_ALL_TAB_NAME, year, month);
+}
+
+export async function getPurchasingAllSheetData() {
+  const rows = await getSheetTabData(PURCHASING_ALL_SHEET_ID, PURCHASING_ALL_TAB_NAME);
+  if (!rows) return null;
+
+  return {
+    dashboard: rows,
+    info: rows,
+  };
+}
+
 export async function getDashboardData() {
   const client = getSheetsClient();
 

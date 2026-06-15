@@ -2,11 +2,10 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CalendarDays, ChevronDown, ClipboardList, Clock, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle, UserRound } from 'lucide-react';
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
 type GaugeData = { empNorm?: number; empOT?: number; w11_1?: number; };
 type NameValue = { name: string; value: number; };
@@ -24,6 +23,147 @@ type ChartPointContext = {
 
 const chartColors = ['#fde68a', '#fdba74', '#93c5fd', '#86efac', '#c4b5fd', '#f9a8d4', '#67e8f9', '#fca5a5'];
 
+/* ──────────────────────────────────────────────
+   Color Theme System
+   ────────────────────────────────────────────── */
+type ColorTheme = 'gold' | 'teal';
+
+const themeTokens = {
+  gold: {
+    // Header
+    headerBorder: 'border-[#ffd56d]',
+    headerShadow: 'shadow-md shadow-slate-200/70',
+    iconBox: 'bg-[#5c607f] text-[#ffef9a]',
+    iconBoxShadow: 'shadow-lg shadow-indigo-100/60',
+    // Accent / loading
+    accent: 'text-[#d4a300]',
+    accentBadgeBg: 'bg-yellow-50',
+    // Menu
+    menuBtn: 'bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]',
+    menuItemHover: 'hover:bg-yellow-50',
+    // Panel 1 – summary chart
+    p1Border: 'border-[#b9dcff]',
+    p1Bg: 'bg-[#e8f5ff]/95',
+    p1Shadow: 'shadow-sm shadow-sky-100/60',
+    p1Bar: 'bg-[#ffe08a]',
+    p1IconHover: 'group-hover:text-[#d4a300]',
+    p1TblBorder: 'border-[#cfe6f7]',
+    p1TblHeadBg: 'bg-[#eef6ff]/90',
+    p1TblRowBg: 'bg-[#fffdf7]/80',
+    p1TblRowHover: 'hover:bg-yellow-50/40',
+    // Panel 2 – status chart
+    p2Border: 'border-[#c7d7ff]',
+    p2Bg: 'bg-[#edf3ff]/95',
+    p2Shadow: 'shadow-sm shadow-sky-100/60',
+    p2Bar: 'bg-[#f9a66c]',
+    p2IconHover: 'group-hover:text-orange-400',
+    p2TblBorder: 'border-[#d7def8]',
+    p2TblHeadBg: 'bg-[#f0f4ff]/90',
+    p2TblRowHover: 'hover:bg-orange-50/40',
+    p2CellHover: 'hover:bg-[#fff3cf]',
+    // Detail table section
+    dtBorder: 'border-[#b9dcff]',
+    dtBg: 'bg-[#e8f5ff]/95',
+    dtShadow: 'shadow-sm shadow-sky-100/60',
+    dtHeaderBg: 'bg-[#f5fbff]/70',
+    dtBar: 'bg-[#5c607f]',
+    dtTblBorder: 'border-[#cfe6f7]',
+    dtTblHeadBg: 'bg-[#eef6ff]/90',
+    dtTblRowBg: 'bg-[#fffdf7]/60',
+    dtTblRowHover: 'hover:bg-yellow-50/50',
+    // Search
+    sBorder: 'border-2 border-[#cfe6f7]',
+    sFocusBorder: 'focus:border-[#ffe08a]',
+    sBg: 'bg-[#fffdf7]',
+    sIconFocus: 'group-focus-within/search:text-[#d4a300]',
+    // Filter badge
+    fBadgeBg: 'bg-[#fff3cf]',
+    fBadgeText: 'text-[#9a6700]',
+    fBadgeBorder: 'border border-[#eecb70]',
+    fCloseText: 'text-[#7c4a00]',
+    // Loading section
+    lBorder: 'border-2 border-[#dbeafe]',
+    lBg: 'bg-[#e8f5ff]/95',
+    // Chart tooltip
+    ttBg: '#fffdf7',
+    ttBorderColor: '#f9a66c',
+    // Stat card (gauge panel)
+    scBlueBg: 'bg-[#fff7d6] text-slate-900 border-[#f6d77a]',
+    scShadow: 'shadow-sm shadow-yellow-100/60',
+    // Gauge card
+    gaugeBg: 'bg-[#fff8e8]',
+    gaugeBorder: 'border border-[#f7e7b7]',
+    gaugeShadow: 'shadow-sm shadow-yellow-100/50',
+  },
+  teal: {
+    // Header
+    headerBorder: 'border-[#5eead4]',
+    headerShadow: 'shadow-md shadow-teal-200/50',
+    iconBox: 'bg-[#134e4a] text-[#99f6e4]',
+    iconBoxShadow: 'shadow-lg shadow-teal-100/60',
+    // Accent / loading
+    accent: 'text-teal-600',
+    accentBadgeBg: 'bg-teal-50',
+    // Menu
+    menuBtn: 'bg-[#5eead4] text-[#134e4a] hover:bg-[#2dd4bf]',
+    menuItemHover: 'hover:bg-teal-50',
+    // Panel 1 – summary chart
+    p1Border: 'border-[#99f6e4]',
+    p1Bg: 'bg-[#ecfdf5]/95',
+    p1Shadow: 'shadow-sm shadow-teal-100/60',
+    p1Bar: 'bg-[#5eead4]',
+    p1IconHover: 'group-hover:text-teal-600',
+    p1TblBorder: 'border-[#a7f3d0]',
+    p1TblHeadBg: 'bg-[#ecfdf5]/90',
+    p1TblRowBg: 'bg-[#f0fdfa]/80',
+    p1TblRowHover: 'hover:bg-teal-50/40',
+    // Panel 2 – status chart
+    p2Border: 'border-[#a7f3d0]',
+    p2Bg: 'bg-[#f0fdfa]/95',
+    p2Shadow: 'shadow-sm shadow-teal-100/60',
+    p2Bar: 'bg-[#14b8a6]',
+    p2IconHover: 'group-hover:text-teal-400',
+    p2TblBorder: 'border-[#a7f3d0]',
+    p2TblHeadBg: 'bg-[#ecfdf5]/90',
+    p2TblRowHover: 'hover:bg-emerald-50/40',
+    p2CellHover: 'hover:bg-[#ccfbf1]',
+    // Detail table section
+    dtBorder: 'border-[#99f6e4]',
+    dtBg: 'bg-[#ecfdf5]/95',
+    dtShadow: 'shadow-sm shadow-teal-100/60',
+    dtHeaderBg: 'bg-[#f0fdf4]/70',
+    dtBar: 'bg-[#134e4a]',
+    dtTblBorder: 'border-[#a7f3d0]',
+    dtTblHeadBg: 'bg-[#ecfdf5]/90',
+    dtTblRowBg: 'bg-[#f0fdfa]/60',
+    dtTblRowHover: 'hover:bg-teal-50/50',
+    // Search
+    sBorder: 'border-2 border-[#a7f3d0]',
+    sFocusBorder: 'focus:border-[#5eead4]',
+    sBg: 'bg-[#f0fdfa]',
+    sIconFocus: 'group-focus-within/search:text-teal-600',
+    // Filter badge
+    fBadgeBg: 'bg-[#ccfbf1]',
+    fBadgeText: 'text-[#0f766e]',
+    fBadgeBorder: 'border border-[#5eead4]',
+    fCloseText: 'text-[#134e4a]',
+    // Loading section
+    lBorder: 'border-2 border-[#a7f3d0]',
+    lBg: 'bg-[#ecfdf5]/95',
+    // Chart tooltip
+    ttBg: '#f0fdfa',
+    ttBorderColor: '#14b8a6',
+    // Stat card (gauge panel)
+    scBlueBg: 'bg-[#ccfbf1] text-slate-900 border-[#5eead4]',
+    scShadow: 'shadow-sm shadow-teal-100/60',
+    // Gauge card
+    gaugeBg: 'bg-[#ecfdf5]',
+    gaugeBorder: 'border border-[#a7f3d0]',
+    gaugeShadow: 'shadow-sm shadow-teal-100/50',
+  },
+} as const;
+
+/* ──────── Animation variants ──────── */
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -41,22 +181,37 @@ const itemVariants: Variants = {
   }
 };
 
-import ReactSpeedometer from 'react-d3-speedometer';
+const HighchartsClient = dynamic(() => import('@/components/charts/HighchartsClient'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[280px] items-center justify-center rounded-2xl bg-slate-50 text-xs font-black uppercase tracking-widest text-slate-400">
+      Loading Chart
+    </div>
+  ),
+});
+
+const SpeedometerClient = dynamic(() => import('@/components/charts/SpeedometerClient'), {
+  ssr: false,
+  loading: () => <div className="h-[112px] w-[176px] rounded-xl bg-white/70" />,
+});
+
+type ThemeTokens = typeof themeTokens[ColorTheme];
 
 interface ModernGaugeProps {
   value?: number;
   label: string;
+  theme: ThemeTokens;
 }
 
-const ModernGauge: React.FC<ModernGaugeProps> = ({ value, label }) => {
+const ModernGauge: React.FC<ModernGaugeProps> = ({ value, label, theme: t }) => {
   const safeValue: number = typeof value === 'number' ? value : 0;
   const clampedValue = Math.min(Math.max(safeValue, -3), 3);
   
   return (
-    <div className="flex h-full flex-col items-center bg-[#fff8e8] p-4 rounded-2xl border border-[#f7e7b7] shadow-sm shadow-yellow-100/50 w-full relative">
+    <div className={`flex h-full flex-col items-center p-4 rounded-2xl w-full relative ${t.gaugeBg} ${t.gaugeBorder} ${t.gaugeShadow}`}>
       <div className="text-[12px] font-black text-slate-500 uppercase tracking-wide mb-1">{label}</div>
       <div className="h-28 w-44">
-        <ReactSpeedometer
+        <SpeedometerClient
           value={Number(clampedValue.toFixed(2))}
           minValue={-3}
           maxValue={3}
@@ -84,11 +239,12 @@ interface StatCardProps {
   label: string;
   value: string | number;
   tone?: 'blue' | 'slate';
+  theme: ThemeTokens;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ label, value, tone = 'slate' }) => {
+const StatCard: React.FC<StatCardProps> = ({ label, value, tone = 'slate', theme: t }) => {
   const toneClasses = { 
-    blue: 'bg-[#fff7d6] text-slate-900 border-[#f6d77a]', 
+    blue: t.scBlueBg, 
     slate: 'bg-white text-slate-900 border-slate-200' 
   };
   
@@ -102,7 +258,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, tone = 'slate' }) => 
     <motion.div 
       variants={itemVariants}
       whileHover={{ y: -5 }}
-      className={`grid min-h-[150px] grid-rows-[auto_1fr] rounded-2xl border-2 p-6 shadow-sm shadow-yellow-100/60 relative overflow-hidden group hover:shadow-md transition-all ${toneClasses[tone]}`}
+      className={`grid min-h-[150px] grid-rows-[auto_1fr] rounded-2xl border-2 p-6 ${t.scShadow} relative overflow-hidden group hover:shadow-md transition-all ${toneClasses[tone]}`}
     >
       {iconMap[label]}
       <div className="whitespace-nowrap text-[13px] font-black uppercase tracking-wide text-slate-500 z-10">{label}</div>
@@ -128,50 +284,70 @@ const THAI_MONTHS = [
 
 const DEFAULT_YEAR = "2025";
 
-export default function PurchasingPage() {
+type PurchasingPageContentProps = {
+  apiPath?: string;
+  pageTitle?: string;
+  pageSubtitle?: string;
+  fixedFilters?: boolean;
+  showGaugePanel?: boolean;
+  showSummaryPanel?: boolean;
+  tableColumnCount?: 9 | 10;
+  colorTheme?: ColorTheme;
+};
+
+export function PurchasingPageContent({
+  apiPath = '/api/purchasing',
+  pageTitle = 'การจัดซื้อจัดจ้าง',
+  pageSubtitle = 'EGAT Procurement Summary',
+  fixedFilters = false,
+  showGaugePanel = true,
+  showSummaryPanel = true,
+  tableColumnCount = 10,
+  colorTheme = 'gold',
+}: PurchasingPageContentProps = {}) {
+  const t = themeTokens[colorTheme];
+
   const [data, setData] = useState<PurchasingData | null>(null);
   const [year, setYear] = useState(DEFAULT_YEAR);
   const [month, setMonth] = useState("all");
   const [hoveredPurchaseStatus, setHoveredPurchaseStatus] = useState('');
   const [query, setQuery] = useState('');
-  const [modulesLoaded, setModulesLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const loadData = useCallback((y: string | null, m: string | null, isInitial = false) => {
-    setIsLoading(true);
+  const loadData = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setError('');
     const params = new URLSearchParams();
     if (y) params.append("year", y);
     if (m) params.append("month", m);
-    fetch(`/api/purchasing?${params.toString()}`, { cache: 'no-store' })
+    fetch(`${apiPath}?${params.toString()}`, { cache: 'no-store' })
       .then((res) => { if (!res.ok) throw new Error('โหลดข้อมูลจัดซื้อไม่สำเร็จ'); return res.json(); })
       .then((payload: PurchasingData) => { 
         if (payload.error) throw new Error(payload.error); 
         setData(payload); 
-        if (isInitial) { 
-          if (payload.currentYear) setYear(payload.currentYear); 
-          if (payload.currentMonth) setMonth(payload.currentMonth === 'รวมทุกเดือน' ? 'all' : payload.currentMonth); 
-        } 
+        if (payload.currentYear) setYear(payload.currentYear); 
+        if (payload.currentMonth) setMonth(payload.currentMonth === 'รวมทุกเดือน' ? 'all' : payload.currentMonth); 
       })
       .catch((err: Error) => { setError(err.message); })
-      .finally(() => setIsLoading(false));
-  }, []);
+      .finally(() => {
+        if (showLoading) setIsLoading(false);
+      });
+  }, [apiPath]);
 
   useEffect(() => {
-    import('highcharts/highcharts-3d').then(() => setModulesLoaded(true)).catch(() => setModulesLoaded(true));
-    
-    const savedYear = localStorage.getItem('dashboard_year') || DEFAULT_YEAR;
-    const savedMonth = localStorage.getItem('dashboard_month') || "all";
-    
-    setYear(savedYear);
-    setMonth(savedMonth);
-    
-    loadData(savedYear, savedMonth, true);
+    loadData(null, null, true);
+
+    const refreshTimer = window.setInterval(() => {
+      loadData(null, null, false, false);
+    }, 30000);
+
+    return () => window.clearInterval(refreshTimer);
   }, [loadData]);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (fixedFilters) return;
     const val = e.target.value;
     setYear(val);
     try {
@@ -183,6 +359,7 @@ export default function PurchasingPage() {
   };
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (fixedFilters) return;
     const val = e.target.value;
     setMonth(val);
     try {
@@ -194,7 +371,7 @@ export default function PurchasingPage() {
   };
 
   const handleRefresh = () => {
-    loadData(year, month);
+    loadData(null, null);
   };
 
   const { chartData = [], summaryTableData = [], secondChartData = [], secondTableData = [], purchaseList = [], gauges = {} } = data || {};
@@ -212,6 +389,15 @@ export default function PurchasingPage() {
 
     return !!normalizedLeft && !!normalizedRight && (normalizedLeft === normalizedRight || normalizedLeft.includes(normalizedRight) || normalizedRight.includes(normalizedLeft));
   }, [normalizeStatus]);
+
+  const togglePurchaseStatusFilter = useCallback((statusName: string) => {
+    const nextStatus = statusName.trim();
+    if (!nextStatus) return;
+
+    setHoveredPurchaseStatus((currentStatus) => {
+      return isSameStatus(currentStatus, nextStatus) ? '' : nextStatus;
+    });
+  }, [isSameStatus]);
 
   const primaryChartData = useMemo(() => chartData.map((item) => ({ name: item.name || '-', y: item.value || 0 })).filter((item) => item.y > 0), [chartData]);
   
@@ -240,12 +426,12 @@ export default function PurchasingPage() {
         custom: { statusName, isSelected },
         events: {
           click: function (this: ChartPointContext) {
-            setHoveredPurchaseStatus(String(this.options?.custom?.statusName || this.name || ''));
+            togglePurchaseStatusFilter(String(this.options?.custom?.statusName || this.name || ''));
           },
         },
       };
     })
-    .filter((item) => item.name !== '-'), [secondChartData, chartHasSelectedStatus, hoveredPurchaseStatus, isSameStatus]);
+    .filter((item) => item.name !== '-'), [secondChartData, chartHasSelectedStatus, hoveredPurchaseStatus, isSameStatus, togglePurchaseStatusFilter]);
 
   const hasSecondaryChartData = secondaryChartData.length > 0;
   
@@ -264,6 +450,9 @@ export default function PurchasingPage() {
   const handleStatusChartPointer = (event: React.MouseEvent<HTMLDivElement>) => {
     if (secondaryChartData.length === 0) return;
 
+    const target = event.target;
+    if (target instanceof Element && target.closest('.highcharts-point, .highcharts-data-label')) return;
+
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -278,7 +467,7 @@ export default function PurchasingPage() {
     const index = Math.min(secondaryChartData.length - 1, Math.max(0, Math.floor(ratio * secondaryChartData.length)));
     const statusName = secondaryChartData[index]?.name;
 
-    if (statusName) setHoveredPurchaseStatus(statusName);
+    if (statusName) togglePurchaseStatusFilter(statusName);
   };
   
   const getStatusStyle = (status: string) => {
@@ -305,8 +494,8 @@ export default function PurchasingPage() {
     credits: { enabled: false },
     title: { text: '' },
     tooltip: {
-      backgroundColor: '#fffdf7',
-      borderColor: '#f9a66c',
+      backgroundColor: t.ttBg,
+      borderColor: t.ttBorderColor,
       borderRadius: 12,
       borderWidth: 2,
       shadow: true,
@@ -324,7 +513,7 @@ export default function PurchasingPage() {
         point: {
           events: {
             click: function (this: ChartPointContext) {
-              setHoveredPurchaseStatus(String(this.options?.custom?.statusName || this.category || this.name || ''));
+              togglePurchaseStatusFilter(String(this.options?.custom?.statusName || this.category || this.name || ''));
             },
           },
         },
@@ -339,7 +528,7 @@ export default function PurchasingPage() {
         point: {
           events: {
             click: function (this: ChartPointContext) {
-              setHoveredPurchaseStatus(String(this.options?.custom?.statusName || this.category || this.name || ''));
+              togglePurchaseStatusFilter(String(this.options?.custom?.statusName || this.category || this.name || ''));
             },
           },
         },
@@ -353,9 +542,15 @@ export default function PurchasingPage() {
       },
     },
     series: [{ name: 'จำนวน', data: secondaryChartData }],
-  }), [secondaryChartData]);
+  }), [secondaryChartData, togglePurchaseStatusFilter, t.ttBg, t.ttBorderColor]);
 
   const totalSummary = useMemo(() => summaryTableData.reduce((sum, row) => sum + (parseFloat(row.col2?.toString().replace(/[^0-9.-]/g, '')) || 0), 0), [summaryTableData]);
+  const tableHeaders = tableColumnCount === 9
+    ? ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ']
+    : ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ', 'การดำเนินการ'];
+  const overviewGridClass = showGaugePanel
+    ? (showSummaryPanel ? 'xl:grid-cols-[280px_minmax(0,1fr)_minmax(0,1fr)]' : 'xl:grid-cols-[280px_minmax(0,1fr)]')
+    : (showSummaryPanel ? 'xl:grid-cols-2' : 'xl:grid-cols-1');
 
   if (error) return (
     <div className="min-h-screen bg-[#e2e2e2] p-4 text-slate-900 md:p-8 font-sans flex items-center justify-center">
@@ -372,7 +567,7 @@ export default function PurchasingPage() {
   return (
     <div className="min-h-screen bg-[#e2e2e2] p-4 text-slate-900 md:p-8 font-sans">
       <motion.header 
-        className="sticky top-0 z-50 mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-2xl md:rounded-3xl border-b-4 border-[#ffd56d] shadow-md shadow-slate-200/70"
+        className={`sticky top-0 z-50 mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-2xl md:rounded-3xl border-b-4 ${t.headerBorder} ${t.headerShadow}`}
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', damping: 15 }}
@@ -381,16 +576,16 @@ export default function PurchasingPage() {
           <div className="flex items-center gap-4">
             <motion.div 
               whileHover={{ rotate: 10, scale: 1.1 }}
-              className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5c607f] text-[#ffef9a] shadow-lg shadow-indigo-100/60"
+              className={`flex h-14 w-14 items-center justify-center rounded-2xl ${t.iconBox} ${t.iconBoxShadow}`}
             >
               <ShoppingCart size={28} strokeWidth={2.5} />
             </motion.div>
             <div>
               <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49] flex items-center gap-3">
-                การจัดซื้อจัดจ้าง
+                {pageTitle}
                 <Image src="/picture/First-Photoroom.png" alt="Purchasing Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16 object-contain" priority />
               </h1>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">EGAT Procurement Summary</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
             </div>
           </div>
         </div>
@@ -402,7 +597,7 @@ export default function PurchasingPage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center text-xs font-black text-[#d4a300] mr-2 bg-yellow-50 px-2 py-1 rounded-lg uppercase"
+                className={`flex items-center text-xs font-black ${t.accent} mr-2 ${t.accentBadgeBg} px-2 py-1 rounded-lg uppercase`}
               >
                 Updating...
               </motion.span>
@@ -410,11 +605,11 @@ export default function PurchasingPage() {
           </AnimatePresence>
           <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
             <Filter size={16} className="ml-2 text-slate-400" />
-            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={year} onChange={handleYearChange}>
+            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-80 transition" value={year} onChange={handleYearChange} disabled={fixedFilters}>
               <option value="all">รวมทุกปี</option>
               {['2023', '2024', '2025', '2026'].map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
-            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={month} onChange={handleMonthChange}>
+            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-80 transition" value={month} onChange={handleMonthChange} disabled={fixedFilters}>
               <option value="all">รวมทุกเดือน</option>
               {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
@@ -427,7 +622,7 @@ export default function PurchasingPage() {
             disabled={isLoading}
             className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-slate-50 border border-slate-200 shadow-sm transition-all flex items-center gap-2 disabled:opacity-60"
           >
-            <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
+            <RefreshCw size={16} strokeWidth={3} className={isLoading ? `animate-spin ${t.accent}` : 'text-slate-500'} />
             รีเฟรชข้อมูล
           </motion.button>
           <div className="relative">
@@ -436,7 +631,7 @@ export default function PurchasingPage() {
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
-              className="px-4 md:px-6 py-2 md:py-3 bg-[#ffe08a] text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-[#ffd56a] shadow-lg transition-all flex items-center gap-2"
+              className={`px-4 md:px-6 py-2 md:py-3 ${t.menuBtn} rounded-xl md:rounded-2xl text-xs md:text-sm font-black shadow-lg transition-all flex items-center gap-2`}
             >
               เมนูหน้า
               <ChevronDown size={16} strokeWidth={3} className={menuOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
@@ -452,8 +647,11 @@ export default function PurchasingPage() {
                   <Link href="/" className="flex items-center gap-3 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-slate-50">
                     <ArrowLeft size={18} className="text-slate-500" /> หน้าหลัก
                   </Link>
-                  <Link href="/purchasing" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                    <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
+                  <Link href="/purchasing" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
+                    <ShoppingCart size={18} className={t.accent} /> จัดซื้อจัดจ้าง
+                  </Link>
+                  <Link href="/purchasing-all" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
+                    <ShoppingBag size={18} className={t.accent} /> สถานะการซื้อจ้างทั้งหมด
                   </Link>
                   <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
                     <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
@@ -469,15 +667,15 @@ export default function PurchasingPage() {
       </motion.header>
 
       <AnimatePresence mode="wait">
-        {isLoading || !modulesLoaded ? (
+        {isLoading ? (
           <motion.div 
             key="loading"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex items-center justify-center gap-3 rounded-[2rem] border-2 border-[#dbeafe] bg-[#e8f5ff]/95 p-20 text-base font-black text-slate-400 shadow-sm uppercase tracking-widest animate-pulse"
+            className={`flex items-center justify-center gap-3 rounded-[2rem] ${t.lBorder} ${t.lBg} p-20 text-base font-black text-slate-400 shadow-sm uppercase tracking-widest animate-pulse`}
           >
-            <RefreshCw size={24} className="animate-spin text-[#d4a300]" /> กำลังโหลดข้อมูล...
+            <RefreshCw size={24} className={`animate-spin ${t.accent}`} /> กำลังโหลดข้อมูล...
           </motion.div>
         ) : (
           <motion.div 
@@ -486,69 +684,73 @@ export default function PurchasingPage() {
             initial="hidden"
             animate="visible"
           >
-            <div className="mb-10 grid grid-cols-1 gap-8 xl:grid-cols-[280px_minmax(0,1fr)_minmax(0,1fr)]">
+            <div className={`mb-10 grid grid-cols-1 gap-8 ${overviewGridClass}`}>
+              {showGaugePanel && (
               <section className="grid grid-cols-1 gap-4">
-                <StatCard label="W11-1" value={gauges.w11_1 || 0} tone="blue" />
+                <StatCard label="W11-1" value={gauges.w11_1 || 0} tone="blue" theme={t} />
                 <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4">
-                  <ModernGauge value={gauges.empNorm} label="พนักงานปกติ" />
-                  <ModernGauge value={gauges.empOT} label="ปกติ + OT" />
+                  <ModernGauge value={gauges.empNorm} label="พนักงานปกติ" theme={t} />
+                  <ModernGauge value={gauges.empOT} label="ปกติ + OT" theme={t} />
                 </motion.div>
               </section>
+              )}
 
               <section className="contents">
-                <motion.div variants={itemVariants} className="min-w-0 rounded-[2rem] border-b-4 border-[#b9dcff] bg-[#e8f5ff]/95 p-4 md:p-8 shadow-sm shadow-sky-100/60 relative overflow-hidden group hover:shadow-md transition-all">
+                {showSummaryPanel && (
+                <motion.div variants={itemVariants} className={`min-w-0 rounded-[2rem] border-b-4 ${t.p1Border} ${t.p1Bg} p-4 md:p-8 ${t.p1Shadow} relative overflow-hidden group hover:shadow-md transition-all`}>
                   <div className="mb-8 flex items-center justify-between gap-3">
                     <h2 className="font-black text-[#4A4A49] uppercase text-xl md:text-3xl tracking-wide flex items-center gap-3">
-                      <div className="w-3 h-7 md:h-10 bg-[#ffe08a] rounded-full"></div>
+                      <div className={`w-3 h-7 md:h-10 ${t.p1Bar} rounded-full`}></div>
                       ปริมาณการซื้อ/จ้างหมวด
                     </h2>
-                    <ClipboardList size={24} className="text-slate-300 group-hover:text-[#d4a300] transition-colors" />
+                    <ClipboardList size={24} className={`text-slate-300 ${t.p1IconHover} transition-colors`} />
                   </div>
                   <div className="grid grid-cols-1 items-center gap-6">
-                    {primaryChartData.length > 0 ? <HighchartsReact highcharts={Highcharts} options={chartOptions} /> : <div className="flex h-[280px] items-center justify-center rounded-2xl bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-widest">No Graph Data</div>}
-                    <div className="max-w-full overflow-x-auto rounded-2xl border-2 border-[#cfe6f7]">
+                    {primaryChartData.length > 0 ? <HighchartsClient options={chartOptions} /> : <div className="flex h-[280px] items-center justify-center rounded-2xl bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-widest">No Graph Data</div>}
+                    <div className={`max-w-full overflow-x-auto rounded-2xl border-2 ${t.p1TblBorder}`}>
                       <table className="w-full min-w-[620px] table-fixed text-center text-[12px] md:text-[13px] font-black text-slate-500">
-                        <thead className="bg-[#eef6ff]/90 text-slate-600 border-b-2 border-[#cfe6f7]">
+                        <thead className={`${t.p1TblHeadBg} text-slate-600 border-b-2 ${t.p1TblBorder}`}>
                           <tr>{summaryTableData.map((row, index) => <th key={`${row.col1}-${index}`} className="break-words px-2 py-4 leading-tight uppercase tracking-normal">{row.col1 || '-'}</th>)}</tr>
                         </thead>
                         <tbody>
-                          <tr className="bg-[#fffdf7]/80 hover:bg-yellow-50/40 transition-colors">
-                            {summaryTableData.map((row, index) => <td key={`${row.col2}-${index}`} className="whitespace-nowrap px-2 py-4 text-[#4A4A49] text-lg md:text-xl font-black border-t border-[#cfe6f7]">{row.col2 || 0}</td>)}
+                          <tr className={`${t.p1TblRowBg} ${t.p1TblRowHover} transition-colors`}>
+                            {summaryTableData.map((row, index) => <td key={`${row.col2}-${index}`} className={`whitespace-nowrap px-2 py-4 text-[#4A4A49] text-lg md:text-xl font-black border-t ${t.p1TblBorder}`}>{row.col2 || 0}</td>)}
                           </tr>
                         </tbody>
                       </table>
                     </div>
                   </div>
                 </motion.div>
+                )}
 
-                <motion.div variants={itemVariants} className="min-w-0 rounded-[2rem] border-b-4 border-[#c7d7ff] bg-[#edf3ff]/95 p-4 md:p-8 shadow-sm shadow-sky-100/60 relative overflow-hidden group hover:shadow-md transition-all">
+                <motion.div variants={itemVariants} className={`min-w-0 rounded-[2rem] border-b-4 ${t.p2Border} ${t.p2Bg} p-4 md:p-8 ${t.p2Shadow} relative overflow-hidden group hover:shadow-md transition-all`}>
                   <div className="mb-8 flex items-center justify-between gap-3">
                     <h2 className="font-black text-[#4A4A49] uppercase text-xl md:text-3xl tracking-wide flex items-center gap-3">
-                      <div className="w-3 h-7 md:h-10 bg-[#f9a66c] rounded-full"></div>
+                      <div className={`w-3 h-7 md:h-10 ${t.p2Bar} rounded-full`}></div>
                       สถานะการซื้อจ้าง
                     </h2>
-                    <CalendarDays size={24} className="text-slate-300 group-hover:text-orange-400 transition-colors" />
+                    <CalendarDays size={24} className={`text-slate-300 ${t.p2IconHover} transition-colors`} />
                   </div>
                   {hasSecondaryChartData ? (
                     <div
                       onClick={handleStatusChartPointer}
                       className="cursor-pointer"
                     >
-                      <HighchartsReact highcharts={Highcharts} options={equipChartOptions} />
+                      <HighchartsClient options={equipChartOptions} />
                     </div>
                   ) : <div className="flex h-[280px] items-center justify-center rounded-2xl bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-widest">No Graph Data</div>}
-                  <div className="mt-6 max-w-full overflow-x-auto rounded-2xl border-2 border-[#d7def8]">
+                  <div className={`mt-6 max-w-full overflow-x-auto rounded-2xl border-2 ${t.p2TblBorder}`}>
                     <table className="w-full min-w-[620px] table-fixed text-center text-[12px] md:text-[13px] font-black text-slate-500">
-                      <thead className="bg-[#f0f4ff]/90 text-slate-600 border-b-2 border-[#d7def8]">
+                      <thead className={`${t.p2TblHeadBg} text-slate-600 border-b-2 ${t.p2TblBorder}`}>
                         <tr>{secondTableData.map((row, index) => <th key={`${row.col1}-${index}`} className="break-words px-2 py-4 leading-tight uppercase tracking-normal">{row.col1 || '-'}</th>)}</tr>
                       </thead>
                       <tbody>
-                        <tr className="bg-[#fffdf7]/80 hover:bg-orange-50/40 transition-colors">
+                        <tr className={`${t.p1TblRowBg} ${t.p2TblRowHover} transition-colors`}>
                           {secondTableData.map((row, index) => (
                             <td
                               key={`${row.col2}-${index}`}
-                              onClick={() => row.col1 && setHoveredPurchaseStatus(row.col1)}
-                              className="whitespace-nowrap px-2 py-4 text-[#4A4A49] text-lg md:text-xl font-black border-t border-[#d7def8] cursor-pointer hover:bg-[#fff3cf] transition-colors"
+                              onClick={() => row.col1 && togglePurchaseStatusFilter(row.col1)}
+                              className={`whitespace-nowrap px-2 py-4 text-[#4A4A49] text-lg md:text-xl font-black border-t ${t.p2TblBorder} cursor-pointer ${t.p2CellHover} transition-colors`}
                             >
                               {row.col2 || 0}
                             </td>
@@ -561,11 +763,11 @@ export default function PurchasingPage() {
               </section>
             </div>
 
-            <motion.section variants={itemVariants} className="rounded-[2rem] border-b-4 border-[#b9dcff] bg-[#e8f5ff]/95 shadow-sm shadow-sky-100/60 overflow-hidden mb-10 group hover:shadow-md transition-all">
-              <div className="flex flex-col gap-4 border-b-2 border-[#cfe6f7] p-4 md:p-8 lg:flex-row lg:items-center lg:justify-between bg-[#f5fbff]/70">
+            <motion.section variants={itemVariants} className={`rounded-[2rem] border-b-4 ${t.dtBorder} ${t.dtBg} ${t.dtShadow} overflow-hidden mb-10 group hover:shadow-md transition-all`}>
+              <div className={`flex flex-col gap-4 border-b-2 ${t.dtTblBorder} p-4 md:p-8 lg:flex-row lg:items-center lg:justify-between ${t.dtHeaderBg}`}>
                 <div>
                   <h2 className="font-black text-[#4A4A49] uppercase text-xl md:text-3xl tracking-wide flex items-center gap-3">
-                    <div className="w-3 h-7 md:h-10 bg-[#5c607f] rounded-full"></div>
+                    <div className={`w-3 h-7 md:h-10 ${t.dtBar} rounded-full`}></div>
                     รายละเอียดรายการจัดซื้อจัดจ้าง
                   </h2>
                   <p className="mt-2 text-[13px] font-black uppercase text-slate-500 tracking-wide">
@@ -576,13 +778,13 @@ export default function PurchasingPage() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -10 }}
-                          className="ml-3 inline-flex rounded-lg bg-[#fff3cf] px-3 py-1 text-[#9a6700] border border-[#eecb70]"
+                          className={`ml-3 inline-flex rounded-lg ${t.fBadgeBg} px-3 py-1 ${t.fBadgeText} ${t.fBadgeBorder}`}
                         >
                           แสดงเฉพาะ: {hoveredPurchaseStatus}
                           <button
                             type="button"
                             onClick={() => setHoveredPurchaseStatus('')}
-                            className="ml-3 font-black text-[#7c4a00] hover:text-[#4A4A49]"
+                            className={`ml-3 font-black ${t.fCloseText} hover:text-[#4A4A49]`}
                           >
                             แสดงทั้งหมด
                           </button>
@@ -593,9 +795,9 @@ export default function PurchasingPage() {
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <div className="relative group/search">
-                    <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/search:text-[#d4a300] transition-colors" strokeWidth={3} />
+                    <Search size={18} className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 ${t.sIconFocus} transition-colors`} strokeWidth={3} />
                     <input
-                      className="h-12 w-full rounded-2xl border-2 border-[#cfe6f7] bg-[#fffdf7] pl-12 pr-4 text-base font-bold text-[#4A4A49] outline-none focus:border-[#ffe08a] sm:w-80 shadow-sm transition-all"
+                      className={`h-12 w-full rounded-2xl ${t.sBorder} ${t.sBg} pl-12 pr-4 text-base font-bold text-[#4A4A49] outline-none ${t.sFocusBorder} sm:w-80 shadow-sm transition-all`}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="SEARCH ECM, W/O, ITEMS..."
@@ -605,11 +807,11 @@ export default function PurchasingPage() {
               </div>
 
               <div className="overflow-x-auto">
-                  <table className="w-full min-w-[1200px] text-left text-[15px] border-collapse border border-[#cfe6f7]">
-                    <thead className="bg-[#eef6ff]/90 text-[12px] font-black uppercase tracking-wide text-slate-500">
+                  <table className={`w-full min-w-[1200px] text-left text-[15px] border-collapse border ${t.dtTblBorder}`}>
+                    <thead className={`${t.dtTblHeadBg} text-[12px] font-black uppercase tracking-wide text-slate-500`}>
                       <tr>
-                        {['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ', 'การดำเนินการ'].map((header) => (
-                          <th key={header} className="px-6 py-5 font-black border border-[#cfe6f7]">{header}</th>
+                        {tableHeaders.map((header) => (
+                          <th key={header} className={`px-6 py-5 font-black border ${t.dtTblBorder}`}>{header}</th>
                         ))}
                       </tr>
                     </thead>
@@ -620,24 +822,24 @@ export default function PurchasingPage() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: index * 0.005 }}
-                          className="bg-[#fffdf7]/60 hover:bg-yellow-50/50 transition-colors"
+                          className={`${t.dtTblRowBg} ${t.dtTblRowHover} transition-colors`}
                         >
-                          <td className="px-6 py-5 font-black text-[#4A4A49] border border-[#cfe6f7]">{row.ecm_buy || '-'}</td>
-                          <td className="px-6 py-5 font-bold text-slate-600 border border-[#cfe6f7]">{row.ecm || '-'}</td>
-                          <td className="px-6 py-5 font-bold text-slate-600 border border-[#cfe6f7]">{row.wo || '-'}</td>
-                          <td className="max-w-[400px] px-6 py-5 font-bold text-[#4A4A49] leading-relaxed border border-[#cfe6f7]">{row.item || '-'}</td>
-                          <td className="px-6 py-5 font-black text-slate-600 border border-[#cfe6f7]">{row.equip || '-'}</td>
-                          <td className="px-6 py-5 font-bold text-slate-600 whitespace-nowrap border border-[#cfe6f7]">{row.date_in || '-'}</td>
-                          <td className="px-6 py-5 font-bold text-slate-600 whitespace-nowrap border border-[#cfe6f7]">{row.date_start || '-'}</td>
-                          <td className="px-6 py-5 font-bold text-slate-600 whitespace-nowrap border border-[#cfe6f7]">{row.date_out || '-'}</td>
-                          <td className="px-6 py-5 border border-[#cfe6f7]">
+                          <td className={`px-6 py-5 font-black text-[#4A4A49] border ${t.dtTblBorder}`}>{row.ecm_buy || '-'}</td>
+                          <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.ecm || '-'}</td>
+                          <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.wo || '-'}</td>
+                          <td className={`max-w-[400px] px-6 py-5 font-bold text-[#4A4A49] leading-relaxed border ${t.dtTblBorder}`}>{row.item || '-'}</td>
+                          <td className={`px-6 py-5 font-black text-slate-600 border ${t.dtTblBorder}`}>{row.equip || '-'}</td>
+                          <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_in || '-'}</td>
+                          <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_start || '-'}</td>
+                          <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_out || '-'}</td>
+                          <td className={`px-6 py-5 border ${t.dtTblBorder}`}>
                             <span className={`inline-flex rounded-lg px-3 py-1.5 text-[12px] font-black uppercase tracking-wide shadow-sm ${getStatusStyle(row.status)}`}>{row.status || '-'}</span>
                           </td>
-                          <td className="px-6 py-5 font-bold text-slate-600 border border-[#cfe6f7]">{row.action || '-'}</td>
+                          {tableColumnCount === 10 && <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.action || '-'}</td>}
                         </motion.tr>
                       )) : (
                         <tr>
-                          <td className="px-6 py-20 text-center text-sm font-black text-slate-400 uppercase tracking-widest border border-[#cfe6f7]" colSpan={10}>No data found matching your filters</td>
+                          <td className={`px-6 py-20 text-center text-sm font-black text-slate-400 uppercase tracking-widest border ${t.dtTblBorder}`} colSpan={tableColumnCount}>No data found matching your filters</td>
                         </tr>
                       )}
                     </tbody>
@@ -649,4 +851,8 @@ export default function PurchasingPage() {
       </AnimatePresence>
     </div>
   );
+}
+
+export default function PurchasingPage() {
+  return <PurchasingPageContent />;
 }

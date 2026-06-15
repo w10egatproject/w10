@@ -215,27 +215,31 @@ const summarizeGroup = (group: string, people: { group: string; total: number; t
   };
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const workerType = new URL(request.url).searchParams.get('workerType');
+    const shouldLoadEmployees = workerType !== 'contractor';
+    const shouldLoadContractors = workerType !== 'employee';
+
     const [employeeRows, contractorRows, employeeErrorRows, contractorErrorRows, contractorEtasRows, employeeEtasRows] = await Promise.all([
-      getEmployeeOtSheetData(),
-      getContractorOtSheetData(),
-      getEmployeeOtErrorSheetData(),
-      getContractorOtErrorSheetData(),
-      getContractorEtasSheetData(),
-      getEmployeeEtasSheetData(),
+      shouldLoadEmployees ? getEmployeeOtSheetData() : Promise.resolve(null),
+      shouldLoadContractors ? getContractorOtSheetData() : Promise.resolve(null),
+      shouldLoadEmployees ? getEmployeeOtErrorSheetData() : Promise.resolve(null),
+      shouldLoadContractors ? getContractorOtErrorSheetData() : Promise.resolve(null),
+      shouldLoadContractors ? getContractorEtasSheetData() : Promise.resolve(null),
+      shouldLoadEmployees ? getEmployeeEtasSheetData() : Promise.resolve(null),
     ]);
 
-    if (!employeeRows) {
+    if (shouldLoadEmployees && !employeeRows) {
       throw new Error('อ่านข้อมูล OT พนักงานไม่สำเร็จ กรุณาแชร์ชีทให้ service account ของระบบก่อน');
     }
 
-    if (!contractorRows) {
+    if (shouldLoadContractors && !contractorRows) {
       throw new Error('อ่านข้อมูล OT ลูกจ้างไม่สำเร็จ กรุณาแชร์ชีทให้ service account ของระบบก่อน');
     }
 
-    const employeeData = parseOtRows(employeeRows, 'employee');
-    const contractorData = parseOtRows(contractorRows, 'contractor');
+    const employeeData = employeeRows ? parseOtRows(employeeRows, 'employee') : { title: 'สรุป OT พนักงาน', people: [] };
+    const contractorData = contractorRows ? parseOtRows(contractorRows, 'contractor') : { title: 'สรุป OT ลูกจ้าง', people: [] };
     const contractorEtasData = contractorEtasRows ? parseContractorEtasRows(contractorEtasRows) : { title: 'ข้อมูลสแกนลายนิ้วมือลูกจ้าง', people: [] };
     const employeeEtasData = employeeEtasRows ? parseEmployeeEtasRows(employeeEtasRows) : { title: 'ข้อมูลสแกนลายนิ้วมือพนักงาน', people: [] };
     const employees = employeeData.people;
@@ -255,7 +259,7 @@ export async function GET() {
     });
 
     // หาแถว "ยอดรวมสุทธิ" ของลูกจ้างจากข้อมูลดิบ
-    const contractorSummaryRow = contractorRows.find(row => 
+    const contractorSummaryRow = contractorRows?.find(row => 
       row.some(cell => cell?.toString().includes('ยอดรวมสุทธิ'))
     );
 

@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CheckCircle2, ChevronDown, Clock, Factory, HardHat, Info, LayoutDashboard, RefreshCw, Shield, ShoppingCart, UserRound, Zap } from 'lucide-react';
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import { Activity, AlertCircle, CheckCircle2, ChevronDown, Clock, Factory, HardHat, Info, LayoutDashboard, RefreshCw, Shield, ShoppingBag, ShoppingCart, UserRound, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -24,6 +23,20 @@ const itemVariants: Variants = {
     transition: { duration: 0.5, ease: 'easeOut' }
   }
 };
+
+const HighchartsClient = dynamic(() => import('@/components/charts/HighchartsClient'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[280px] items-center justify-center rounded-2xl bg-slate-50 text-xs font-black uppercase tracking-widest text-slate-400">
+      Loading Chart
+    </div>
+  ),
+});
+
+const SpeedometerClient = dynamic(() => import('@/components/charts/SpeedometerClient'), {
+  ssr: false,
+  loading: () => <div className="h-[112px] w-[176px] rounded-xl bg-slate-100/70" />,
+});
 
 interface GroupBlockProps {
   name: string;
@@ -96,8 +109,6 @@ const GroupBlock: React.FC<GroupBlockProps> = ({ name, stats, themeColor, isSumm
   );
 };
 
-import ReactSpeedometer from 'react-d3-speedometer';
-
 interface ModernGaugeProps {
   value?: number;
   label: string;
@@ -111,7 +122,7 @@ const ModernGauge: React.FC<ModernGaugeProps> = ({ value, label }) => {
     <div className="flex flex-col items-center bg-white p-3 rounded-2xl border border-slate-200 shadow-sm w-full relative">
        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{label}</div>
        <div className="h-28 w-44">
-          <ReactSpeedometer
+          <SpeedometerClient
             value={Number(clampedValue.toFixed(2))}
             minValue={-3}
             maxValue={3}
@@ -167,14 +178,13 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [year, setYear] = useState(DEFAULT_YEAR);
   const [month, setMonth] = useState("all");
-  const [modulesLoaded, setModulesLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false) => {
+  const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
-    setIsLoading(true);
+    if (showLoading) setIsLoading(true);
     const params = new URLSearchParams();
     if (y) params.append("year", y);
     if (m) params.append("month", m);
@@ -183,23 +193,22 @@ export default function DashboardPage() {
       const d: DashboardData = await res.json();
       if (!res.ok || d.error) throw new Error(d.error || 'โหลดข้อมูลไม่สำเร็จ');
       setData(d);
-      if (isInitial) {
-        if (d.currentYear) setYear(d.currentYear);
-        if (d.currentMonth) setMonth(d.currentMonth === 'รวมทุกเดือน' ? 'all' : d.currentMonth);
-      }
+      if (d.currentYear) setYear(d.currentYear);
+      if (d.currentMonth) setMonth(d.currentMonth === 'รวมทุกเดือน' ? 'all' : d.currentMonth);
     }).catch((err: Error) => setError(err.message))
-    .finally(() => setIsLoading(false));
+    .finally(() => {
+      if (showLoading) setIsLoading(false);
+    });
   }, []);
 
   useEffect(() => { 
-    import('highcharts/highcharts-3d').then(() => setModulesLoaded(true)).catch(() => setModulesLoaded(true));
-    
-    const savedYear = localStorage.getItem('dashboard_year') || DEFAULT_YEAR;
-    const savedMonth = localStorage.getItem('dashboard_month') || "all";
-    
-    // We only call setYear/setMonth if they are different from current state to minimize renders,
-    // but better to just use the values for the first data fetch.
-    loadDashboard(savedYear, savedMonth, true);
+    loadDashboard(null, null, true);
+
+    const refreshTimer = window.setInterval(() => {
+      loadDashboard(null, null, false, false);
+    }, 30000);
+
+    return () => window.clearInterval(refreshTimer);
   }, [loadDashboard]);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -225,7 +234,7 @@ export default function DashboardPage() {
   };
 
   const handleRefresh = () => {
-    loadDashboard(year, month);
+    loadDashboard(null, null);
   };
 
   const { statusData = {}, equipmentData = [], wGauges = {}, groupStats = {}, w_all = {} } = data || {};
@@ -362,6 +371,9 @@ export default function DashboardPage() {
                     <Link href="/purchasing" className="flex items-center gap-3 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
                       <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
                     </Link>
+                    <Link href="/purchasing-all" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
+                      <ShoppingBag size={18} className="text-[#d4a300]" /> สถานะการซื้อจ้างทั้งหมด
+                    </Link>
                     <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
                       <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
                     </Link>
@@ -376,7 +388,7 @@ export default function DashboardPage() {
       </motion.header>
 
       <AnimatePresence mode="wait">
-        {isLoading || !data || !modulesLoaded ? (
+        {isLoading || !data ? (
           <motion.div 
             key="loading"
             className="flex items-center justify-center p-20 text-lg font-black text-slate-400 uppercase tracking-widest animate-pulse"
@@ -412,8 +424,7 @@ export default function DashboardPage() {
                       <div className="text-5xl font-black text-white mb-2 z-10">{statusData?.total || 0}</div>
                       <div className="flex-1 flex items-center justify-center min-h-[200px]">
                         <div className="w-full h-full scale-110 origin-center">
-                          <HighchartsReact 
-                            highcharts={Highcharts} 
+                          <HighchartsClient
                             options={{
                               ...statusChartOptions,
                               chart: { ...statusChartOptions.chart, height: 200, margin: [0, 0, 0, 0], spacing: [0, 0, 0, 0] },
@@ -521,7 +532,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-start">
                     <div className="flex flex-col bg-[#f7f4ff]/90 rounded-2xl p-3 md:p-5 border-2 border-[#b9c4e8] shadow-sm overflow-hidden">
-                      <HighchartsReact highcharts={Highcharts} options={equipChartOptions} />
+                      <HighchartsClient options={equipChartOptions} />
                     </div>
                     <div className="overflow-hidden rounded-2xl border-2 border-[#b9c4e8] overflow-x-auto">
                         <table className="w-full text-center text-[13px] md:text-[15px] font-black text-slate-500 min-w-[560px] border-collapse border border-slate-200">
