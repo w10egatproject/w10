@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, ChevronDown, Clock, Filter, RefreshCw, ShoppingCart, UserRound } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, ShoppingCart, UserRound } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 type EmployeeOtRow = {
@@ -74,6 +74,50 @@ const contractorTailHeaderClasses = [
 ];
 
 const otGroups = ['W11', 'W12', 'W13', 'W14'];
+
+// Source sheet links sit near the OT navigation so reviewers can jump back to the original Google Sheet quickly.
+const sheetLinks = {
+  contractor: [
+    {
+      href: 'https://docs.google.com/spreadsheets/d/1ucCTBZBLF8tkTWyuIE46_aRx0vUwen382wWokuR55UQ/edit?gid=560156838#gid=560156838',
+      label: 'ETAS_dataลจ',
+      description: 'ข้อมูลสแกนลูกจ้าง',
+      buttonClass: 'bg-[#be185d] text-white hover:bg-[#9d174d] focus:ring-[#f472b6]',
+    },
+    {
+      href: 'https://docs.google.com/spreadsheets/d/1ucCTBZBLF8tkTWyuIE46_aRx0vUwen382wWokuR55UQ/edit?gid=803186817#gid=803186817',
+      label: 'Check OT Error',
+      description: 'ตรวจสอบข้อผิดพลาด OT',
+      buttonClass: 'bg-[#dc2626] text-white hover:bg-[#b91c1c] focus:ring-[#f87171]',
+    },
+    {
+      href: 'https://docs.google.com/spreadsheets/d/1ucCTBZBLF8tkTWyuIE46_aRx0vUwen382wWokuR55UQ/edit?gid=2120946153#gid=2120946153',
+      label: 'สรุปOT',
+      description: 'สรุป OT ลูกจ้าง',
+      buttonClass: 'bg-[#f472b6] text-[#061b3d] hover:bg-[#f9a8d4] focus:ring-[#f472b6]',
+    },
+  ],
+  employee: [
+    {
+      href: 'https://docs.google.com/spreadsheets/d/1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA/edit?gid=1501422016#gid=1501422016',
+      label: 'สรุปOTประจำเดือนปี2569_กบย-ช._หสบ-ช.',
+      description: 'สรุป OT พนักงาน',
+      buttonClass: 'bg-[#d4a300] text-[#061b3d] hover:bg-[#eecb70] focus:ring-[#d4a300]',
+    },
+    {
+      href: 'https://docs.google.com/spreadsheets/d/1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA/edit?gid=560056512#gid=560056512',
+      label: 'ETAS_data',
+      description: 'ข้อมูลสแกนพนักงาน',
+      buttonClass: 'bg-[#0284c7] text-white hover:bg-[#0369a1] focus:ring-[#38bdf8]',
+    },
+    {
+      href: 'https://docs.google.com/spreadsheets/d/1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA/edit?gid=803186817#gid=803186817',
+      label: 'Check OT Error',
+      description: 'ตรวจสอบข้อผิดพลาด OT พนักงาน',
+      buttonClass: 'bg-[#dc2626] text-white hover:bg-[#b91c1c] focus:ring-[#f87171]',
+    },
+  ],
+};
 
 const emptyEmployeeTotals = {
   total: 0,
@@ -409,6 +453,7 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
   const pageSubtitle = isEmployeePage ? 'EGAT Employee OT Summary' : 'EGAT Contractor OT Summary';
   const rangeLabel = isEmployeePage ? 'พนง B2:AL20' : 'ลจ B2:AO34';
   const HeaderIcon = isEmployeePage ? UserRound : Clock;
+  const sourceSheetLinks = isEmployeePage ? sheetLinks.employee : sheetLinks.contractor;
 
   const loadData = useCallback(() => {
     setIsLoading(true);
@@ -544,6 +589,34 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
           </div>
         </div>
       </motion.header>
+
+      {/* Source-sheet quick action: keep the original Google Sheet one click below the OT navbar. */}
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[#4A4A49] shadow-sm md:flex-row md:items-center md:justify-between md:px-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f5ff] text-[#0284c7]">
+            <FileSpreadsheet size={20} strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-black text-[#061b3d]">{isEmployeePage ? 'ชีท OT พนักงาน' : 'ชีท OT ลูกจ้าง'}</p>
+            <p className="truncate text-xs font-bold text-slate-600">เปิดแท็บต้นทางใน Google Sheet</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+          {sourceSheetLinks.map((sourceSheet) => (
+            <a
+              key={sourceSheet.href}
+              href={sourceSheet.href}
+              target="_blank"
+              rel="noreferrer"
+              title={sourceSheet.description}
+              className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${sourceSheet.buttonClass}`}
+            >
+              <ExternalLink size={16} strokeWidth={2.5} />
+              เปิด Google Sheet {sourceSheet.label}
+            </a>
+          ))}
+        </div>
+      </div>
 
       <AnimatePresence mode="wait">
         {error ? (
