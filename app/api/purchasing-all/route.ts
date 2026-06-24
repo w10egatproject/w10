@@ -69,7 +69,7 @@ export async function GET(request: Request) {
     }
 
     const purchaseList = [];
-    for (let r = 9; r < rawData.length; r++) {
+    for (let r = 10; r < rawData.length; r++) {
       const row = rawData[r] || [];
 
       if (row.some((cell) => cell?.toString().trim())) {
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
           date_start: row[6] || '',
           date_out: row[7] || '',
           status: row[8] || '',
-          action: '',
+          action: row[17] || '',
         });
       }
     }

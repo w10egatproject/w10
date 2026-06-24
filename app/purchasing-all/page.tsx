@@ -8,7 +8,7 @@ export default function PurchasingAllPage() {
       pageSubtitle="EGAT Purchasing Status All"
       fixedFilters
       showGaugePanel={false}
-      tableColumnCount={9}
+      tableColumnCount={10}
       colorTheme="teal"
     />
   );

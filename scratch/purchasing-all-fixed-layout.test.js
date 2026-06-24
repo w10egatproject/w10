@@ -14,8 +14,8 @@ assert(
   page.includes('fixedFilters') &&
     page.includes('showGaugePanel={false}') &&
     !page.includes('showSummaryPanel={false}') &&
-    page.includes('tableColumnCount={9}'),
-  'Purchasing-all page should fix filters, hide the left gauge panel, keep the pie chart summary panel visible, and render a 9-column table.',
+    page.includes('tableColumnCount={10}'),
+  'Purchasing-all page should fix filters, hide the left gauge panel, keep the pie chart summary panel visible, and render a 10-column table with action.',
 );
 
 assert(
@@ -29,7 +29,7 @@ assert(
 
 assert(
   purchasingPage.includes('tableColumnCount') && purchasingPage.includes('colSpan={tableColumnCount}'),
-  'Reusable purchasing page should allow purchasing-all to use a 9-column empty-state colspan.',
+  'Reusable purchasing page should allow purchasing-all to use the selected empty-state colspan.',
 );
 
 assert(
@@ -58,11 +58,12 @@ assert(
 );
 
 assert(
-    route.includes('for (let r = 9; r < rawData.length; r++)') &&
+    route.includes('for (let r = 10; r < rawData.length; r++)') &&
     route.includes('ecm_buy: row[0]') &&
     route.includes('status: row[8]') &&
+    route.includes('action: row[17]') &&
     !route.includes('for (let r = 31; r < rawData.length; r++)'),
-  'Purchasing-all big table should read A10:I downward.',
+  'Purchasing-all big table should skip the sheet header row and read data from A11:I downward with action from R11 downward.',
 );
 
 console.log('purchasing-all-fixed-layout.test.js passed');
