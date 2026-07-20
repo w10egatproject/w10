@@ -319,3 +319,27 @@ export async function getContractorOtErrorSheetData() {
     return null;
   }
 }
+
+export async function getShopOrderSheetData() {
+  const sheetId = process.env.GOOGLE_SHOP_ORDER_SHEET_ID;
+  if (!sheetId) {
+    console.error('Missing GOOGLE_SHOP_ORDER_SHEET_ID');
+    return null;
+  }
+
+  const client = getSheetsClientForSheet(sheetId);
+  if (!client) return null;
+
+  try {
+    const response = await client.sheets.spreadsheets.values.get({
+      spreadsheetId: client.sheetId,
+      range: "'PrintCheck'!A1:CZ2000",
+    });
+
+    return response.data.values || [];
+  } catch (error: unknown) {
+    console.error('Google Sheets Shop Order API error:', getErrorMessage(error));
+    return null;
+  }
+}
+

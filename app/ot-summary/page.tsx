@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, ChevronDown, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, ShoppingCart, UserRound } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Clock, ExternalLink, FileSpreadsheet, Filter, Package, RefreshCw, ShoppingBag, ShoppingCart, UserRound } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 type EmployeeOtRow = {
@@ -576,6 +576,12 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
                   </Link>
                   <Link href="/purchasing" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
                     <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
+                  </Link>
+                  <Link href="/purchasing-all" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
+                    <ShoppingBag size={18} className="text-[#d4a300]" /> สถานะการซื้อจ้างทั้งหมด
+                  </Link>
+                  <Link href="/shop-order" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50/50">
+                    <Package size={18} className="text-[#d4a300]" /> คลังอะไหล่ BEML
                   </Link>
                   <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
                     <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
