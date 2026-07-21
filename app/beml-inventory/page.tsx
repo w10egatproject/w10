@@ -538,7 +538,7 @@ export default function ShopOrderPage() {
                   {/* Health Ring Card */}
                   <div className="bg-[#0c0f1d] text-white rounded-2xl p-5 flex flex-col justify-between border border-slate-800 shadow-md min-h-[240px]">
                     <div>
-                      <h3 className="text-sm font-bold text-white">สถานะอะไหล่</h3>
+                      <h3 className="text-sm font-bold">สถานะอะไหล่</h3>
                       <p className="text-xs text-slate-400 mt-1">สัดส่วนรายการปกติ - ใกล้ - หมด</p>
                     </div>
 
