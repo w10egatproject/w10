@@ -320,15 +320,16 @@ export async function getContractorOtErrorSheetData() {
   }
 }
 
-export async function getShopOrderSheetData() {
+export async function getShopOrderSheetData(): Promise<{ data: any[][] | null; error: string | null }> {
   const sheetId = process.env.GOOGLE_SHOP_ORDER_SHEET_ID;
   if (!sheetId) {
-    console.error('Missing GOOGLE_SHOP_ORDER_SHEET_ID');
-    return null;
+    return { data: null, error: 'Missing GOOGLE_SHOP_ORDER_SHEET_ID' };
   }
 
   const client = getSheetsClientForSheet(sheetId);
-  if (!client) return null;
+  if (!client) {
+    return { data: null, error: 'Failed to initialize Google Sheets client (check GOOGLE_CLIENT_EMAIL/PRIVATE_KEY)' };
+  }
 
   try {
     const response = await client.sheets.spreadsheets.values.get({
@@ -336,10 +337,11 @@ export async function getShopOrderSheetData() {
       range: "'PrintCheck'!A1:CZ2000",
     });
 
-    return response.data.values || [];
+    return { data: response.data.values || [], error: null };
   } catch (error: unknown) {
-    console.error('Google Sheets Shop Order API error:', getErrorMessage(error));
-    return null;
+    const errMsg = getErrorMessage(error);
+    console.error('Google Sheets Shop Order API error:', errMsg);
+    return { data: null, error: errMsg };
   }
 }
 

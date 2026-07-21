@@ -70,15 +70,15 @@ export async function GET() {
       }, { headers: noStoreHeaders });
     }
 
-    const rawData = await getShopOrderSheetData();
+    const { data: rawData, error: sheetError } = await getShopOrderSheetData();
     if (!rawData || rawData.length === 0) {
       // If fetching fails but sheetId was provided, return error or fallback to demo with a warning
-      console.warn('Failed to fetch Google Sheet data. Falling back to Demo data.');
+      console.warn('Failed to fetch Google Sheet data. Falling back to Demo data.', sheetError);
       const demo = getDemoData();
       return NextResponse.json({
         ...demo,
         isDemo: true,
-        warning: 'ไม่สามารถดึงข้อมูลจาก Google Sheet ได้ จึงแสดงข้อมูลจำลองแทน',
+        warning: `ไม่สามารถดึงข้อมูลจาก Google Sheet ได้ (${sheetError || 'ไม่พบข้อมูล'}) จึงแสดงข้อมูลจำลองแทน`,
         timestamp: new Date().toISOString()
       }, { headers: noStoreHeaders });
     }
