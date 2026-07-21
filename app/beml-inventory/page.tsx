@@ -303,8 +303,8 @@ export default function ShopOrderPage() {
           <button
             onClick={() => { setCurrentTab('dashboard'); setStatusFilter(null); }}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'dashboard'
-                ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+              ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" /> แดชบอร์ด
@@ -312,8 +312,8 @@ export default function ShopOrderPage() {
           <button
             onClick={() => { setCurrentTab('inventory'); setStatusFilter(null); }}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'inventory' && statusFilter === null
-                ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+              ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
           >
             <Package className="w-3.5 h-3.5" /> คลังอะไหล่
@@ -321,8 +321,8 @@ export default function ShopOrderPage() {
           <button
             onClick={() => { setCurrentTab('low-stock'); setStatusFilter('Low'); }}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'low-stock'
-                ? 'bg-amber-100 text-amber-800 border border-amber-200 shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+              ? 'bg-amber-100 text-amber-800 border border-amber-200 shadow-sm'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
           >
             <AlertCircle className="w-3.5 h-3.5" /> ของใกล้หมด
@@ -330,8 +330,8 @@ export default function ShopOrderPage() {
           <button
             onClick={() => { setCurrentTab('out-stock'); setStatusFilter('Out'); }}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'out-stock'
-                ? 'bg-rose-100 text-rose-800 border border-rose-200 shadow-sm'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+              ? 'bg-rose-100 text-rose-800 border border-rose-200 shadow-sm'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
           >
             <X className="w-3.5 h-3.5" /> ของหมด
@@ -538,7 +538,7 @@ export default function ShopOrderPage() {
                   {/* Health Ring Card */}
                   <div className="bg-[#0c0f1d] text-white rounded-2xl p-5 flex flex-col justify-between border border-slate-800 shadow-md min-h-[240px]">
                     <div>
-                      <h3 className="text-sm font-bold text-slate-200">สถานะอะไหล่</h3>
+                      <h3 className="text-sm font-bold text-white">สถานะอะไหล่</h3>
                       <p className="text-xs text-slate-400 mt-1">สัดส่วนรายการปกติ - ใกล้ - หมด</p>
                     </div>
 
@@ -548,7 +548,7 @@ export default function ShopOrderPage() {
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                           {/* Ring background */}
                           <circle cx="60" cy="60" r="52" fill="transparent" stroke="#1f293d" strokeWidth="10" />
-                          
+
                           {/* Normal segment */}
                           <circle
                             cx="60"
@@ -561,7 +561,7 @@ export default function ShopOrderPage() {
                             strokeDashoffset={healthSegments.normalOffset}
                             className="transition-all duration-1000 ease-out"
                           />
-                          
+
                           {/* Low segment */}
                           <circle
                             cx="60"
@@ -574,7 +574,7 @@ export default function ShopOrderPage() {
                             strokeDashoffset={healthSegments.lowOffset}
                             className="transition-all duration-1000 ease-out"
                           />
-                          
+
                           {/* Out segment */}
                           <circle
                             cx="60"
@@ -588,7 +588,7 @@ export default function ShopOrderPage() {
                             className="transition-all duration-1000 ease-out"
                           />
                         </svg>
-                        
+
                         {/* Center Text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                           <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
@@ -837,10 +837,10 @@ export default function ShopOrderPage() {
               transition={{ type: 'spring', damping: 20 }}
               onClick={(e) => e.stopPropagation()}
               className={`w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border ${selectedItem.status === 'Out'
-                  ? 'border-rose-200 ring-4 ring-rose-50/30'
-                  : selectedItem.status === 'Low'
-                    ? 'border-amber-200 ring-4 ring-amber-50/30'
-                    : 'border-slate-200 ring-4 ring-slate-50/30'
+                ? 'border-rose-200 ring-4 ring-rose-50/30'
+                : selectedItem.status === 'Low'
+                  ? 'border-amber-200 ring-4 ring-amber-50/30'
+                  : 'border-slate-200 ring-4 ring-slate-50/30'
                 }`}
             >
               {/* Header card border color */}
@@ -919,10 +919,10 @@ export default function ShopOrderPage() {
 
                   {/* Action or Order Suggestion note */}
                   <div className={`p-4 rounded-2xl flex gap-3 text-xs leading-relaxed ${selectedItem.status === 'Out'
-                      ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                      : selectedItem.status === 'Low'
-                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                        : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                    : selectedItem.status === 'Low'
+                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                      : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                     }`}>
                     <Info className={`w-5 h-5 shrink-0 ${selectedItem.status === 'Out' ? 'text-rose-500' : selectedItem.status === 'Low' ? 'text-amber-500' : 'text-emerald-500'
                       }`} />
