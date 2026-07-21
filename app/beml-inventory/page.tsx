@@ -57,7 +57,7 @@ export default function ShopOrderPage() {
     if (showLoading) setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/shop-order', { cache: 'no-store' });
+      const res = await fetch('/api/beml-inventory', { cache: 'no-store' });
       if (!res.ok) throw new Error('ไม่สามารถเชื่อมต่อกับ API ได้');
       const json: ApiResponse = await res.json();
       if (json.status === 'error') throw new Error(json.status);

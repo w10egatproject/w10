@@ -57,15 +57,15 @@ function getDemoData() {
 
 export async function GET() {
   try {
-    const sheetId = process.env.GOOGLE_SHOP_ORDER_SHEET_ID;
+    const sheetId = process.env.GOOGLE_BEML_INVENTORY_SHEET_ID;
     
-    // Fallback to demo data if GOOGLE_SHOP_ORDER_SHEET_ID is not configured
+    // Fallback to demo data if GOOGLE_BEML_INVENTORY_SHEET_ID is not configured
     if (!sheetId) {
       const demo = getDemoData();
       return NextResponse.json({
         ...demo,
         isDemo: true,
-        warning: 'กำลังใช้ข้อมูลจำลอง (Demo Data) เนื่องจากเซิร์ฟเวอร์ยังไม่ได้รับค่า GOOGLE_SHOP_ORDER_SHEET_ID — กรุณาปิดแล้วเปิดเซิร์ฟเวอร์ Next.js (npm run dev) ใหม่เพื่อให้ระบบโหลดไฟล์ .env.local',
+        warning: 'กำลังใช้ข้อมูลจำลอง (Demo Data) เนื่องจากเซิร์ฟเวอร์ยังไม่ได้รับค่า GOOGLE_BEML_INVENTORY_SHEET_ID — กรุณาปิดแล้วเปิดเซิร์ฟเวอร์ Next.js (npm run dev) ใหม่เพื่อให้ระบบโหลดไฟล์ .env.local',
         timestamp: new Date().toISOString()
       }, { headers: noStoreHeaders });
     }
@@ -149,7 +149,7 @@ export async function GET() {
     }, { headers: noStoreHeaders });
 
   } catch (error: any) {
-    console.error('Shop Order API error:', error);
+    console.error('BEML Inventory API error:', error);
     return NextResponse.json({
       status: 'error',
       message: error.message || 'Internal Server Error'

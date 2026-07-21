@@ -374,7 +374,7 @@ export default function DashboardPage() {
                     <Link href="/purchasing-all" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
                       <ShoppingBag size={18} className="text-[#d4a300]" /> สถานะการซื้อจ้างทั้งหมด
                     </Link>
-                    <Link href="/shop-order" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50/50">
+                    <Link href="/beml-inventory" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50/50">
                       <Package size={18} className="text-[#d4a300]" /> คลังอะไหล่ BEML
                     </Link>
                     <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">

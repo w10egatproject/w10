@@ -18,7 +18,7 @@ envContent.split('\n').forEach(line => {
 function getSheetsClient() {
   const clientEmail = env.GOOGLE_CLIENT_EMAIL;
   const privateKey = env.GOOGLE_PRIVATE_KEY;
-  const sheetId = env.GOOGLE_SHOP_ORDER_SHEET_ID;
+  const sheetId = env.GOOGLE_BEML_INVENTORY_SHEET_ID;
 
   if (!clientEmail || !privateKey || !sheetId) {
     console.error('Missing environment variables');

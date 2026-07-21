@@ -653,7 +653,7 @@ export function PurchasingPageContent({
                   <Link href="/purchasing-all" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
                     <ShoppingBag size={18} className={t.accent} /> สถานะการซื้อจ้างทั้งหมด
                   </Link>
-                  <Link href="/shop-order" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
+                  <Link href="/beml-inventory" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
                     <Package size={18} className={t.accent} /> คลังอะไหล่ BEML
                   </Link>
                   <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">

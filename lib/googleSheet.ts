@@ -321,9 +321,9 @@ export async function getContractorOtErrorSheetData() {
 }
 
 export async function getShopOrderSheetData(): Promise<{ data: any[][] | null; error: string | null }> {
-  const sheetId = process.env.GOOGLE_SHOP_ORDER_SHEET_ID;
+  const sheetId = process.env.GOOGLE_BEML_INVENTORY_SHEET_ID;
   if (!sheetId) {
-    return { data: null, error: 'Missing GOOGLE_SHOP_ORDER_SHEET_ID' };
+    return { data: null, error: 'Missing GOOGLE_BEML_INVENTORY_SHEET_ID' };
   }
 
   const client = getSheetsClientForSheet(sheetId);
