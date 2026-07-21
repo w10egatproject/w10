@@ -398,235 +398,242 @@ export default function ShopOrderPage() {
           {/* Dashboard view */}
           {currentTab === 'dashboard' && (
             <>
-              {/* Main Bento Layout: Stats & Health */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {/* Left Bento: Stats cards */}
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-                  {/* Total Stocked items */}
-                  <div
-                    onClick={() => setStatusFilter(null)}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === null ? 'border-[#6366f1] ring-2 ring-[#e0e7ff] shadow-sm' : 'border-slate-200'
-                      }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="text-4xl font-extrabold text-slate-900 tracking-tight">{stats.total}</span>
-                      <div className="p-2 bg-indigo-50 rounded-xl text-indigo-500"><Boxes className="w-5 h-5" /></div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">ทั้งหมด</h3>
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div className="bg-indigo-500 h-full rounded-full" style={{ width: '100%' }}></div>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-2">รวมทุกรายการในระบบ</p>
-                    </div>
-                  </div>
-
-                  {/* Normal status items */}
-                  <div
-                    onClick={() => toggleStatusFilter('Normal')}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Normal' ? 'border-emerald-500 ring-2 ring-[#d1fae5] shadow-sm' : 'border-slate-200'
-                      }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="text-4xl font-extrabold text-emerald-600 tracking-tight">{stats.normal}</span>
-                      <div className="p-2 bg-emerald-50 rounded-xl text-emerald-500"><CheckCircle2 className="w-5 h-5" /></div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">ปกติ</h3>
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${stats.normalPct}%` }}></div>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-2">คิดเป็น {stats.normalPct}% ของทั้งหมด</p>
-                    </div>
-                  </div>
-
-                  {/* Low stock items */}
-                  <div
-                    onClick={() => toggleStatusFilter('Low')}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Low' ? 'border-amber-500 ring-2 ring-[#fef3c7] shadow-sm' : 'border-slate-200'
-                      }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="text-4xl font-extrabold text-amber-600 tracking-tight">{stats.low}</span>
-                      <div className="p-2 bg-amber-50 rounded-xl text-amber-500"><AlertCircle className="w-5 h-5" /></div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">ใกล้หมด</h3>
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div className="bg-amber-500 h-full rounded-full" style={{ width: `${stats.lowPct}%` }}></div>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-2">คิดเป็น {stats.lowPct}% ของทั้งหมด</p>
-                    </div>
-                  </div>
-
-                  {/* Out of stock items */}
-                  <div
-                    onClick={() => toggleStatusFilter('Out')}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Out' ? 'border-rose-500 ring-2 ring-[#ffe4e6] shadow-sm' : 'border-slate-200'
-                      }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="text-4xl font-extrabold text-rose-600 tracking-tight">{stats.out}</span>
-                      <div className="p-2 bg-rose-50 rounded-xl text-rose-500"><X className="w-5 h-5" /></div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">หมด</h3>
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div className="bg-rose-500 h-full rounded-full" style={{ width: `${stats.outPct}%` }}></div>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-2">คิดเป็น {stats.outPct}% ของทั้งหมด</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Bento: Health Ring */}
-                <div className="bg-[#0c0f1d] text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-800 shadow-md min-h-[250px]">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-200">สถานะอะไหล่</h3>
-                    <p className="text-xs text-slate-400 mt-1">สัดส่วนรายการปกติ - ใกล้หมด - หมด</p>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-6 my-4">
-                    {/* SVG Ring */}
-                    <div className="relative w-28 h-28 shrink-0 group">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                        {/* Ring background */}
-                        <circle cx="60" cy="60" r="52" fill="transparent" stroke="#1f293d" strokeWidth="10" />
-
-                        {/* Normal segment */}
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="52"
-                          fill="transparent"
-                          stroke="#10b981"
-                          strokeWidth="10"
-                          strokeDasharray={`${healthSegments.normalLength} ${circumference}`}
-                          strokeDashoffset={healthSegments.normalOffset}
-                          className="transition-all duration-1000 ease-out"
-                        />
-
-                        {/* Low segment */}
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="52"
-                          fill="transparent"
-                          stroke="#f59e0b"
-                          strokeWidth="10"
-                          strokeDasharray={`${healthSegments.lowLength} ${circumference}`}
-                          strokeDashoffset={healthSegments.lowOffset}
-                          className="transition-all duration-1000 ease-out"
-                        />
-
-                        {/* Out segment */}
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="52"
-                          fill="transparent"
-                          stroke="#f43f5e"
-                          strokeWidth="10"
-                          strokeDasharray={`${healthSegments.outLength} ${circumference}`}
-                          strokeDashoffset={healthSegments.outOffset}
-                          className="transition-all duration-1000 ease-out"
-                        />
-                      </svg>
-
-                      {/* Center Text */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
-                        <span className="text-[9px] text-slate-400 mt-1">ปกติ</span>
-                      </div>
-
-                      {/* Tooltip on hover */}
-                      <div className="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-2 w-32 bg-slate-900 border border-slate-700 text-xs rounded-xl p-2.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                        <p className="font-bold border-b border-slate-700 pb-1 mb-1.5 text-center">แยกตามสถานะ</p>
-                        <div className="flex items-center justify-between text-slate-300">
-                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>ปกติ</span>
-                          <strong>{stats.normal}</strong>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-300 mt-1">
-                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span>ใกล้หมด</span>
-                          <strong>{stats.low}</strong>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-300 mt-1">
-                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"></span>หมด</span>
-                          <strong>{stats.out}</strong>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-slate-400 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-1.5 rounded bg-emerald-500 shrink-0"></span>
-                        <span>ปกติ: <strong>{stats.normal}</strong> รายการ</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-1.5 rounded bg-amber-500 shrink-0"></span>
-                        <span>ใกล้หมด: <strong>{stats.low}</strong> รายการ</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-1.5 rounded bg-rose-500 shrink-0"></span>
-                        <span>หมด: <strong>{stats.out}</strong> รายการ</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-center text-xs text-slate-300 pt-2 border-t border-slate-800">
-                    {stats.normal} จาก {stats.total} รายการ อยู่ในเกณฑ์ปกติ
-                  </div>
-                </div>
+              {/* Header Title */}
+              <div className="mb-4">
+                <h2 className="text-xl md:text-2xl font-black text-[#4A4A49] tracking-tight">แดชบอร์ด</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase mt-1">ภาพรวมคลังอะไหล่ BEML Inventory - อัปเดตล่าสุด</p>
               </div>
 
-              {/* Interactive Bin Map Grid */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                      <LayoutGrid className="w-5 h-5 text-slate-500" />
-                      แผนผังอะไหล่ (Bin Map)
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">แสดงสถานะทางสายตาของรหัสอะไหล่กล่องต่างๆ ในระบบ</p>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                {/* Left Column: Interactive Bin Map Grid (takes 3 cols) */}
+                <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm self-start">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <div>
+                      <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                        แผนผังคลังอะไหล่ (Bin Map)
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">แต่ละช่อง = 1 รายการอะไหล่ · คลิกเพื่อดูรายละเอียด</p>
+                    </div>
+                    <div className="flex gap-4 text-xs font-semibold text-slate-500">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-500"></span>ปกติ</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-500"></span>ใกล้หมด</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-rose-500"></span>หมด</span>
+                    </div>
                   </div>
-                  <div className="flex gap-4 text-xs font-semibold text-slate-500">
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-300"></span>ปกติ</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-100 border border-amber-300"></span>ใกล้หมด</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-rose-100 border border-rose-300"></span>หมด</span>
+
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-2">
+                    {finalData.map((item, idx) => {
+                      let colorClass = 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-800';
+                      if (item.status === 'Out') {
+                        colorClass = 'bg-rose-50 border-rose-200 hover:bg-rose-100 text-rose-800';
+                      } else if (item.status === 'Low') {
+                        colorClass = 'bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-800';
+                      }
+
+                      return (
+                        <motion.div
+                          key={item.code + '-' + idx}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: Math.min(idx * 0.005, 0.5) }}
+                          onClick={() => setSelectedItem(item)}
+                          className={`border text-[11px] font-bold p-2 rounded-lg text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-center items-center shadow-2xs select-none ${colorClass}`}
+                          title={`${item.name} — คงเหลือ: ${item.balance}/${item.min}`}
+                        >
+                          <span className="truncate w-full max-w-[80px] text-center">{item.code}</span>
+                          <span className="text-[8px] opacity-75 font-normal truncate w-full">{item.system}</span>
+                        </motion.div>
+                      );
+                    })}
                   </div>
+
+                  {finalData.length === 0 && (
+                    <div className="text-center py-10 text-slate-400 text-sm">
+                      ไม่พบรายการอะไหล่ตามการค้นหาหรือสถานะที่เลือก
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-2">
-                  {finalData.map((item, idx) => {
-                    let colorClass = 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-800';
-                    if (item.status === 'Out') {
-                      colorClass = 'bg-rose-50 border-rose-200 hover:bg-rose-100 text-rose-800';
-                    } else if (item.status === 'Low') {
-                      colorClass = 'bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-800';
-                    }
+                {/* Right Column: Stats & Health Ring Sidebar (takes 1 col) */}
+                <div className="lg:col-span-1 flex flex-col gap-6">
+                  {/* Stats cards vertical stack */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Total Stocked items */}
+                    <div
+                      onClick={() => setStatusFilter(null)}
+                      className={`bg-white border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === null ? 'border-[#6366f1] ring-2 ring-[#e0e7ff] shadow-sm' : 'border-slate-200'
+                        }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{stats.total}</span>
+                        <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-500"><Boxes className="w-4 h-4" /></div>
+                      </div>
+                      <div className="mt-2">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">ทั้งหมด</h3>
+                        <div className="w-full bg-slate-100 h-1 rounded-full mt-2 overflow-hidden">
+                          <div className="bg-indigo-500 h-full rounded-full" style={{ width: '100%' }}></div>
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-1">รวมทุกรายการในระบบ</p>
+                      </div>
+                    </div>
 
-                    return (
-                      <motion.div
-                        key={item.code + '-' + idx}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: Math.min(idx * 0.005, 0.5) }}
-                        onClick={() => setSelectedItem(item)}
-                        className={`border text-[11px] font-bold p-2 rounded-lg text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-center items-center shadow-2xs select-none ${colorClass}`}
-                        title={`${item.name} — คงเหลือ: ${item.balance}/${item.min}`}
-                      >
-                        <span className="truncate w-full max-w-[80px] text-center">{item.code}</span>
-                        <span className="text-[8px] opacity-75 font-normal truncate w-full">{item.system}</span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                    {/* Normal status items */}
+                    <div
+                      onClick={() => toggleStatusFilter('Normal')}
+                      className={`bg-white border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Normal' ? 'border-emerald-500 ring-2 ring-[#d1fae5] shadow-sm' : 'border-slate-200'
+                        }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-3xl font-extrabold text-emerald-600 tracking-tight">{stats.normal}</span>
+                        <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-500"><CheckCircle2 className="w-4 h-4" /></div>
+                      </div>
+                      <div className="mt-2">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">ปกติ</h3>
+                        <div className="w-full bg-slate-100 h-1 rounded-full mt-2 overflow-hidden">
+                          <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${stats.normalPct}%` }}></div>
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-1">คิดเป็น {stats.normalPct}% ของทั้งหมด</p>
+                      </div>
+                    </div>
 
-                {finalData.length === 0 && (
-                  <div className="text-center py-10 text-slate-400 text-sm">
-                    ไม่พบรายการอะไหล่ตามการค้นหาหรือสถานะที่เลือก
+                    {/* Low stock items */}
+                    <div
+                      onClick={() => toggleStatusFilter('Low')}
+                      className={`bg-white border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Low' ? 'border-amber-500 ring-2 ring-[#fef3c7] shadow-sm' : 'border-slate-200'
+                        }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-3xl font-extrabold text-amber-600 tracking-tight">{stats.low}</span>
+                        <div className="p-1.5 bg-amber-50 rounded-lg text-amber-500"><AlertCircle className="w-4 h-4" /></div>
+                      </div>
+                      <div className="mt-2">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">ใกล้หมด</h3>
+                        <div className="w-full bg-slate-100 h-1 rounded-full mt-2 overflow-hidden">
+                          <div className="bg-amber-500 h-full rounded-full" style={{ width: `${stats.lowPct}%` }}></div>
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-1">คิดเป็น {stats.lowPct}% ของทั้งหมด</p>
+                      </div>
+                    </div>
+
+                    {/* Out of stock items */}
+                    <div
+                      onClick={() => toggleStatusFilter('Out')}
+                      className={`bg-white border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Out' ? 'border-rose-500 ring-2 ring-[#ffe4e6] shadow-sm' : 'border-slate-200'
+                        }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="text-3xl font-extrabold text-rose-600 tracking-tight">{stats.out}</span>
+                        <div className="p-1.5 bg-rose-50 rounded-lg text-rose-500"><X className="w-4 h-4" /></div>
+                      </div>
+                      <div className="mt-2">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">หมด</h3>
+                        <div className="w-full bg-slate-100 h-1 rounded-full mt-2 overflow-hidden">
+                          <div className="bg-rose-500 h-full rounded-full" style={{ width: `${stats.outPct}%` }}></div>
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-1">คิดเป็น {stats.outPct}% ของทั้งหมด</p>
+                      </div>
+                    </div>
                   </div>
-                )}
+
+                  {/* Health Ring Card */}
+                  <div className="bg-[#0c0f1d] text-white rounded-2xl p-5 flex flex-col justify-between border border-slate-800 shadow-md min-h-[240px]">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-200">สถานะอะไหล่</h3>
+                      <p className="text-xs text-slate-400 mt-1">สัดส่วนรายการปกติ - ใกล้ - หมด</p>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center gap-4 my-3">
+                      {/* SVG Ring */}
+                      <div className="relative w-28 h-28 shrink-0 group">
+                        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                          {/* Ring background */}
+                          <circle cx="60" cy="60" r="52" fill="transparent" stroke="#1f293d" strokeWidth="10" />
+                          
+                          {/* Normal segment */}
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="52"
+                            fill="transparent"
+                            stroke="#10b981"
+                            strokeWidth="10"
+                            strokeDasharray={`${healthSegments.normalLength} ${circumference}`}
+                            strokeDashoffset={healthSegments.normalOffset}
+                            className="transition-all duration-1000 ease-out"
+                          />
+                          
+                          {/* Low segment */}
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="52"
+                            fill="transparent"
+                            stroke="#f59e0b"
+                            strokeWidth="10"
+                            strokeDasharray={`${healthSegments.lowLength} ${circumference}`}
+                            strokeDashoffset={healthSegments.lowOffset}
+                            className="transition-all duration-1000 ease-out"
+                          />
+                          
+                          {/* Out segment */}
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="52"
+                            fill="transparent"
+                            stroke="#f43f5e"
+                            strokeWidth="10"
+                            strokeDasharray={`${healthSegments.outLength} ${circumference}`}
+                            strokeDashoffset={healthSegments.outOffset}
+                            className="transition-all duration-1000 ease-out"
+                          />
+                        </svg>
+                        
+                        {/* Center Text */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
+                          <span className="text-[9px] text-slate-400 mt-1">ปกติ</span>
+                        </div>
+
+                        {/* Tooltip on hover */}
+                        <div className="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-2 w-32 bg-slate-900 border border-slate-700 text-xs rounded-xl p-2.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                          <p className="font-bold border-b border-slate-700 pb-1 mb-1.5 text-center">แยกตามสถานะ</p>
+                          <div className="flex items-center justify-between text-slate-300">
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>ปกติ</span>
+                            <strong>{stats.normal}</strong>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-300 mt-1">
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span>ใกล้หมด</span>
+                            <strong>{stats.low}</strong>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-300 mt-1">
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"></span>หมด</span>
+                            <strong>{stats.out}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-slate-400 w-full space-y-1.5 border-t border-slate-800 pt-3">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-emerald-500 shrink-0"></span>ปกติ</span>
+                          <span className="text-slate-200"><strong>{stats.normal}</strong> รายการ</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-amber-500 shrink-0"></span>ใกล้หมด</span>
+                          <span className="text-slate-200"><strong>{stats.low}</strong> รายการ</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded bg-rose-500 shrink-0"></span>หมด</span>
+                          <span className="text-slate-200"><strong>{stats.out}</strong> รายการ</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-center text-[10px] text-slate-400 pt-2 border-t border-slate-800">
+                      {stats.normal} จาก {stats.total} รายการ อยู่ในเกณฑ์ปกติ
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}
