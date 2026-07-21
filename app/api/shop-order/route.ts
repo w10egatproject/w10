@@ -37,7 +37,7 @@ function getDemoData() {
     }
 
     data.push({
-      code: 'BEML-' + String(i).padStart(4, '0'),
+      code: 's' + i + '.',
       pn: 'PN-' + (10000 + i),
       name: 'อะไหล่ตัวอย่างหมายเลข ' + i,
       system: systems[i % systems.length],
