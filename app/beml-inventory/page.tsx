@@ -38,17 +38,17 @@ export default function ShopOrderPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSystem, setSelectedSystem] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState<'Normal' | 'Low' | 'Out' | null>(null);
-  
+
   // Tab navigation state: 'dashboard' | 'inventory' | 'low-stock' | 'out-stock'
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'inventory' | 'low-stock' | 'out-stock'>('dashboard');
-  
+
   // Sorting state
   const [sortField, setSortField] = useState<keyof InventoryItem | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Popover state
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  
+
   // Navigation Menu state
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -61,7 +61,7 @@ export default function ShopOrderPage() {
       if (!res.ok) throw new Error('ไม่สามารถเชื่อมต่อกับ API ได้');
       const json: ApiResponse = await res.json();
       if (json.status === 'error') throw new Error(json.status);
-      
+
       setData(json.data);
       setSystems(json.systems);
       setIsDemo(json.isDemo);
@@ -75,7 +75,7 @@ export default function ShopOrderPage() {
 
   useEffect(() => {
     loadData();
-    
+
     // Auto refresh every 30 seconds
     const interval = setInterval(() => {
       loadData(false);
@@ -121,14 +121,14 @@ export default function ShopOrderPage() {
     if (statusFilter) {
       result = result.filter(item => item.status === statusFilter);
     }
-    
+
     // Apply sorting
     if (sortField) {
       const dir = sortDirection === 'asc' ? 1 : -1;
       result.sort((a, b) => {
         const valA = a[sortField];
         const valB = b[sortField];
-        
+
         if (typeof valA === 'number' && typeof valB === 'number') {
           return (valA - valB) * dir;
         }
@@ -220,7 +220,7 @@ export default function ShopOrderPage() {
               Demo Mode
             </span>
           )}
-          
+
           <AnimatePresence>
             {isLoading && (
               <motion.span
@@ -302,41 +302,37 @@ export default function ShopOrderPage() {
         <div className="flex flex-wrap gap-2 w-full xl:w-auto overflow-x-auto scrollbar-none pb-1 xl:pb-0">
           <button
             onClick={() => { setCurrentTab('dashboard'); setStatusFilter(null); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              currentTab === 'dashboard'
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'dashboard'
                 ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
                 : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
-            }`}
+              }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" /> แดชบอร์ด
           </button>
           <button
             onClick={() => { setCurrentTab('inventory'); setStatusFilter(null); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              currentTab === 'inventory' && statusFilter === null
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'inventory' && statusFilter === null
                 ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
                 : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
-            }`}
+              }`}
           >
             <Package className="w-3.5 h-3.5" /> คลังอะไหล่
           </button>
           <button
             onClick={() => { setCurrentTab('low-stock'); setStatusFilter('Low'); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              currentTab === 'low-stock'
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'low-stock'
                 ? 'bg-amber-100 text-amber-800 border border-amber-200 shadow-sm'
                 : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
-            }`}
+              }`}
           >
             <AlertCircle className="w-3.5 h-3.5" /> ของใกล้หมด
           </button>
           <button
             onClick={() => { setCurrentTab('out-stock'); setStatusFilter('Out'); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              currentTab === 'out-stock'
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'out-stock'
                 ? 'bg-rose-100 text-rose-800 border border-rose-200 shadow-sm'
                 : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
-            }`}
+              }`}
           >
             <X className="w-3.5 h-3.5" /> ของหมด
           </button>
@@ -409,9 +405,8 @@ export default function ShopOrderPage() {
                   {/* Total Stocked items */}
                   <div
                     onClick={() => setStatusFilter(null)}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${
-                      statusFilter === null ? 'border-[#6366f1] ring-2 ring-[#e0e7ff] shadow-sm' : 'border-slate-200'
-                    }`}
+                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === null ? 'border-[#6366f1] ring-2 ring-[#e0e7ff] shadow-sm' : 'border-slate-200'
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <span className="text-4xl font-extrabold text-slate-900 tracking-tight">{stats.total}</span>
@@ -429,9 +424,8 @@ export default function ShopOrderPage() {
                   {/* Normal status items */}
                   <div
                     onClick={() => toggleStatusFilter('Normal')}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${
-                      statusFilter === 'Normal' ? 'border-emerald-500 ring-2 ring-[#d1fae5] shadow-sm' : 'border-slate-200'
-                    }`}
+                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Normal' ? 'border-emerald-500 ring-2 ring-[#d1fae5] shadow-sm' : 'border-slate-200'
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <span className="text-4xl font-extrabold text-emerald-600 tracking-tight">{stats.normal}</span>
@@ -449,9 +443,8 @@ export default function ShopOrderPage() {
                   {/* Low stock items */}
                   <div
                     onClick={() => toggleStatusFilter('Low')}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${
-                      statusFilter === 'Low' ? 'border-amber-500 ring-2 ring-[#fef3c7] shadow-sm' : 'border-slate-200'
-                    }`}
+                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Low' ? 'border-amber-500 ring-2 ring-[#fef3c7] shadow-sm' : 'border-slate-200'
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <span className="text-4xl font-extrabold text-amber-600 tracking-tight">{stats.low}</span>
@@ -469,9 +462,8 @@ export default function ShopOrderPage() {
                   {/* Out of stock items */}
                   <div
                     onClick={() => toggleStatusFilter('Out')}
-                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${
-                      statusFilter === 'Out' ? 'border-rose-500 ring-2 ring-[#ffe4e6] shadow-sm' : 'border-slate-200'
-                    }`}
+                    className={`bg-white border rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md ${statusFilter === 'Out' ? 'border-rose-500 ring-2 ring-[#ffe4e6] shadow-sm' : 'border-slate-200'
+                      }`}
                   >
                     <div className="flex justify-between items-start">
                       <span className="text-4xl font-extrabold text-rose-600 tracking-tight">{stats.out}</span>
@@ -487,342 +479,342 @@ export default function ShopOrderPage() {
                   </div>
                 </div>
 
-            {/* Right Bento: Health Ring */}
-            <div className="bg-[#0c0f1d] text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-800 shadow-md min-h-[250px]">
-              <div>
-                <h3 className="text-sm font-bold text-slate-200">สถานะอะไหล่</h3>
-                <p className="text-xs text-slate-400 mt-1">สัดส่วนรายการปกติ - ใกล้หมด - หมด</p>
-              </div>
-
-              <div className="flex items-center justify-center gap-6 my-4">
-                {/* SVG Ring */}
-                <div className="relative w-28 h-28 shrink-0 group">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                    {/* Ring background */}
-                    <circle cx="60" cy="60" r="52" fill="transparent" stroke="#1f293d" strokeWidth="10" />
-                    
-                    {/* Normal segment */}
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="transparent"
-                      stroke="#10b981"
-                      strokeWidth="10"
-                      strokeDasharray={`${healthSegments.normalLength} ${circumference}`}
-                      strokeDashoffset={healthSegments.normalOffset}
-                      className="transition-all duration-1000 ease-out"
-                    />
-
-                    {/* Low segment */}
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="transparent"
-                      stroke="#f59e0b"
-                      strokeWidth="10"
-                      strokeDasharray={`${healthSegments.lowLength} ${circumference}`}
-                      strokeDashoffset={healthSegments.lowOffset}
-                      className="transition-all duration-1000 ease-out"
-                    />
-
-                    {/* Out segment */}
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="transparent"
-                      stroke="#f43f5e"
-                      strokeWidth="10"
-                      strokeDasharray={`${healthSegments.outLength} ${circumference}`}
-                      strokeDashoffset={healthSegments.outOffset}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  </svg>
-                  
-                  {/* Center Text */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
-                    <span className="text-[9px] text-slate-400 mt-1">ปกติ</span>
+                {/* Right Bento: Health Ring */}
+                <div className="bg-[#0c0f1d] text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-800 shadow-md min-h-[250px]">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-200">สถานะอะไหล่</h3>
+                    <p className="text-xs text-slate-400 mt-1">สัดส่วนรายการปกติ - ใกล้หมด - หมด</p>
                   </div>
 
-                  {/* Tooltip on hover */}
-                  <div className="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-2 w-32 bg-slate-900 border border-slate-700 text-xs rounded-xl p-2.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                    <p className="font-bold border-b border-slate-700 pb-1 mb-1.5 text-center">แยกตามสถานะ</p>
-                    <div className="flex items-center justify-between text-slate-300">
-                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>ปกติ</span>
-                      <strong>{stats.normal}</strong>
+                  <div className="flex items-center justify-center gap-6 my-4">
+                    {/* SVG Ring */}
+                    <div className="relative w-28 h-28 shrink-0 group">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                        {/* Ring background */}
+                        <circle cx="60" cy="60" r="52" fill="transparent" stroke="#1f293d" strokeWidth="10" />
+
+                        {/* Normal segment */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="52"
+                          fill="transparent"
+                          stroke="#10b981"
+                          strokeWidth="10"
+                          strokeDasharray={`${healthSegments.normalLength} ${circumference}`}
+                          strokeDashoffset={healthSegments.normalOffset}
+                          className="transition-all duration-1000 ease-out"
+                        />
+
+                        {/* Low segment */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="52"
+                          fill="transparent"
+                          stroke="#f59e0b"
+                          strokeWidth="10"
+                          strokeDasharray={`${healthSegments.lowLength} ${circumference}`}
+                          strokeDashoffset={healthSegments.lowOffset}
+                          className="transition-all duration-1000 ease-out"
+                        />
+
+                        {/* Out segment */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="52"
+                          fill="transparent"
+                          stroke="#f43f5e"
+                          strokeWidth="10"
+                          strokeDasharray={`${healthSegments.outLength} ${circumference}`}
+                          strokeDashoffset={healthSegments.outOffset}
+                          className="transition-all duration-1000 ease-out"
+                        />
+                      </svg>
+
+                      {/* Center Text */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
+                        <span className="text-[9px] text-slate-400 mt-1">ปกติ</span>
+                      </div>
+
+                      {/* Tooltip on hover */}
+                      <div className="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-2 w-32 bg-slate-900 border border-slate-700 text-xs rounded-xl p-2.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                        <p className="font-bold border-b border-slate-700 pb-1 mb-1.5 text-center">แยกตามสถานะ</p>
+                        <div className="flex items-center justify-between text-slate-300">
+                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>ปกติ</span>
+                          <strong>{stats.normal}</strong>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-300 mt-1">
+                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span>ใกล้หมด</span>
+                          <strong>{stats.low}</strong>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-300 mt-1">
+                          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"></span>หมด</span>
+                          <strong>{stats.out}</strong>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-slate-300 mt-1">
-                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span>ใกล้หมด</span>
-                      <strong>{stats.low}</strong>
+
+                    <div className="text-xs text-slate-400 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-1.5 rounded bg-emerald-500 shrink-0"></span>
+                        <span>ปกติ: <strong>{stats.normal}</strong> รายการ</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-1.5 rounded bg-amber-500 shrink-0"></span>
+                        <span>ใกล้หมด: <strong>{stats.low}</strong> รายการ</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-1.5 rounded bg-rose-500 shrink-0"></span>
+                        <span>หมด: <strong>{stats.out}</strong> รายการ</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-slate-300 mt-1">
-                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"></span>หมด</span>
-                      <strong>{stats.out}</strong>
-                    </div>
+                  </div>
+
+                  <div className="text-center text-xs text-slate-300 pt-2 border-t border-slate-800">
+                    {stats.normal} จาก {stats.total} รายการ อยู่ในเกณฑ์ปกติ
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Bin Map Grid */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      <LayoutGrid className="w-5 h-5 text-slate-500" />
+                      แผนผังอะไหล่ (Bin Map)
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">แสดงสถานะทางสายตาของรหัสอะไหล่กล่องต่างๆ ในระบบ</p>
+                  </div>
+                  <div className="flex gap-4 text-xs font-semibold text-slate-500">
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-300"></span>ปกติ</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-100 border border-amber-300"></span>ใกล้หมด</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-rose-100 border border-rose-300"></span>หมด</span>
                   </div>
                 </div>
 
-                <div className="text-xs text-slate-400 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-1.5 rounded bg-emerald-500 shrink-0"></span>
-                    <span>ปกติ: <strong>{stats.normal}</strong> รายการ</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-1.5 rounded bg-amber-500 shrink-0"></span>
-                    <span>ใกล้หมด: <strong>{stats.low}</strong> รายการ</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-1.5 rounded bg-rose-500 shrink-0"></span>
-                    <span>หมด: <strong>{stats.out}</strong> รายการ</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center text-xs text-slate-300 pt-2 border-t border-slate-800">
-                {stats.normal} จาก {stats.total} รายการ อยู่ในเกณฑ์ปกติ
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Bin Map Grid */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                  <LayoutGrid className="w-5 h-5 text-slate-500" />
-                  แผนผังอะไหล่ (Bin Map)
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">แสดงสถานะทางสายตาของรหัสอะไหล่กล่องต่างๆ ในระบบ</p>
-              </div>
-              <div className="flex gap-4 text-xs font-semibold text-slate-500">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-300"></span>ปกติ</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-100 border border-amber-300"></span>ใกล้หมด</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-rose-100 border border-rose-300"></span>หมด</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-2">
-              {finalData.map((item, idx) => {
-                let colorClass = 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-800';
-                if (item.status === 'Out') {
-                  colorClass = 'bg-rose-50 border-rose-200 hover:bg-rose-100 text-rose-800';
-                } else if (item.status === 'Low') {
-                  colorClass = 'bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-800';
-                }
-
-                return (
-                  <motion.div
-                    key={item.code + '-' + idx}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: Math.min(idx * 0.005, 0.5) }}
-                    onClick={() => setSelectedItem(item)}
-                    className={`border text-[11px] font-bold p-2 rounded-lg text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-center items-center shadow-2xs select-none ${colorClass}`}
-                    title={`${item.name} — คงเหลือ: ${item.balance}/${item.min}`}
-                  >
-                    <span className="truncate w-full max-w-[80px] text-center">{item.code}</span>
-                    <span className="text-[8px] opacity-75 font-normal truncate w-full">{item.system}</span>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {finalData.length === 0 && (
-              <div className="text-center py-10 text-slate-400 text-sm">
-                ไม่พบรายการอะไหล่ตามการค้นหาหรือสถานะที่เลือก
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Data Table / Cards Section */}
-      {currentTab !== 'dashboard' && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-bold text-slate-800 text-lg">ตารางอะไหล่ทั้งหมด</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  พบข้อมูล: <strong className="text-slate-800">{finalData.length}</strong> รายการ
-                  {statusFilter && ` (เฉพาะกลุ่มสถานะ: ${getStatusText(statusFilter)})`}
-                </p>
-              </div>
-              {statusFilter && (
-                <button
-                  onClick={() => setStatusFilter(null)}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all"
-                >
-                  ล้างตัวกรอง {getStatusText(statusFilter)} <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold bg-slate-50/50">
-                    <th onClick={() => handleSort('code')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
-                      รหัส/Code {sortField === 'code' && (sortDirection === 'asc' ? '▲' : '▼')}
-                    </th>
-                    <th onClick={() => handleSort('pn')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
-                      P/N {sortField === 'pn' && (sortDirection === 'asc' ? '▲' : '▼')}
-                    </th>
-                    <th onClick={() => handleSort('name')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
-                      รายการอะไหล่ {sortField === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
-                    </th>
-                    <th onClick={() => handleSort('system')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
-                      ระบบ {sortField === 'system' && (sortDirection === 'asc' ? '▲' : '▼')}
-                    </th>
-                    <th onClick={() => handleSort('balance')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors text-right">
-                      คงเหลือ {sortField === 'balance' && (sortDirection === 'asc' ? '▲' : '▼')}
-                    </th>
-                    <th onClick={() => handleSort('min')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors text-right">
-                      MIN {sortField === 'min' && (sortDirection === 'asc' ? '▲' : '▼')}
-                    </th>
-                    <th className="p-3 text-center">การดำเนินการ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-2">
                   {finalData.map((item, idx) => {
-                    const isLow = item.status === 'Low';
-                    const isOut = item.status === 'Out';
-                    
-                    let rowBg = 'hover:bg-slate-50/70';
-                    let balanceColor = 'text-slate-800';
-                    
-                    if (isOut) {
-                      rowBg = 'bg-rose-50/20 hover:bg-rose-50/40';
-                      balanceColor = 'text-rose-600 font-extrabold';
-                    } else if (isLow) {
-                      rowBg = 'bg-amber-50/20 hover:bg-amber-50/40';
-                      balanceColor = 'text-amber-600 font-bold';
+                    let colorClass = 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-800';
+                    if (item.status === 'Out') {
+                      colorClass = 'bg-rose-50 border-rose-200 hover:bg-rose-100 text-rose-800';
+                    } else if (item.status === 'Low') {
+                      colorClass = 'bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-800';
                     }
 
                     return (
-                      <tr
+                      <motion.div
                         key={item.code + '-' + idx}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: Math.min(idx * 0.005, 0.5) }}
                         onClick={() => setSelectedItem(item)}
-                        className={`cursor-pointer transition-colors ${rowBg}`}
+                        className={`border text-[11px] font-bold p-2 rounded-lg text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-center items-center shadow-2xs select-none ${colorClass}`}
+                        title={`${item.name} — คงเหลือ: ${item.balance}/${item.min}`}
                       >
-                        <td className="p-3 font-semibold text-[#4A4A49]">{item.code}</td>
-                        <td className="p-3 text-slate-500 font-mono text-xs">{item.pn}</td>
-                        <td className="p-3 text-slate-700 font-medium max-w-[280px] truncate">{item.name}</td>
-                        <td className="p-3">
-                          <span className="inline-block text-[11px] bg-slate-100 text-slate-600 font-bold px-2.5 py-0.5 rounded-full border border-slate-200">
-                            {item.system}
-                          </span>
-                        </td>
-                        <td className={`p-3 text-right ${balanceColor}`}>{item.balance.toLocaleString()}</td>
-                        <td className="p-3 text-right text-slate-500 font-medium">{item.min.toLocaleString()}</td>
-                        <td className="p-3">
-                          <div className="flex items-center justify-center gap-2 text-xs font-bold">
-                            {/* Status badge */}
-                            {isOut ? (
-                              <span className="flex items-center gap-1 bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-lg">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span> หมด
-                              </span>
-                            ) : isLow ? (
-                              <span className="flex items-center gap-1 bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-lg">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> ใกล้หมด
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ปกติ
-                              </span>
-                            )}
-
-                            {/* Action badge */}
-                            {item.action && item.action !== '-' ? (
-                              <span className="bg-[#5c607f] text-white px-2 py-0.5 rounded-md text-[10px]">
-                                {item.action}
-                              </span>
-                            ) : (
-                              <span className="text-slate-300">—</span>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
+                        <span className="truncate w-full max-w-[80px] text-center">{item.code}</span>
+                        <span className="text-[8px] opacity-75 font-normal truncate w-full">{item.system}</span>
+                      </motion.div>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
+                </div>
 
-            {/* Mobile Cards View */}
-            <div className="md:hidden flex flex-col gap-3">
-              {finalData.map((item, idx) => {
-                const isLow = item.status === 'Low';
-                const isOut = item.status === 'Out';
-                
-                let cardBorder = 'border-slate-200';
-                let balanceColor = 'text-slate-800';
-                let statusBadge = (
-                  <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                    <span className="w-1 h-1 rounded-full bg-emerald-600"></span> ปกติ
-                  </span>
-                );
-                
-                if (isOut) {
-                  cardBorder = 'border-rose-300 bg-rose-50/10';
-                  balanceColor = 'text-rose-600 font-extrabold';
-                  statusBadge = (
-                    <span className="flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                      <span className="w-1 h-1 rounded-full bg-rose-600 animate-pulse"></span> หมด
-                    </span>
-                  );
-                } else if (isLow) {
-                  cardBorder = 'border-amber-300 bg-amber-50/10';
-                  balanceColor = 'text-amber-700 font-bold';
-                  statusBadge = (
-                    <span className="flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                      <span className="w-1 h-1 rounded-full bg-amber-600"></span> ใกล้หมด
-                    </span>
-                  );
-                }
-
-                return (
-                  <div
-                    key={item.code + '-' + idx + '-mob'}
-                    onClick={() => setSelectedItem(item)}
-                    className={`border p-4 rounded-xl flex flex-col gap-2 cursor-pointer shadow-2xs hover:bg-slate-50 transition ${cardBorder}`}
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[11px] text-slate-400 font-bold font-mono">{item.code} · {item.pn}</p>
-                        <h4 className="text-sm font-black text-slate-800 truncate mt-0.5">{item.name}</h4>
-                      </div>
-                      <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-bold">
-                        {item.system}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-end border-t border-slate-100 pt-2 mt-1">
-                      <div className="flex items-center gap-2">
-                        {statusBadge}
-                        {item.action && item.action !== '-' && (
-                          <span className="bg-[#5c607f] text-white px-2 py-0.5 rounded-md text-[9px] font-bold">
-                            {item.action}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] text-slate-400 font-bold block mb-0.5">คงเหลือ / MIN</span>
-                        <span className={`text-base ${balanceColor}`}>{item.balance}</span>
-                        <span className="text-xs text-slate-400 font-medium"> / {item.min}</span>
-                      </div>
-                    </div>
+                {finalData.length === 0 && (
+                  <div className="text-center py-10 text-slate-400 text-sm">
+                    ไม่พบรายการอะไหล่ตามการค้นหาหรือสถานะที่เลือก
                   </div>
-                );
-              })}
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Data Table / Cards Section */}
+          {currentTab !== 'dashboard' && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="font-bold text-slate-800 text-lg">ตารางอะไหล่ทั้งหมด</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    พบข้อมูล: <strong className="text-slate-800">{finalData.length}</strong> รายการ
+                    {statusFilter && ` (เฉพาะกลุ่มสถานะ: ${getStatusText(statusFilter)})`}
+                  </p>
+                </div>
+                {statusFilter && (
+                  <button
+                    onClick={() => setStatusFilter(null)}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all"
+                  >
+                    ล้างตัวกรอง {getStatusText(statusFilter)} <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-400 font-bold bg-slate-50/50">
+                      <th onClick={() => handleSort('code')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
+                        รหัส/Code {sortField === 'code' && (sortDirection === 'asc' ? '▲' : '▼')}
+                      </th>
+                      <th onClick={() => handleSort('pn')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
+                        P/N {sortField === 'pn' && (sortDirection === 'asc' ? '▲' : '▼')}
+                      </th>
+                      <th onClick={() => handleSort('name')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
+                        รายการอะไหล่ {sortField === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
+                      </th>
+                      <th onClick={() => handleSort('system')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors">
+                        ระบบ {sortField === 'system' && (sortDirection === 'asc' ? '▲' : '▼')}
+                      </th>
+                      <th onClick={() => handleSort('balance')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors text-right">
+                        คงเหลือ {sortField === 'balance' && (sortDirection === 'asc' ? '▲' : '▼')}
+                      </th>
+                      <th onClick={() => handleSort('min')} className="p-3 cursor-pointer select-none hover:text-[#d4a300] transition-colors text-right">
+                        MIN {sortField === 'min' && (sortDirection === 'asc' ? '▲' : '▼')}
+                      </th>
+                      <th className="p-3 text-center">การดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {finalData.map((item, idx) => {
+                      const isLow = item.status === 'Low';
+                      const isOut = item.status === 'Out';
+
+                      let rowBg = 'hover:bg-slate-50/70';
+                      let balanceColor = 'text-slate-800';
+
+                      if (isOut) {
+                        rowBg = 'bg-rose-50/20 hover:bg-rose-50/40';
+                        balanceColor = 'text-rose-600 font-extrabold';
+                      } else if (isLow) {
+                        rowBg = 'bg-amber-50/20 hover:bg-amber-50/40';
+                        balanceColor = 'text-amber-600 font-bold';
+                      }
+
+                      return (
+                        <tr
+                          key={item.code + '-' + idx}
+                          onClick={() => setSelectedItem(item)}
+                          className={`cursor-pointer transition-colors ${rowBg}`}
+                        >
+                          <td className="p-3 font-semibold text-[#4A4A49]">{item.code}</td>
+                          <td className="p-3 text-slate-500 font-mono text-xs">{item.pn}</td>
+                          <td className="p-3 text-slate-700 font-medium max-w-[280px] truncate">{item.name}</td>
+                          <td className="p-3">
+                            <span className="inline-block text-[11px] bg-slate-100 text-slate-600 font-bold px-2.5 py-0.5 rounded-full border border-slate-200">
+                              {item.system}
+                            </span>
+                          </td>
+                          <td className={`p-3 text-right ${balanceColor}`}>{item.balance.toLocaleString()}</td>
+                          <td className="p-3 text-right text-slate-500 font-medium">{item.min.toLocaleString()}</td>
+                          <td className="p-3">
+                            <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                              {/* Status badge */}
+                              {isOut ? (
+                                <span className="flex items-center gap-1 bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-lg">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span> หมด
+                                </span>
+                              ) : isLow ? (
+                                <span className="flex items-center gap-1 bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-lg">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> ใกล้หมด
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ปกติ
+                                </span>
+                              )}
+
+                              {/* Action badge */}
+                              {item.action && item.action !== '-' ? (
+                                <span className="bg-[#5c607f] text-white px-2 py-0.5 rounded-md text-[10px]">
+                                  {item.action}
+                                </span>
+                              ) : (
+                                <span className="text-slate-300">—</span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards View */}
+              <div className="md:hidden flex flex-col gap-3">
+                {finalData.map((item, idx) => {
+                  const isLow = item.status === 'Low';
+                  const isOut = item.status === 'Out';
+
+                  let cardBorder = 'border-slate-200';
+                  let balanceColor = 'text-slate-800';
+                  let statusBadge = (
+                    <span className="flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                      <span className="w-1 h-1 rounded-full bg-emerald-600"></span> ปกติ
+                    </span>
+                  );
+
+                  if (isOut) {
+                    cardBorder = 'border-rose-300 bg-rose-50/10';
+                    balanceColor = 'text-rose-600 font-extrabold';
+                    statusBadge = (
+                      <span className="flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                        <span className="w-1 h-1 rounded-full bg-rose-600 animate-pulse"></span> หมด
+                      </span>
+                    );
+                  } else if (isLow) {
+                    cardBorder = 'border-amber-300 bg-amber-50/10';
+                    balanceColor = 'text-amber-700 font-bold';
+                    statusBadge = (
+                      <span className="flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                        <span className="w-1 h-1 rounded-full bg-amber-600"></span> ใกล้หมด
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={item.code + '-' + idx + '-mob'}
+                      onClick={() => setSelectedItem(item)}
+                      className={`border p-4 rounded-xl flex flex-col gap-2 cursor-pointer shadow-2xs hover:bg-slate-50 transition ${cardBorder}`}
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] text-slate-400 font-bold font-mono">{item.code} · {item.pn}</p>
+                          <h4 className="text-sm font-black text-slate-800 truncate mt-0.5">{item.name}</h4>
+                        </div>
+                        <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-bold">
+                          {item.system}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-end border-t border-slate-100 pt-2 mt-1">
+                        <div className="flex items-center gap-2">
+                          {statusBadge}
+                          {item.action && item.action !== '-' && (
+                            <span className="bg-[#5c607f] text-white px-2 py-0.5 rounded-md text-[9px] font-bold">
+                              {item.action}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-400 font-bold block mb-0.5">คงเหลือ / MIN</span>
+                          <span className={`text-base ${balanceColor}`}>{item.balance}</span>
+                          <span className="text-xs text-slate-400 font-medium"> / {item.min}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
-      </>
-    )}
+          )}
+        </>
+      )}
 
       {/* Item Detail Popover Overlay Modal */}
       <AnimatePresence>
@@ -837,19 +829,17 @@ export default function ShopOrderPage() {
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: 'spring', damping: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border ${
-                selectedItem.status === 'Out'
+              className={`w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl border ${selectedItem.status === 'Out'
                   ? 'border-rose-200 ring-4 ring-rose-50/30'
                   : selectedItem.status === 'Low'
                     ? 'border-amber-200 ring-4 ring-amber-50/30'
                     : 'border-slate-200 ring-4 ring-slate-50/30'
-              }`}
+                }`}
             >
               {/* Header card border color */}
               <div
-                className={`h-2.5 w-full ${
-                  selectedItem.status === 'Out' ? 'bg-rose-500' : selectedItem.status === 'Low' ? 'bg-amber-500' : 'bg-emerald-500'
-                }`}
+                className={`h-2.5 w-full ${selectedItem.status === 'Out' ? 'bg-rose-500' : selectedItem.status === 'Low' ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}
               ></div>
 
               <div className="p-6">
@@ -898,9 +888,8 @@ export default function ShopOrderPage() {
                   <div className="grid grid-cols-4 gap-2 bg-slate-50 border border-slate-100 rounded-2xl p-4">
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 font-bold block mb-1">คงเหลือ</span>
-                      <strong className={`text-lg block font-mono ${
-                        selectedItem.status === 'Out' ? 'text-rose-600 font-black' : selectedItem.status === 'Low' ? 'text-amber-600' : 'text-slate-800'
-                      }`}>
+                      <strong className={`text-lg block font-mono ${selectedItem.status === 'Out' ? 'text-rose-600 font-black' : selectedItem.status === 'Low' ? 'text-amber-600' : 'text-slate-800'
+                        }`}>
                         {selectedItem.balance.toLocaleString()}
                       </strong>
                     </div>
@@ -913,26 +902,23 @@ export default function ShopOrderPage() {
                       <strong className="text-lg block text-slate-600 font-mono">{selectedItem.max.toLocaleString()}</strong>
                     </div>
                     <div className="text-center border-l border-slate-200">
-                      <span className="text-[10px] text-slate-400 font-bold block mb-1">ขาดแคลน</span>
-                      <strong className={`text-lg block font-mono ${
-                        selectedItem.min - selectedItem.balance > 0 ? 'text-rose-600' : 'text-slate-400 font-normal'
-                      }`}>
+                      <span className="text-[10px] text-slate-400 font-bold block mb-1">ต่ำกว่า MIN</span>
+                      <strong className={`text-lg block font-mono ${selectedItem.min - selectedItem.balance > 0 ? 'text-rose-600' : 'text-slate-400 font-normal'
+                        }`}>
                         {Math.max(selectedItem.min - selectedItem.balance, 0).toLocaleString()}
                       </strong>
                     </div>
                   </div>
 
                   {/* Action or Order Suggestion note */}
-                  <div className={`p-4 rounded-2xl flex gap-3 text-xs leading-relaxed ${
-                    selectedItem.status === 'Out'
+                  <div className={`p-4 rounded-2xl flex gap-3 text-xs leading-relaxed ${selectedItem.status === 'Out'
                       ? 'bg-rose-50 text-rose-800 border border-rose-200'
                       : selectedItem.status === 'Low'
                         ? 'bg-amber-50 text-amber-800 border border-amber-200'
                         : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                  }`}>
-                    <Info className={`w-5 h-5 shrink-0 ${
-                      selectedItem.status === 'Out' ? 'text-rose-500' : selectedItem.status === 'Low' ? 'text-amber-500' : 'text-emerald-500'
-                    }`} />
+                    }`}>
+                    <Info className={`w-5 h-5 shrink-0 ${selectedItem.status === 'Out' ? 'text-rose-500' : selectedItem.status === 'Low' ? 'text-amber-500' : 'text-emerald-500'
+                      }`} />
                     <div>
                       {selectedItem.status === 'Out' ? (
                         <span>
