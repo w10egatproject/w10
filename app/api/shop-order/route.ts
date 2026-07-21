@@ -65,6 +65,7 @@ export async function GET() {
       return NextResponse.json({
         ...demo,
         isDemo: true,
+        warning: 'กำลังใช้ข้อมูลจำลอง (Demo Data) เนื่องจากเซิร์ฟเวอร์ยังไม่ได้รับค่า GOOGLE_SHOP_ORDER_SHEET_ID — กรุณาปิดแล้วเปิดเซิร์ฟเวอร์ Next.js (npm run dev) ใหม่เพื่อให้ระบบโหลดไฟล์ .env.local',
         timestamp: new Date().toISOString()
       }, { headers: noStoreHeaders });
     }
