@@ -35,12 +35,16 @@ const destinations = [
   { href: '/ot-employee', label: 'สรุป OT พนักงาน' },
 ] as const;
 
-function renderOpenMenu(pathname: string) {
+function renderOpenMenu(
+  pathname: string,
+  props?: { itemHoverClassName?: string },
+) {
   usePathnameMock.mockReturnValue(pathname);
   render(
     <NavigationMenu
       buttonClassName="bg-test-button text-test-foreground"
       accentClassName="text-test-accent"
+      itemHoverClassName={props?.itemHoverClassName}
     />,
   );
   fireEvent.click(screen.getByRole('button', { name: 'เมนูหน้า' }));
@@ -89,6 +93,16 @@ describe('NavigationMenu route contract', () => {
     expect(purchasingLink.querySelector('svg')?.getAttribute('class')).toContain(
       'text-test-accent',
     );
+  });
+
+  it('applies a page-specific hover class to every available destination', () => {
+    const navigation = renderOpenMenu('/purchasing-all', {
+      itemHoverClassName: 'hover:bg-test-theme',
+    });
+
+    for (const link of within(navigation).getAllByRole('link')) {
+      expect(link.className).toContain('hover:bg-test-theme');
+    }
   });
 });
 

@@ -627,6 +627,7 @@ export function PurchasingPageContent({
           <NavigationMenu
             buttonClassName={t.menuBtn}
             accentClassName={t.accent}
+            itemHoverClassName={t.menuItemHover}
           />
         </div>
       </motion.header>

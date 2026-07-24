@@ -25,6 +25,7 @@ import {
 interface NavigationMenuProps {
   buttonClassName: string;
   accentClassName?: string;
+  itemHoverClassName?: string;
 }
 
 interface NavigationDestination {
@@ -82,6 +83,7 @@ const destinations: readonly NavigationDestination[] = [
 export function NavigationMenu({
   buttonClassName,
   accentClassName = 'text-[#d4a300]',
+  itemHoverClassName,
 }: NavigationMenuProps) {
   const pathname = usePathname();
   const menuId = useId();
@@ -233,7 +235,7 @@ export function NavigationMenu({
                         data-testid="navigation-destination"
                         href={destination.href}
                         onClick={closeMenu}
-                        className={`${commonClassName} ${destination.hoverClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-500`}
+                        className={`${commonClassName} ${itemHoverClassName ?? destination.hoverClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-500`}
                       >
                         <Icon
                           aria-hidden="true"
