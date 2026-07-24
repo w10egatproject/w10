@@ -10,14 +10,16 @@ assert.ok(fs.existsSync(path.join(root, 'app', 'ot-employee', 'page.tsx')), 'emp
 
 const contractorPage = read('app/ot-summary/page.tsx');
 const employeePage = read('app/ot-employee/page.tsx');
+const navigationMenu = read('components/navigation/NavigationMenu.tsx');
 
 assert.match(contractorPage, /สรุป OT ลูกจ้าง/, 'contractor page should identify contractor OT');
 assert.match(contractorPage, /workerType = 'contractor'/, 'contractor route should default to contractor OT');
 assert.match(employeePage, /workerType="employee"/, 'employee route should render employee OT mode');
 
+assert.match(navigationMenu, /href: '\/ot-summary'/, 'shared navigation should link to contractor OT');
+assert.match(navigationMenu, /href: '\/ot-employee'/, 'shared navigation should link to employee OT');
+
 for (const file of ['app/page.tsx', 'app/purchasing/page.tsx', 'app/ot-summary/page.tsx']) {
   const content = read(file);
-  assert.match(content, /href="\/ot-summary"[\s\S]*สรุป OT ลูกจ้าง/, `${file} should link to contractor OT`);
-  assert.match(content, /href="\/ot-employee"[\s\S]*สรุป OT พนักงาน/, `${file} should link to employee OT`);
-  assert.doesNotMatch(content, /สรุปโอทีลูกจ้างและพนักงาน/, `${file} should not use the combined OT label`);
+  assert.match(content, /NavigationMenu/, `${file} should use the shared navigation`);
 }
