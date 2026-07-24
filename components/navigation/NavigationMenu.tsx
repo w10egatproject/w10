@@ -12,7 +12,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useId, useState } from 'react';
+import {
+  type FocusEvent,
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 
 interface NavigationMenuProps {
   buttonClassName: string;
@@ -26,6 +34,8 @@ interface NavigationDestination {
   iconClassName?: string;
   hoverClassName: string;
 }
+
+const CLOSE_DELAY_MS = 150;
 
 const destinations: readonly NavigationDestination[] = [
   {
@@ -75,15 +85,107 @@ export function NavigationMenu({
 }: NavigationMenuProps) {
   const pathname = usePathname();
   const menuId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const activationPointerTypeRef = useRef<string | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(
+    null,
+  );
   const [isOpen, setIsOpen] = useState(false);
 
+  const cancelScheduledClose = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const openMenu = useCallback(() => {
+    cancelScheduledClose();
+    setIsOpen(true);
+  }, [cancelScheduledClose]);
+
+  const closeMenu = useCallback(() => {
+    cancelScheduledClose();
+    setIsOpen(false);
+  }, [cancelScheduledClose]);
+
+  const scheduleClose = useCallback(() => {
+    cancelScheduledClose();
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      setIsOpen(false);
+    }, CLOSE_DELAY_MS);
+  }, [cancelScheduledClose]);
+
+  useEffect(() => cancelScheduledClose, [cancelScheduledClose]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !rootRef.current?.contains(event.target)
+      ) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointerDown);
+    };
+  }, [closeMenu, isOpen]);
+
+  const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (
+      !(nextTarget instanceof Node) ||
+      !rootRef.current?.contains(nextTarget)
+    ) {
+      closeMenu();
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape' && isOpen) {
+      event.preventDefault();
+      closeMenu();
+      triggerRef.current?.focus();
+    }
+  };
+
   return (
-    <div className="relative">
+    <div
+      ref={rootRef}
+      className="relative"
+      onMouseEnter={openMenu}
+      onMouseLeave={scheduleClose}
+      onFocusCapture={cancelScheduledClose}
+      onBlurCapture={handleBlur}
+      onKeyDown={handleKeyDown}
+    >
       <button
+        ref={triggerRef}
         type="button"
         aria-controls={menuId}
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
+        onPointerDown={(event) => {
+          activationPointerTypeRef.current = event.pointerType;
+        }}
+        onClick={() => {
+          cancelScheduledClose();
+          const pointerType = activationPointerTypeRef.current;
+          activationPointerTypeRef.current = null;
+          if (pointerType === 'mouse') {
+            setIsOpen(true);
+            return;
+          }
+          setIsOpen((current) => !current);
+        }}
         className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 md:rounded-2xl md:px-6 md:py-3 md:text-sm ${buttonClassName}`}
       >
         เมนูหน้า
@@ -132,6 +234,7 @@ export function NavigationMenu({
                       <Link
                         data-testid="navigation-destination"
                         href={destination.href}
+                        onClick={closeMenu}
                         className={`${commonClassName} ${destination.hoverClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-500`}
                       >
                         <Icon
