@@ -86,6 +86,10 @@ export function NavigationMenu({
   itemHoverClassName,
 }: NavigationMenuProps) {
   const pathname = usePathname();
+  const visibleDestinations =
+    pathname === '/'
+      ? destinations.filter((destination) => destination.href !== '/')
+      : destinations;
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -207,7 +211,7 @@ export function NavigationMenu({
             className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-300/40"
           >
             <ul>
-              {destinations.map((destination, index) => {
+              {visibleDestinations.map((destination, index) => {
                 const Icon = destination.icon;
                 const iconClassName =
                   destination.iconClassName ?? accentClassName;

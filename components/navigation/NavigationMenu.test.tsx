@@ -62,7 +62,7 @@ afterEach(() => {
 });
 
 describe('NavigationMenu route contract', () => {
-  it.each(destinations)(
+  it.each(destinations.slice(1))(
     'renders all six destinations and disables the current route $href',
     ({ href, label }) => {
       const navigation = renderOpenMenu(href);
@@ -80,6 +80,16 @@ describe('NavigationMenu route contract', () => {
       expect(within(navigation).getAllByRole('link')).toHaveLength(5);
     },
   );
+
+  it('omits the redundant home destination on the home route', () => {
+    const navigation = renderOpenMenu('/');
+
+    expect(
+      within(navigation).getAllByTestId('navigation-destination'),
+    ).toHaveLength(5);
+    expect(within(navigation).queryByText('หน้าหลัก')).toBeNull();
+    expect(within(navigation).getAllByRole('link')).toHaveLength(5);
+  });
 
   it('preserves page-specific trigger and accent classes', () => {
     const navigation = renderOpenMenu('/');

@@ -94,7 +94,7 @@ npx eslint components/navigation/NavigationMenu.tsx components/navigation/Naviga
 npm run build
 ```
 
-Expected: 22 unit/integration tests pass, both route scripts exit successfully,
+Expected: 21 unit/integration tests pass, both route scripts exit successfully,
 scoped ESLint exits with code 0, and the production build exits with code 0.
 
 - [ ] **Step 5: Commit and deploy**
