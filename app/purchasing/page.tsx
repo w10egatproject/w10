@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, CalendarDays, ChevronDown, ClipboardList, Clock, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle, UserRound } from 'lucide-react';
+import { CalendarDays, ClipboardList, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import NavigationMenu from '@/components/navigation/NavigationMenu';
 
 type GaugeData = { empNorm?: number; empOT?: number; w11_1?: number; };
 type NameValue = { name: string; value: number; };
@@ -314,7 +314,6 @@ export function PurchasingPageContent({
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const loadData = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     if (showLoading) setIsLoading(true);
@@ -625,47 +624,10 @@ export function PurchasingPageContent({
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? `animate-spin ${t.accent}` : 'text-slate-500'} />
             รีเฟรชข้อมูล
           </motion.button>
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={() => setMenuOpen((value) => !value)}
-              className={`px-4 md:px-6 py-2 md:py-3 ${t.menuBtn} rounded-xl md:rounded-2xl text-xs md:text-sm font-black shadow-lg transition-all flex items-center gap-2`}
-            >
-              เมนูหน้า
-              <ChevronDown size={16} strokeWidth={3} className={menuOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
-            </motion.button>
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40"
-                >
-                  <Link href="/" className="flex items-center gap-3 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-slate-50">
-                    <ArrowLeft size={18} className="text-slate-500" /> หน้าหลัก
-                  </Link>
-                  <Link href="/purchasing" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
-                    <ShoppingCart size={18} className={t.accent} /> จัดซื้อจัดจ้าง
-                  </Link>
-                  <Link href="/purchasing-all" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
-                    <ShoppingBag size={18} className={t.accent} /> สถานะการซื้อจ้างทั้งหมด
-                  </Link>
-                  <Link href="/beml-inventory" className={`flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] ${t.menuItemHover}`}>
-                    <Package size={18} className={t.accent} /> คลังอะไหล่ BEML
-                  </Link>
-                  <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
-                    <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
-                  </Link>
-                  <Link href="/ot-employee" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-amber-50">
-                    <UserRound size={18} className="text-amber-500" /> สรุป OT พนักงาน
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <NavigationMenu
+            buttonClassName={t.menuBtn}
+            accentClassName={t.accent}
+          />
         </div>
       </motion.header>
 

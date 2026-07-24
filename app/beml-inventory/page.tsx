@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Clock, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, AlertCircle, CheckCircle2, Info, ChevronDown, Boxes, ListFilter, X, UserRound, LayoutGrid, FileSpreadsheet } from 'lucide-react';
+import { RefreshCw, Search, Package, AlertCircle, CheckCircle2, Info, ChevronDown, Boxes, X, LayoutGrid, FileSpreadsheet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
+import NavigationMenu from '@/components/navigation/NavigationMenu';
 
 interface InventoryItem {
   code: string;
@@ -48,9 +48,6 @@ export default function ShopOrderPage() {
 
   // Popover state
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-
-  // Navigation Menu state
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // Load Inventory Data
   const loadData = useCallback(async (showLoading = true) => {
@@ -247,44 +244,10 @@ export default function ShopOrderPage() {
           </motion.button>
 
           {/* Navigation Dropdown Menu */}
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="px-4 md:px-6 py-2 md:py-3 bg-[#ffe08a] text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-[#ffd56a] shadow-lg transition-all flex items-center gap-2"
-            >
-              เมนูหน้า
-              <ChevronDown size={16} strokeWidth={3} className={menuOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
-            </motion.button>
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div
-                  className="absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40"
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                >
-                  <Link href="/" className="flex items-center gap-3 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-slate-50">
-                    <ArrowLeft size={18} className="text-slate-500" /> หน้าหลัก
-                  </Link>
-                  <Link href="/purchasing" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                    <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
-                  </Link>
-                  <Link href="/purchasing-all" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                    <ShoppingBag size={18} className="text-[#d4a300]" /> สถานะการซื้อจ้างทั้งหมด
-                  </Link>
-                  <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
-                    <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
-                  </Link>
-                  <Link href="/ot-employee" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-amber-50">
-                    <UserRound size={18} className="text-amber-500" /> สรุป OT พนักงาน
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <NavigationMenu
+            buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
+            accentClassName="text-[#d4a300]"
+          />
         </div>
       </motion.header>
 

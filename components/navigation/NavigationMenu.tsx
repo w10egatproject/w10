@@ -88,9 +88,7 @@ export function NavigationMenu({
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activationPointerTypeRef = useRef<string | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(
-    null,
-  );
+  const closeTimerRef = useRef<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const cancelScheduledClose = useCallback(() => {

@@ -16,6 +16,7 @@ const purchasingPage = read('app', 'purchasing', 'page.tsx');
 const purchasingAllPage = read('app', 'purchasing-all', 'page.tsx');
 const purchasingAllRoute = read('app', 'api', 'purchasing-all', 'route.ts');
 const googleSheet = read('lib', 'googleSheet.ts');
+const navigationMenu = read('components', 'navigation', 'NavigationMenu.tsx');
 
 assert(
   purchasingPage.includes('export function PurchasingPageContent'),
@@ -51,9 +52,10 @@ assert(
 );
 
 assert(
-  read('app', 'page.tsx').includes('/purchasing-all') &&
-    purchasingPage.includes('/purchasing-all'),
-  'Navigation menus should link to /purchasing-all.',
+  navigationMenu.includes("href: '/purchasing-all'") &&
+    read('app', 'page.tsx').includes('NavigationMenu') &&
+    purchasingPage.includes('NavigationMenu'),
+  'Shared navigation should link to /purchasing-all and be used by both page sources.',
 );
 
 console.log('purchasing-all-page.test.js passed');

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CheckCircle2, ChevronDown, Clock, Factory, HardHat, Info, LayoutDashboard, Package, RefreshCw, Shield, ShoppingBag, ShoppingCart, UserRound, Zap } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle2, Clock, Factory, HardHat, Info, LayoutDashboard, RefreshCw, Shield, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import NavigationMenu from '@/components/navigation/NavigationMenu';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -180,7 +180,6 @@ export default function DashboardPage() {
   const [month, setMonth] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
@@ -349,44 +348,10 @@ export default function DashboardPage() {
               <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
               รีเฟรชข้อมูล
             </motion.button>
-            <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                onClick={() => setMenuOpen((value) => !value)}
-                className="px-4 md:px-6 py-2 md:py-3 bg-[#ffe08a] text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-[#ffd56a] shadow-lg transition-all flex items-center gap-2"
-              >
-                เมนูหน้า
-                <ChevronDown size={16} strokeWidth={3} className={menuOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
-              </motion.button>
-              <AnimatePresence>
-                {menuOpen && (
-                  <motion.div 
-                    className="absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40"
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  >
-                    <Link href="/purchasing" className="flex items-center gap-3 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                      <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
-                    </Link>
-                    <Link href="/purchasing-all" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                      <ShoppingBag size={18} className="text-[#d4a300]" /> สถานะการซื้อจ้างทั้งหมด
-                    </Link>
-                    <Link href="/beml-inventory" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50/50">
-                      <Package size={18} className="text-[#d4a300]" /> คลังอะไหล่ BEML
-                    </Link>
-                    <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
-                      <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
-                    </Link>
-                    <Link href="/ot-employee" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-amber-50">
-                      <UserRound size={18} className="text-amber-500" /> สรุป OT พนักงาน
-                    </Link>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <NavigationMenu
+              buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
+              accentClassName="text-[#d4a300]"
+            />
         </div>
       </motion.header>
 

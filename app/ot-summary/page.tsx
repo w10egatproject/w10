@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Check, ChevronDown, Clock, ExternalLink, FileSpreadsheet, Filter, Package, RefreshCw, ShoppingBag, ShoppingCart, UserRound } from 'lucide-react';
+import { Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, UserRound } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
+import NavigationMenu from '@/components/navigation/NavigationMenu';
 
 type EmployeeOtRow = {
   sequence: number;
@@ -447,7 +447,6 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
   const [data, setData] = useState<OtSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
   const isEmployeePage = workerType === 'employee';
   const pageTitle = isEmployeePage ? 'สรุป OT พนักงาน' : 'สรุป OT ลูกจ้าง';
   const pageSubtitle = isEmployeePage ? 'EGAT Employee OT Summary' : 'EGAT Contractor OT Summary';
@@ -552,47 +551,10 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
             รีเฟรชข้อมูล
           </motion.button>
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="px-4 md:px-6 py-2 md:py-3 bg-[#ffe08a] text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-[#ffd56a] shadow-lg transition-all flex items-center gap-2"
-            >
-              เมนูหน้า
-              <ChevronDown size={16} strokeWidth={3} className={menuOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
-            </motion.button>
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div 
-                  className="absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                >
-                  <Link href="/" className="flex items-center gap-3 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-slate-50">
-                    <ArrowLeft size={18} className="text-slate-500" /> หน้าหลัก
-                  </Link>
-                  <Link href="/purchasing" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                    <ShoppingCart size={18} className="text-[#d4a300]" /> จัดซื้อจัดจ้าง
-                  </Link>
-                  <Link href="/purchasing-all" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50">
-                    <ShoppingBag size={18} className="text-[#d4a300]" /> สถานะการซื้อจ้างทั้งหมด
-                  </Link>
-                  <Link href="/beml-inventory" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-yellow-50/50">
-                    <Package size={18} className="text-[#d4a300]" /> คลังอะไหล่ BEML
-                  </Link>
-                  <Link href="/ot-summary" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-sky-50">
-                    <Clock size={18} className="text-sky-500" /> สรุป OT ลูกจ้าง
-                  </Link>
-                  <Link href="/ot-employee" className="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-sm font-black text-[#4A4A49] hover:bg-amber-50">
-                    <UserRound size={18} className="text-amber-500" /> สรุป OT พนักงาน
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <NavigationMenu
+            buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
+            accentClassName="text-[#d4a300]"
+          />
         </div>
       </motion.header>
 
