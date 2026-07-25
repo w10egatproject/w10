@@ -40,6 +40,10 @@ The feature must:
   populated date means `เสร็จสิ้น`.
 - Existing Drive files are retained when an order is deleted or when a new
   attachment replaces the link stored on an order.
+- Attachments use a Google Drive resumable upload session. File bytes travel
+  directly from the browser to Google Drive and never pass through a Vercel
+  Function, preserving the 10 MB limit despite Vercel's 4.5 MB Function
+  payload limit.
 - Dashboard summaries follow the active search and filters rather than always
   representing the unfiltered dataset.
 - The approved layout is responsive hybrid: split table/dashboard on desktop,
@@ -181,13 +185,20 @@ Use one route-handler resource at `/api/shop-order`:
 
 - `GET` returns orders, department options, receiver options, and a server
   timestamp.
-- `POST` accepts a new order and an optional attachment.
-- `PATCH` accepts edits for an existing order and an optional replacement
-  attachment.
+- `POST` accepts a new order and an optional finalized Drive file ID.
+- `PATCH` accepts edits for an existing order and an optional finalized Drive
+  file ID.
 - `DELETE` accepts the stable order sequence to remove the order data.
 
-`POST` and `PATCH` use `multipart/form-data` so the browser does not need to
-convert attachments to Base64. `DELETE` uses a small JSON body.
+Use a second Route Handler at `/api/shop-order/upload-session`:
+
+- `POST` validates attachment metadata, pre-generates a Drive file ID, and
+  starts a resumable upload in the configured folder.
+
+All application Route Handler bodies are small JSON payloads. The browser sends
+the attachment bytes with `PUT` directly to the HTTPS resumable session URI
+returned by Google Drive. The session URI is treated as a short-lived bearer
+secret and is never logged, persisted, or placed in a page URL.
 
 All responses use a consistent envelope:
 
@@ -223,26 +234,35 @@ operations. No credential or private key is committed to source control.
 
 ### 6.1 Create
 
-1. Parse the multipart request.
-2. Validate every form value and the optional file.
-3. Re-read allowed departments on the server and reject unknown values.
-4. Upload a valid attachment to the target Drive folder.
-5. Set the uploaded file to `anyone with the link` / viewer, matching the
+1. Validate the form locally for immediate feedback.
+2. When a file is present, inspect its extension, MIME type, size, and signature
+   in the browser before requesting an upload session.
+3. Send only filename, MIME type, and byte size to the upload-session endpoint.
+4. The server re-validates metadata, pre-generates a Drive file ID, and starts
+   a resumable upload with that ID in the configured folder.
+5. The browser uploads bytes directly to the returned HTTPS session URI.
+6. Send the order JSON and optional uploaded file ID to `/api/shop-order`.
+7. The server re-reads allowed departments and re-validates every form value.
+8. For an uploaded file ID, verify its parent folder, pending app marker,
+   filename, MIME type, exact size, and leading byte signature through Drive.
+9. Set the verified file to `anyone with the link` / viewer, matching the
    existing application.
-6. Append the order to `Order1`.
-7. Use the actual appended row returned by Sheets to assign the stable
+10. Append the order to `Order1`.
+11. Use the actual appended row returned by Sheets to assign the stable
    sequence in column A, avoiding duplicate sequence values from simultaneous
    append requests.
-8. Return the normalized created order.
+12. Return the normalized created order.
 
-If the Drive upload fails, no row is appended. If the sheet write fails after
-the upload, the uploaded file is intentionally retained.
+If session creation, direct upload, or server verification fails, no row is
+appended. If the sheet write fails after file finalization, the uploaded file
+is intentionally retained.
 
 ### 6.2 Update
 
 1. Validate the stable sequence and current order existence.
 2. Validate all replacement values.
-3. Upload a new attachment first when supplied.
+3. Upload and verify a replacement through the same resumable flow when
+   supplied.
 4. Re-check the sequence immediately before writing.
 5. Replace columns B–K while preserving column A.
 6. Keep the previous Drive file.
@@ -272,8 +292,11 @@ Validation checks:
 - supported file signature/magic bytes where the format provides one; and
 - a sanitized Drive filename.
 
-An extension or MIME value alone is insufficient. Executable, script, HTML,
-SVG, and unknown binary uploads are rejected.
+The browser check is usability feedback, not a security boundary. Before
+making the file public or writing its URL to Sheets, the server independently
+checks Drive metadata and a bounded leading-byte range. An extension or MIME
+value alone is insufficient. Executable, script, HTML, SVG, and unknown binary
+uploads are rejected.
 
 ## 7. Read, Filter, and Refresh Flow
 
@@ -314,8 +337,8 @@ The UI provides:
 - disabled pending actions to prevent duplicate submissions.
 
 Server logs contain operation type, safe error category, and correlation ID.
-They must not contain attachment bytes/Base64, private keys, authorization
-headers, or full sensitive payloads.
+They must not contain attachment bytes/Base64, resumable session URIs, private
+keys, authorization headers, or full sensitive payloads.
 
 Because the approved page has no authentication, authorization is not a
 security boundary. Same-origin and content-type checks reduce browser-based
@@ -348,10 +371,12 @@ Mock Google Sheets and Drive clients at their server boundary and verify:
 - exact A–K mappings;
 - actual appended-row sequence assignment;
 - department revalidation on mutations;
-- Drive upload before the sheet write;
+- resumable session creation with a pre-generated Drive file ID;
+- rejection of invalid Drive parent, marker, size, MIME, and signature data;
+- file finalization before the sheet write;
 - preservation of old files;
-- sheet failure after upload;
-- Drive failure before sheet mutation;
+- sheet failure after file finalization;
+- Drive session or verification failure before sheet mutation;
 - missing rows and stale sequence checks;
 - malformed bodies and unsupported content types; and
 - sanitized 4xx/5xx error envelopes.
@@ -367,6 +392,7 @@ Verify:
 - pending/disabled submit state;
 - delete confirmation;
 - attachment selection and validation feedback;
+- direct upload progress, retry, and expired-session feedback;
 - loading, empty, success, and failure states; and
 - keyboard/focus behavior for menus and dialogs.
 
