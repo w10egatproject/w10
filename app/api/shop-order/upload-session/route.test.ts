@@ -156,4 +156,28 @@ describe('Shop Order upload-session route', () => {
       correlationId: expect.stringMatching(/^[0-9a-f-]{36}$/),
     });
   });
+
+  it('returns an actionable safe response when Drive folder permission is missing', async () => {
+    repository.createUploadSession.mockRejectedValueOnce(
+      Object.assign(new Error('hidden google response'), {
+        code: 'DRIVE_ACCESS_FORBIDDEN',
+      }),
+    );
+
+    const response = await POST(jsonRequest({
+      name: 'photo.png',
+      mimeType: 'image/png',
+      size: 1024,
+    }));
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      ok: false,
+      error: {
+        code: 'DRIVE_CONFIGURATION_REQUIRED',
+        message:
+          'ระบบยังเชื่อมต่อ Google Drive ไม่ได้ กรุณาเปิด Google Drive API และแชร์โฟลเดอร์ให้ Service Account เป็น Editor',
+      },
+    });
+  });
 });

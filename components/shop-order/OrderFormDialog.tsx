@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { formatThaiDate } from '@/lib/shop-order/domain';
 import type { ShopOrder, ShopOrderInput } from '@/lib/shop-order/types';
@@ -18,8 +19,31 @@ export function OrderFormDialog({ mode, order, departments, receivers, pending, 
     dateOut: order.dateOut, note: order.note,
   } : empty);
   const [file, setFile] = useState<File>();
+  const [previewUrl, setPreviewUrl] = useState('');
+  const previewUrlRef = useRef('');
   const first = useRef<HTMLSelectElement>(null);
-  useEffect(() => { first.current?.focus(); }, []);
+  useEffect(() => {
+    first.current?.focus();
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
+  const selectFile = (nextFile?: File) => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = '';
+    }
+    setFile(nextFile);
+    if (nextFile?.type.startsWith('image/')) {
+      const url = URL.createObjectURL(nextFile);
+      previewUrlRef.current = url;
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl('');
+    }
+  };
   const set = (patch: Partial<ShopOrderInput>) => setValue((current) => ({ ...current, ...patch }));
   return <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-3" onMouseDown={(e) => { if (e.target === e.currentTarget && !pending) onClose(); }}>
     <section role="dialog" aria-modal="true" aria-labelledby="order-form-title" onKeyDown={(e) => { if (e.key === 'Escape' && !pending) onClose(); }}
@@ -57,8 +81,13 @@ export function OrderFormDialog({ mode, order, departments, receivers, pending, 
           <textarea rows={3} value={value.note} onChange={(e) => set({ note: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-3 font-normal" />
         </label>
         <label className="text-sm font-bold sm:col-span-2">ไฟล์แนบ (ไม่เกิน 10 MB)
-          <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx" capture="environment" onChange={(e) => setFile(e.target.files?.[0])} className="mt-1 block w-full text-sm font-normal" />
+          <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx" capture="environment" onChange={(e) => selectFile(e.target.files?.[0])} className="mt-1 block w-full text-sm font-normal" />
         </label>
+        {file && <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 sm:col-span-2">
+          {previewUrl ? <Image src={previewUrl} alt={`ตัวอย่างไฟล์ ${file.name}`} width={80} height={80} unoptimized className="h-20 w-20 rounded-lg object-cover" />
+            : <div className="grid h-20 w-20 place-items-center rounded-lg bg-slate-200 text-xs font-bold text-slate-600">ไฟล์</div>}
+          <div className="min-w-0"><p className="truncate text-sm font-bold">{file.name}</p><p className="text-xs text-slate-500">{(file.size / 1024).toLocaleString('th-TH', { maximumFractionDigits: 1 })} KB</p></div>
+        </div>}
         {pending && progress !== undefined && <div aria-live="polite" className="sm:col-span-2"><div className="h-2 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-indigo-600" style={{ width: `${progress}%` }} /></div><p className="mt-1 text-xs">กำลังอัปโหลด {progress}%</p></div>}
         <div className="flex justify-end gap-2 sm:col-span-2"><button type="button" disabled={pending} onClick={onClose} className="rounded-xl border px-4 py-2 font-bold">ยกเลิก</button>
           <button type="submit" disabled={pending} className="rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white disabled:opacity-50">{pending ? 'กำลังบันทึก...' : 'บันทึก'}</button></div>

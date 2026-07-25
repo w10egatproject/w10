@@ -214,6 +214,19 @@ describe('ShopOrderRepository', () => {
       .rejects.toThrow('resumable');
   });
 
+  it('classifies a forbidden Drive folder without exposing Google details', async () => {
+    const { dependencies, authenticatedFetch } = makeDependencies();
+    authenticatedFetch.mockReset().mockResolvedValue(
+      new Response(null, { status: 403 }),
+    );
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.createUploadSession(uploadMetadata)).rejects.toMatchObject({
+      code: 'DRIVE_ACCESS_FORBIDDEN',
+      message: 'ไม่สามารถเข้าถึงโฟลเดอร์ Google Drive ได้',
+    });
+  });
+
   it.each([
     ['wrong parent', { parents: ['other-folder'] }],
     ['missing pending marker', { appProperties: {} }],

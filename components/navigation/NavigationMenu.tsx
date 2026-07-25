@@ -66,13 +66,6 @@ const destinations: readonly NavigationDestination[] = [
     hoverClassName: 'hover:bg-yellow-50/50',
   },
   {
-    href: '/shop-order',
-    label: 'Shop Order',
-    icon: ClipboardList,
-    iconClassName: 'text-indigo-500',
-    hoverClassName: 'hover:bg-indigo-50',
-  },
-  {
     href: '/ot-summary',
     label: 'สรุป OT ลูกจ้าง',
     icon: Clock,
@@ -85,6 +78,13 @@ const destinations: readonly NavigationDestination[] = [
     icon: UserRound,
     iconClassName: 'text-amber-500',
     hoverClassName: 'hover:bg-amber-50',
+  },
+  {
+    href: '/shop-order',
+    label: 'Shop Order',
+    icon: ClipboardList,
+    iconClassName: 'text-indigo-500',
+    hoverClassName: 'hover:bg-indigo-50',
   },
 ];
 

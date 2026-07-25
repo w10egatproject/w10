@@ -14,6 +14,29 @@ const order: ShopOrder = {
 afterEach(cleanup);
 
 describe('Shop Order dialogs', () => {
+  it('shows a small preview after selecting an image and revokes its URL', async () => {
+    const user = userEvent.setup();
+    const createObjectURL = vi.fn(() => 'blob:preview');
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', Object.assign(URL, {
+      createObjectURL,
+      revokeObjectURL,
+    }));
+    const { unmount } = render(
+      <OrderFormDialog mode="create" departments={[]} receivers={[]} pending={false} onClose={vi.fn()} onSubmit={vi.fn()} />,
+    );
+    const file = new File(['image'], 'sample.png', { type: 'image/png' });
+
+    await user.upload(screen.getByLabelText(/ไฟล์แนบ/), file);
+
+    const preview = screen.getByRole('img', { name: 'ตัวอย่างไฟล์ sample.png' });
+    expect(preview.getAttribute('src')).toBe('blob:preview');
+    expect(preview.className).toContain('h-20');
+    unmount();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:preview');
+    vi.unstubAllGlobals();
+  });
+
   it('submits an accessible form with the approved fields', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

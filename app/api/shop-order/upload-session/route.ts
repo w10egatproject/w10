@@ -12,6 +12,17 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function hasErrorCode(
+  error: unknown,
+  code: string,
+): error is Error & { code: string } {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    error.code === code
+  );
+}
+
 function readUploadMetadata(
   body: Record<string, unknown>,
 ): UploadMetadata | null {
@@ -55,7 +66,14 @@ export async function POST(request: Request): Promise<Response> {
       await repository.createUploadSession(metadata),
       201,
     );
-  } catch {
+  } catch (error) {
+    if (hasErrorCode(error, 'DRIVE_ACCESS_FORBIDDEN')) {
+      return jsonError(
+        'DRIVE_CONFIGURATION_REQUIRED',
+        'ระบบยังเชื่อมต่อ Google Drive ไม่ได้ กรุณาเปิด Google Drive API และแชร์โฟลเดอร์ให้ Service Account เป็น Editor',
+        503,
+      );
+    }
     return internalError('create_upload_session');
   }
 }

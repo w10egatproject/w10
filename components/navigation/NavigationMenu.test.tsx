@@ -31,9 +31,9 @@ const destinations = [
   { href: '/purchasing', label: 'จัดซื้อจัดจ้าง' },
   { href: '/purchasing-all', label: 'สถานะการซื้อจ้างทั้งหมด' },
   { href: '/beml-inventory', label: 'คลังอะไหล่ BEML' },
-  { href: '/shop-order', label: 'Shop Order' },
   { href: '/ot-summary', label: 'สรุป OT ลูกจ้าง' },
   { href: '/ot-employee', label: 'สรุป OT พนักงาน' },
+  { href: '/shop-order', label: 'Shop Order' },
 ] as const;
 
 function renderOpenMenu(

@@ -91,6 +91,16 @@ interface VerifiedUpload {
   appProperties: Record<string, string>;
 }
 
+export class ShopOrderRepositoryError extends Error {
+  constructor(
+    public readonly code: 'DRIVE_ACCESS_FORBIDDEN',
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ShopOrderRepositoryError';
+  }
+}
+
 function quoteSheetName(name: string): string {
   return `'${name.replaceAll("'", "''")}'`;
 }
@@ -456,6 +466,12 @@ export function createShopOrderRepository(
         }),
       },
     );
+    if (response.status === 403) {
+      throw new ShopOrderRepositoryError(
+        'DRIVE_ACCESS_FORBIDDEN',
+        'ไม่สามารถเข้าถึงโฟลเดอร์ Google Drive ได้',
+      );
+    }
     if (!response.ok) {
       throw new Error('ไม่สามารถเริ่มการอัปโหลดไฟล์ได้');
     }
