@@ -579,12 +579,24 @@ function requiredEnvironment(name: string): string {
   return value;
 }
 
-function normalizePrivateKey(value: string): string {
-  const unquoted =
-    value.length >= 2 && value.startsWith('"') && value.endsWith('"')
-      ? value.slice(1, -1)
-      : value;
-  return unquoted.replace(/\\n/g, '\n');
+export function normalizePrivateKey(value: string): string {
+  let normalized = value.trim();
+  if (
+    normalized.length >= 2 &&
+    normalized.startsWith('"') &&
+    normalized.endsWith('"')
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+  normalized = normalized.replace(/\\n/g, '\n');
+  const beginMarker = '-----BEGIN PRIVATE KEY-----';
+  const endMarker = '-----END PRIVATE KEY-----';
+  const begin = normalized.indexOf(beginMarker);
+  const end = normalized.indexOf(endMarker, Math.max(0, begin));
+  if (begin >= 0 && end >= begin) {
+    normalized = normalized.slice(begin, end + endMarker.length);
+  }
+  return normalized;
 }
 
 let defaultRepositoryPromise: Promise<ShopOrderRepository> | undefined;

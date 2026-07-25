@@ -6,6 +6,7 @@ const pageSources = [
   'app/page.tsx',
   'app/purchasing/page.tsx',
   'app/beml-inventory/page.tsx',
+  'components/shop-order/ShopOrderDashboard.tsx',
   'app/ot-summary/page.tsx',
 ] as const;
 

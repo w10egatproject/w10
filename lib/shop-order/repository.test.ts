@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createShopOrderRepository,
+  normalizePrivateKey,
   type ShopOrderRepositoryDependencies,
 } from './repository';
 import type { ShopOrderInput, UploadMetadata } from './types';
@@ -130,6 +131,13 @@ function makeDependencies() {
 }
 
 describe('ShopOrderRepository', () => {
+  it('normalizes quoted private keys with platform prefixes safely', () => {
+    expect(
+      normalizePrivateKey(
+        '"prefix-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----suffix"',
+      ),
+    ).toBe('-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----');
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
   });

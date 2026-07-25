@@ -31,6 +31,7 @@ const destinations = [
   { href: '/purchasing', label: 'จัดซื้อจัดจ้าง' },
   { href: '/purchasing-all', label: 'สถานะการซื้อจ้างทั้งหมด' },
   { href: '/beml-inventory', label: 'คลังอะไหล่ BEML' },
+  { href: '/shop-order', label: 'Shop Order' },
   { href: '/ot-summary', label: 'สรุป OT ลูกจ้าง' },
   { href: '/ot-employee', label: 'สรุป OT พนักงาน' },
 ] as const;
@@ -63,7 +64,7 @@ afterEach(() => {
 
 describe('NavigationMenu route contract', () => {
   it.each(destinations.slice(1))(
-    'renders all six destinations and disables the current route $href',
+    'renders all seven destinations and disables the current route $href',
     ({ href, label }) => {
       const navigation = renderOpenMenu(href);
       const renderedDestinations = within(navigation).getAllByTestId(
@@ -77,7 +78,7 @@ describe('NavigationMenu route contract', () => {
       const currentItem = within(navigation).getByText(label);
       expect(currentItem.getAttribute('aria-current')).toBe('page');
       expect(currentItem.closest('a')).toBeNull();
-      expect(within(navigation).getAllByRole('link')).toHaveLength(5);
+      expect(within(navigation).getAllByRole('link')).toHaveLength(6);
     },
   );
 
@@ -86,9 +87,9 @@ describe('NavigationMenu route contract', () => {
 
     expect(
       within(navigation).getAllByTestId('navigation-destination'),
-    ).toHaveLength(5);
+    ).toHaveLength(6);
     expect(within(navigation).queryByText('หน้าหลัก')).toBeNull();
-    expect(within(navigation).getAllByRole('link')).toHaveLength(5);
+    expect(within(navigation).getAllByRole('link')).toHaveLength(6);
   });
 
   it('preserves page-specific trigger and accent classes', () => {

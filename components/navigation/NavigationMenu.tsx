@@ -6,6 +6,7 @@ import {
   ChevronDown,
   Clock,
   Package,
+  ClipboardList,
   ShoppingBag,
   ShoppingCart,
   UserRound,
@@ -63,6 +64,13 @@ const destinations: readonly NavigationDestination[] = [
     label: 'คลังอะไหล่ BEML',
     icon: Package,
     hoverClassName: 'hover:bg-yellow-50/50',
+  },
+  {
+    href: '/shop-order',
+    label: 'Shop Order',
+    icon: ClipboardList,
+    iconClassName: 'text-indigo-500',
+    hoverClassName: 'hover:bg-indigo-50',
   },
   {
     href: '/ot-summary',

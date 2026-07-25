@@ -1,0 +1,120 @@
+'use client';
+
+import Image from 'next/image';
+import { ClipboardList, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { filterAndSortOrders, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
+import { inspectLocalFile } from '@/lib/shop-order/file-rules';
+import { uploadToDriveSession } from '@/lib/shop-order/upload-client';
+import type { ApiResult, ShopOrder, ShopOrderBootstrap, ShopOrderFilters, ShopOrderInput, UploadSession } from '@/lib/shop-order/types';
+import { OrderDetailDialog } from './OrderDetailDialog';
+import { OrderFormDialog } from './OrderFormDialog';
+import { ShopOrderSummary } from './ShopOrderSummary';
+import { ShopOrderTable } from './ShopOrderTable';
+import { ShopOrderToolbar } from './ShopOrderToolbar';
+
+const EMPTY_FILTERS: ShopOrderFilters = { query: '', year: 'all', month: 'all', status: 'all' };
+
+export function ShopOrderDashboard() {
+  const [data, setData] = useState<ShopOrderBootstrap | null>(null);
+  const [filters, setFilters] = useState<ShopOrderFilters>(EMPTY_FILTERS);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selected, setSelected] = useState<ShopOrder | null>(null);
+  const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
+  const [mutationPending, setMutationPending] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>();
+
+  const loadData = useCallback(async () => {
+    setError('');
+    try {
+      const response = await fetch('/api/shop-order', { cache: 'no-store' });
+      const result = await response.json() as ApiResult<ShopOrderBootstrap>;
+      if (!response.ok || !result.ok) throw new Error(result.ok ? '' : result.error.message);
+      setData(result.data);
+    } catch {
+      setError('ไม่สามารถโหลดข้อมูล Shop Order ได้ กรุณาลองใหม่');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadData(), 0);
+    return () => window.clearTimeout(timer);
+  }, [loadData]);
+  const filtered = useMemo(() => filterAndSortOrders(data?.orders ?? [], filters), [data, filters]);
+  const summary = useMemo(() => summarizeOrders(filtered), [filtered]);
+  const pagination = useMemo(() => paginateOrders(filtered, page, 20), [filtered, page]);
+  const years = useMemo(() => Array.from(new Set((data?.orders ?? []).flatMap((o) => o.dateIn ? [String(Number(o.dateIn.slice(0, 4)) + 543)] : []))).sort().reverse(), [data]);
+
+  const updateFilters = (next: ShopOrderFilters) => { setFilters(next); setPage(1); };
+
+  const requestJson = async <T,>(url: string, init: RequestInit): Promise<T> => {
+    const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init.headers } });
+    const result = await response.json() as ApiResult<T>;
+    if (!response.ok || !result.ok) throw new Error(result.ok ? 'ดำเนินการไม่สำเร็จ' : result.error.message);
+    return result.data;
+  };
+
+  const saveOrder = async ({ order, file }: { order: ShopOrderInput; file?: File }) => {
+    setMutationPending(true); setError('');
+    try {
+      let uploadedFileId: string | undefined;
+      if (file) {
+        const metadata = await inspectLocalFile(file);
+        const session = await requestJson<UploadSession>('/api/shop-order/upload-session', { method: 'POST', body: JSON.stringify(metadata) });
+        setUploadProgress(0);
+        await uploadToDriveSession(file, session, setUploadProgress);
+        uploadedFileId = session.fileId;
+      }
+      await requestJson('/api/shop-order', {
+        method: formMode === 'edit' ? 'PATCH' : 'POST',
+        body: JSON.stringify({ ...(formMode === 'edit' && selected ? { no: selected.no } : {}), order, uploadedFileId }),
+      });
+      setFormMode(null); setSelected(null); setUploadProgress(undefined);
+      await loadData();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'บันทึกรายการไม่สำเร็จ');
+    } finally { setMutationPending(false); }
+  };
+
+  const deleteOrder = async () => {
+    if (!selected) return;
+    setMutationPending(true); setError('');
+    try {
+      await requestJson('/api/shop-order', { method: 'DELETE', body: JSON.stringify({ no: selected.no }) });
+      setSelected(null); await loadData();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'ลบรายการไม่สำเร็จ'); }
+    finally { setMutationPending(false); }
+  };
+
+  return (
+    <main className="min-h-screen bg-slate-200 p-3 text-slate-800 md:p-6">
+      <header className="sticky top-0 z-30 mb-4 flex flex-col gap-3 rounded-2xl border-b-4 border-amber-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Image src="/picture/egat.png" alt="การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย" width={48} height={48} priority />
+          <div><h1 className="flex items-center gap-2 text-xl font-black md:text-2xl">Shop Order <ClipboardList className="h-6 w-6 text-indigo-600" /></h1>
+            <p className="text-xs font-bold text-slate-500">ระบบติดตามหนังสือสั่งการ · W10</p></div>
+        </div>
+        <NavigationMenu buttonClassName="bg-amber-300 text-slate-900 hover:bg-amber-400" accentClassName="text-indigo-600" />
+      </header>
+
+      <ShopOrderToolbar filters={filters} years={years} loading={loading} onChange={updateFilters} onRefresh={() => void loadData()} onAdd={() => { setSelected(null); setFormMode('create'); }} />
+      {error && <div role="alert" className="mb-4 flex items-center justify-between rounded-xl bg-rose-50 p-4 text-sm font-bold text-rose-800">
+        <span>{error}</span><button onClick={() => { setLoading(true); void loadData(); }} className="flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5"><RefreshCw className="h-4 w-4" /> ลองใหม่</button>
+      </div>}
+      {loading && !data ? <div aria-label="กำลังโหลดข้อมูล" className="grid animate-pulse gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
+        <div className="h-96 rounded-2xl bg-white/70" /><div className="h-72 rounded-2xl bg-white/70" />
+      </div> : <div data-testid="shop-order-layout" className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
+        <div className="order-2 min-w-0 lg:order-1"><ShopOrderTable orders={pagination.items} page={pagination.page} totalPages={pagination.totalPages} total={pagination.total} onPage={setPage} onSelect={setSelected} /></div>
+        <div className="order-1 lg:order-2"><ShopOrderSummary summary={summary} /></div>
+      </div>}
+      {data && <p className="mt-4 text-right text-xs text-slate-500">อัปเดตล่าสุด {new Date(data.generatedAt).toLocaleString('th-TH')}</p>}
+      {selected && !formMode && <OrderDetailDialog order={selected} pending={mutationPending} onClose={() => setSelected(null)} onEdit={() => setFormMode('edit')} onDelete={() => void deleteOrder()} />}
+      {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}
+    </main>
+  );
+}
