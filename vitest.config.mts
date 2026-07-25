@@ -8,6 +8,10 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
-    include: ['components/**/*.test.{ts,tsx}'],
+    include: [
+      'components/**/*.test.{ts,tsx}',
+      'lib/**/*.test.ts',
+      'app/api/**/*.test.ts',
+    ],
   },
 });
