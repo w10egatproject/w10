@@ -43,10 +43,28 @@ export interface UploadMetadata {
   size: number;
 }
 
+export interface UploadSessionRequest extends UploadMetadata {
+  orderNumber: string;
+}
+
 export interface UploadSession {
   fileId: string;
   uploadUrl: string;
   expiresAt: string;
+}
+
+export type AttachmentOutcome =
+  | { status: 'none' }
+  | { status: 'attached'; fileId: string; fileUrl: string }
+  | {
+      status: 'order_saved_without_attachment';
+      code: string;
+      message: string;
+    };
+
+export interface ShopOrderMutationResult {
+  order: ShopOrder;
+  attachment: AttachmentOutcome;
 }
 
 export type ApiResult<T> =

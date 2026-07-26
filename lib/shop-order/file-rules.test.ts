@@ -36,16 +36,6 @@ const fixtures: Array<{
     signature: bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a),
   },
   {
-    name: 'animation.gif',
-    mimeType: 'image/gif',
-    signature: bytes(...Array.from('GIF87a', (character) => character.charCodeAt(0))),
-  },
-  {
-    name: 'animation.GIF',
-    mimeType: 'image/gif',
-    signature: bytes(...Array.from('GIF89a', (character) => character.charCodeAt(0))),
-  },
-  {
     name: 'photo.webp',
     mimeType: 'image/webp',
     signature: bytes(
@@ -58,53 +48,9 @@ const fixtures: Array<{
     ),
   },
   {
-    name: 'photo.heic',
-    mimeType: 'image/heic',
-    signature: bytes(
-      0x00,
-      0x00,
-      0x00,
-      0x18,
-      ...Array.from('ftypheic', (character) => character.charCodeAt(0)),
-    ),
-  },
-  {
-    name: 'photo.heif',
-    mimeType: 'image/heif',
-    signature: bytes(
-      0x00,
-      0x00,
-      0x00,
-      0x18,
-      ...Array.from('ftypmif1', (character) => character.charCodeAt(0)),
-    ),
-  },
-  {
     name: 'document.pdf',
     mimeType: 'application/pdf',
     signature: bytes(...Array.from('%PDF-', (character) => character.charCodeAt(0))),
-  },
-  {
-    name: 'legacy.doc',
-    mimeType: 'application/msword',
-    signature: bytes(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1),
-  },
-  {
-    name: 'modern.docx',
-    mimeType:
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    signature: bytes(0x50, 0x4b, 0x03, 0x04),
-  },
-  {
-    name: 'legacy.xls',
-    mimeType: 'application/vnd.ms-excel',
-    signature: bytes(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1),
-  },
-  {
-    name: 'modern.xlsx',
-    mimeType:
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    signature: bytes(0x50, 0x4b, 0x03, 0x04),
   },
 ];
 
@@ -128,6 +74,23 @@ describe('Shop Order file rules', () => {
     },
   );
 
+  it.each([
+    ['photo.gif', 'image/gif'],
+    ['photo.heic', 'image/heic'],
+    [
+      'letter.docx',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
+    [
+      'sheet.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
+  ])('rejects removed attachment type %s', async (name, mimeType) => {
+    await expect(
+      inspectLocalFile(new File(['data'], name, { type: mimeType })),
+    ).rejects.toThrow('รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF');
+  });
+
   it('requires extension, MIME, and signature to describe the same type', async () => {
     const png = fixtures.find(({ name }) => name === 'photo.png')!;
 
@@ -135,12 +98,12 @@ describe('Shop Order file rules', () => {
       inspectLocalFile(
         new File([blobPart(png.signature)], 'photo.jpg', { type: png.mimeType }),
       ),
-    ).rejects.toThrow('ไม่รองรับไฟล์ประเภทนี้');
+    ).rejects.toThrow('รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF');
     await expect(
       inspectLocalFile(
         new File([blobPart(png.signature)], png.name, { type: 'image/jpeg' }),
       ),
-    ).rejects.toThrow('ไม่รองรับไฟล์ประเภทนี้');
+    ).rejects.toThrow('รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF');
     await expect(
       inspectLocalFile(
         new File(['<script/>'], png.name, { type: png.mimeType }),
@@ -152,14 +115,14 @@ describe('Shop Order file rules', () => {
         mimeType: 'application/vnd.ms-excel',
         size: 20,
       }),
-    ).toThrow('ไม่รองรับไฟล์ประเภทนี้');
+    ).toThrow('รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF');
     expect(() =>
       assertUploadMetadata({
         name: 'photo.heic',
         mimeType: 'image/heif',
         size: 20,
       }),
-    ).toThrow('ไม่รองรับไฟล์ประเภทนี้');
+    ).toThrow('รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF');
   });
 
   it('rejects empty files and files above 10 MiB while allowing exactly 10 MiB', () => {
@@ -220,7 +183,7 @@ describe('Shop Order file rules', () => {
     ['trailing.pdf.exe', 'application/pdf'],
   ])('rejects unsupported metadata %s', (name, mimeType) => {
     expect(() => assertUploadMetadata({ name, mimeType, size: 20 })).toThrow(
-      'ไม่รองรับไฟล์ประเภทนี้',
+      'รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF',
     );
   });
 
@@ -241,41 +204,4 @@ describe('Shop Order file rules', () => {
     ).toBe(false);
   });
 
-  it('does not mistake a generic MP4 ftyp box for HEIC/HEIF', () => {
-    const mp4Header = bytes(
-      0x00,
-      0x00,
-      0x00,
-      0x18,
-      ...Array.from('ftypisom', (character) => character.charCodeAt(0)),
-    );
-
-    expect(
-      matchesAllowedSignature(
-        { name: 'spoof.heic', mimeType: 'image/heic', size: mp4Header.length },
-        mp4Header,
-      ),
-    ).toBe(false);
-  });
-
-  it('does not treat the HEIF minor-version field as a compatible brand', () => {
-    const malformedHeader = bytes(
-      0x00,
-      0x00,
-      0x00,
-      0x18,
-      ...Array.from('ftypisomheic', (character) => character.charCodeAt(0)),
-    );
-
-    expect(
-      matchesAllowedSignature(
-        {
-          name: 'spoof.heic',
-          mimeType: 'image/heic',
-          size: malformedHeader.length,
-        },
-        malformedHeader,
-      ),
-    ).toBe(false);
-  });
 });
