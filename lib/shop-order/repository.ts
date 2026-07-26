@@ -1,5 +1,11 @@
 import { assertUploadMetadata, matchesAllowedSignature } from './file-rules';
 import { isoToSheetSerial, parseSheetRow } from './domain';
+import {
+  classifyDriveOAuthError,
+  createDriveOAuthClient,
+  readDriveOAuthEnvironment,
+  type DriveFailureCode,
+} from './drive-oauth';
 import type {
   ShopOrder,
   ShopOrderBootstrap,
@@ -10,7 +16,6 @@ import type {
 
 const GOOGLE_SHEETS_SCOPE =
   'https://www.googleapis.com/auth/spreadsheets';
-const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive';
 const GOOGLE_UPLOAD_ORIGIN = 'https://www.googleapis.com';
 const SOURCE_DEPARTMENT = 'หสบ-ช.';
 const LEADING_BYTE_RANGE = 'bytes=0-31';
@@ -93,7 +98,7 @@ interface VerifiedUpload {
 
 export class ShopOrderRepositoryError extends Error {
   constructor(
-    public readonly code: 'DRIVE_ACCESS_FORBIDDEN',
+    public readonly code: DriveFailureCode,
     message: string,
   ) {
     super(message);
@@ -626,22 +631,41 @@ async function createDefaultRepository(): Promise<ShopOrderRepository> {
   const sheetName = requiredEnvironment('SHOP_ORDER_SHEET_NAME');
   const folderId = requiredEnvironment('SHOP_ORDER_DRIVE_FOLDER_ID');
   const { google } = await import('googleapis');
-  const auth = new google.auth.JWT({
+  const sheetAuth = new google.auth.JWT({
     email: clientEmail,
     key: privateKey,
-    scopes: [GOOGLE_SHEETS_SCOPE, GOOGLE_DRIVE_SCOPE],
+    scopes: [GOOGLE_SHEETS_SCOPE],
   });
-  const sheets = google.sheets({ version: 'v4', auth });
-  const drive = google.drive({ version: 'v3', auth });
+  const driveAuth = createDriveOAuthClient(
+    google,
+    readDriveOAuthEnvironment(process.env),
+  );
+  const sheets = google.sheets({ version: 'v4', auth: sheetAuth });
+  const drive = google.drive({ version: 'v3', auth: driveAuth });
 
   return createShopOrderRepository({
     // The narrow structural boundary keeps tests independent from Google types.
     sheets: sheets as unknown as GoogleSheetsClient,
     drive: drive as unknown as GoogleDriveClient,
     getAccessToken: async () => {
-      const token = await auth.getAccessToken();
-      if (!token.token) throw new Error('Google authentication failed');
-      return token.token;
+      try {
+        const response = await driveAuth.getAccessToken();
+        const token =
+          typeof response === 'string' ? response : response?.token;
+        if (!token) {
+          throw new ShopOrderRepositoryError(
+            'DRIVE_OAUTH_REAUTH_REQUIRED',
+            'Google Drive OAuth authorization is required',
+          );
+        }
+        return token;
+      } catch (error) {
+        if (error instanceof ShopOrderRepositoryError) throw error;
+        throw new ShopOrderRepositoryError(
+          classifyDriveOAuthError(error),
+          'Google Drive authentication failed',
+        );
+      }
     },
     authenticatedFetch: fetch,
     config: { spreadsheetId, sheetName, folderId },

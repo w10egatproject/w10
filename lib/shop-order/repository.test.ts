@@ -399,4 +399,98 @@ describe('ShopOrderRepository', () => {
     expect(drive.files.update).toHaveBeenCalled();
     expect(sheets.spreadsheets.values.clear).not.toHaveBeenCalled();
   });
+
+  it('lazily uses Sheets-only JWT and refresh-token OAuth for Drive', async () => {
+    vi.resetModules();
+    const previousEnvironment = {
+      clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
+      privateKey: process.env.GOOGLE_PRIVATE_KEY,
+      spreadsheetId: process.env.SHOP_ORDER_SHEET_ID,
+      sheetName: process.env.SHOP_ORDER_SHEET_NAME,
+      folderId: process.env.SHOP_ORDER_DRIVE_FOLDER_ID,
+      oauthClientId: process.env.GOOGLE_DRIVE_OAUTH_CLIENT_ID,
+      oauthClientSecret: process.env.GOOGLE_DRIVE_OAUTH_CLIENT_SECRET,
+      oauthRefreshToken: process.env.GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN,
+    };
+    Object.assign(process.env, {
+      GOOGLE_CLIENT_EMAIL: 'sheets@example.iam.gserviceaccount.com',
+      GOOGLE_PRIVATE_KEY:
+        '-----BEGIN PRIVATE KEY-----\\nkey\\n-----END PRIVATE KEY-----',
+      SHOP_ORDER_SHEET_ID: 'spreadsheet-id',
+      SHOP_ORDER_SHEET_NAME: 'Order1',
+      SHOP_ORDER_DRIVE_FOLDER_ID: 'folder-id',
+      GOOGLE_DRIVE_OAUTH_CLIENT_ID: 'oauth-client-id',
+      GOOGLE_DRIVE_OAUTH_CLIENT_SECRET: 'oauth-client-secret',
+      GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN: 'refresh-token',
+    });
+
+    const sheetAuth = { getAccessToken: vi.fn() };
+    const driveAuth = {
+      setCredentials: vi.fn(),
+      getAccessToken: vi.fn().mockResolvedValue({ token: 'drive-access-token' }),
+    };
+    const JWT = vi.fn(function JwtConstructor() {
+      return sheetAuth;
+    });
+    const OAuth2 = vi.fn(function OAuth2Constructor() {
+      return driveAuth;
+    });
+    const sheetsClient = { spreadsheets: {} };
+    const driveClient = { files: {}, permissions: {} };
+    const sheets = vi.fn().mockReturnValue(sheetsClient);
+    const drive = vi.fn().mockReturnValue(driveClient);
+    vi.doMock('googleapis', () => ({
+      google: {
+        auth: { JWT, OAuth2 },
+        sheets,
+        drive,
+      },
+    }));
+
+    try {
+      const repositoryModule = await import('./repository');
+
+      expect(JWT).not.toHaveBeenCalled();
+      expect(OAuth2).not.toHaveBeenCalled();
+
+      const repository = await repositoryModule.getShopOrderRepository();
+
+      expect(JWT).toHaveBeenCalledWith({
+        email: 'sheets@example.iam.gserviceaccount.com',
+        key: '-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----',
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+      expect(OAuth2).toHaveBeenCalledWith(
+        'oauth-client-id',
+        'oauth-client-secret',
+      );
+      expect(driveAuth.setCredentials).toHaveBeenCalledWith({
+        refresh_token: 'refresh-token',
+      });
+      expect(sheets).toHaveBeenCalledWith({ version: 'v4', auth: sheetAuth });
+      expect(drive).toHaveBeenCalledWith({ version: 'v3', auth: driveAuth });
+      expect(JSON.stringify(repository)).not.toContain('refresh-token');
+    } finally {
+      vi.doUnmock('googleapis');
+      for (const [name, value] of Object.entries({
+        GOOGLE_CLIENT_EMAIL: previousEnvironment.clientEmail,
+        GOOGLE_PRIVATE_KEY: previousEnvironment.privateKey,
+        SHOP_ORDER_SHEET_ID: previousEnvironment.spreadsheetId,
+        SHOP_ORDER_SHEET_NAME: previousEnvironment.sheetName,
+        SHOP_ORDER_DRIVE_FOLDER_ID: previousEnvironment.folderId,
+        GOOGLE_DRIVE_OAUTH_CLIENT_ID: previousEnvironment.oauthClientId,
+        GOOGLE_DRIVE_OAUTH_CLIENT_SECRET:
+          previousEnvironment.oauthClientSecret,
+        GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN:
+          previousEnvironment.oauthRefreshToken,
+      })) {
+        if (value === undefined) {
+          delete process.env[name];
+        } else {
+          process.env[name] = value;
+        }
+      }
+      vi.resetModules();
+    }
+  });
 });
