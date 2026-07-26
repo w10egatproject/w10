@@ -1,136 +1,134 @@
-# Shop Order Drive OAuth B1 Design
+# การออกแบบ Shop Order Drive OAuth B1
 
-**Date:** 2026-07-27
+**วันที่:** 2026-07-27
 
-**Status:** Approved design; awaiting written-spec review
+**สถานะ:** อนุมัติแนวทางการออกแบบแล้ว รอการตรวจทานเอกสารฉบับภาษาไทย
 
-**Target application:** W10 Dashboard
+**แอปพลิเคชันเป้าหมาย:** W10 Dashboard
 
-**Supersedes:** The Google Drive authentication, attachment lifecycle, and
-attachment type decisions in
-`docs/superpowers/specs/2026-07-24-shop-order-nextjs-design.md`. Sheet CRUD,
-dashboard layout, filtering, and status behavior remain unchanged.
+**ใช้แทนข้อกำหนดเดิม:** เอกสารนี้ใช้แทนส่วนการยืนยันตัวตน Google Drive,
+วงจรชีวิตไฟล์แนบ และประเภทไฟล์แนบใน
+`docs/superpowers/specs/2026-07-24-shop-order-nextjs-design.md` ส่วนการทำ CRUD
+กับชีต รูปแบบแดชบอร์ด ตัวกรอง และการคำนวณสถานะยังคงเดิม
 
-## 1. Objective
+## 1. วัตถุประสงค์
 
-Replace Service Account ownership for new Shop Order attachments with a
-single-owner Google OAuth connection for `w10egat.project@gmail.com`.
+เปลี่ยนการสร้างไฟล์แนบ Shop Order ใหม่จาก Service Account มาเป็น Google
+OAuth ที่เชื่อมกับบัญชีเจ้าของเพียงบัญชีเดียว คือ
+`w10egat.project@gmail.com`
 
-The change must:
+ระบบใหม่ต้อง:
 
-- continue reading and writing `Order1` with the existing Service Account;
-- upload new attachments directly from the browser to Google Drive through a
-  resumable upload session;
-- make the OAuth account, rather than the Service Account, own new files;
-- use the least-privilege `drive.file` scope;
-- keep the application usable without Google sign-in for each clerk;
-- preserve the current 10 MB attachment limit without sending file bytes
-  through a Vercel Function;
-- retain legacy Apps Script attachments without attempting to manage them;
-- clean up abandoned and replaced OAuth-created files on a defined schedule;
-  and
-- return safe, actionable Thai errors without exposing OAuth credentials or
-  resumable session URLs.
+- อ่านและเขียนชีต `Order1` ด้วย Service Account เดิมต่อไป
+- อัปโหลดไฟล์แนบใหม่จากเบราว์เซอร์ไปยัง Google Drive โดยตรงผ่าน Resumable
+  Upload Session
+- ให้บัญชี OAuth เป็นเจ้าของไฟล์ใหม่แทน Service Account
+- ใช้สิทธิ์ขั้นต่ำ `drive.file`
+- ให้ธุรการใช้งานได้โดยไม่ต้องล็อกอิน Google รายบุคคล
+- รักษาขนาดไฟล์สูงสุด 10 MB โดยไม่ส่งเนื้อไฟล์ผ่าน Vercel Function
+- เก็บไฟล์เดิมจาก Apps Script ไว้และไม่พยายามจัดการไฟล์เหล่านั้น
+- ล้างไฟล์ที่อัปโหลดค้างและไฟล์ที่ถูกแทนที่ตามระยะเวลาที่กำหนด
+- แสดงข้อผิดพลาดภาษาไทยที่ปลอดภัยและนำไปแก้ไขได้ โดยไม่เปิดเผยข้อมูล OAuth
+  หรือ Resumable Session URL
 
-## 2. Confirmed Product Decisions
+## 2. ข้อตกลงผลิตภัณฑ์ที่ยืนยันแล้ว
 
-- This is the B1 model: one OAuth connection serves every Shop Order user.
-- The connected owner is `w10egat.project@gmail.com`.
-- Users do not sign in. Anyone who can reach the production URL can perform
-  the existing Shop Order operations.
-- New files are shared as `anyone with the link` / viewer.
-- Google Sheets continues to use `GOOGLE_CLIENT_EMAIL` and
-  `GOOGLE_PRIVATE_KEY`.
-- Google Drive attachment operations use OAuth only. There is no Service
-  Account upload fallback.
-- OAuth uses `https://www.googleapis.com/auth/drive.file`, not full Drive
-  access.
-- A local one-time setup utility creates an app-owned folder named
-  `Picture-OAuth`. The owner can then move that folder under
-  `WebApp ShopOrder` without changing its file ID.
-- The existing `Picture` folder and all legacy links remain untouched.
-- Accepted attachments are JPEG, PNG, WebP, and PDF, up to 10 MB.
-- Only the original attachment is stored. The UI uses Google Drive's generated
-  thumbnail instead of uploading a second thumbnail file.
-- Stored filenames use
-  `SO-{orderNumber}-{yyyyMMdd-HHmmss}-{shortId}.{extension}`. The original
-  client filename is not retained in the Drive filename.
-- If Drive upload fails, the order is still saved without an attachment and
-  the UI clearly warns the user that the file must be added later.
-- Abandoned pending uploads are trashed after 24 hours.
-- OAuth-created attachments replaced during edit or detached during order
-  deletion are scheduled for trash after 30 days.
-- Legacy Apps Script files are never automatically trashed.
-- Vercel WAF rate-limits Shop Order mutation and upload-session traffic to
-  30 requests per source IP per 10-minute fixed window.
+- ใช้รูปแบบ B1: การเชื่อม OAuth หนึ่งชุดให้บริการผู้ใช้ Shop Order ทุกคน
+- บัญชีเจ้าของที่เชื่อมคือ `w10egat.project@gmail.com`
+- ผู้ใช้ไม่ต้องล็อกอิน ผู้ที่เข้าถึง URL Production ได้สามารถใช้งาน Shop Order
+  ตามสิทธิ์เดิม
+- ไฟล์ใหม่ตั้งสิทธิ์เป็น `ทุกคนที่มีลิงก์` และมีสิทธิ์ดู
+- Google Sheets ยังใช้ `GOOGLE_CLIENT_EMAIL` และ `GOOGLE_PRIVATE_KEY`
+- งานเกี่ยวกับไฟล์แนบใน Google Drive ใช้ OAuth เท่านั้น
+  ไม่มีการย้อนกลับไปอัปโหลดด้วย Service Account
+- OAuth ใช้ Scope `https://www.googleapis.com/auth/drive.file`
+  ไม่ใช้สิทธิ์เข้าถึง Drive เต็มรูปแบบ
+- เครื่องมือตั้งค่าในเครื่องจะสร้างโฟลเดอร์ที่แอปเป็นผู้สร้างชื่อ
+  `Picture-OAuth` เจ้าของสามารถย้ายโฟลเดอร์นี้ไปไว้ใต้ `WebApp ShopOrder`
+  ได้โดย File ID ไม่เปลี่ยน
+- โฟลเดอร์ `Picture` เดิมและลิงก์ไฟล์เก่าทั้งหมดยังคงเดิม
+- รองรับ JPEG, PNG, WebP และ PDF ขนาดไม่เกิน 10 MB
+- เก็บเฉพาะไฟล์ต้นฉบับหนึ่งไฟล์ หน้าเว็บใช้ Thumbnail ที่ Google Drive
+  สร้างให้อัตโนมัติแทนการอัปโหลดรูปย่อซ้ำ
+- ชื่อไฟล์ที่จัดเก็บใช้รูปแบบ
+  `SO-{orderNumber}-{yyyyMMdd-HHmmss}-{shortId}.{extension}`
+  โดยไม่เก็บชื่อไฟล์เดิมจากเครื่องผู้ใช้
+- หากอัปโหลด Drive ไม่สำเร็จ ระบบยังบันทึกออเดอร์โดยไม่มีไฟล์แนบ
+  และแจ้งชัดเจนว่าต้องกลับมาเพิ่มไฟล์ภายหลัง
+- ไฟล์ Pending ที่ไม่ได้ผูกกับออเดอร์จะถูกย้ายเข้าถังขยะหลัง 24 ชั่วโมง
+- ไฟล์ที่ระบบ OAuth สร้างและถูกแทนที่ตอนแก้ไข
+  หรือถูกแยกออกตอนลบออเดอร์ จะถูกกำหนดให้ย้ายเข้าถังขยะหลัง 30 วัน
+- ไฟล์เดิมจาก Apps Script จะไม่ถูกระบบย้ายเข้าถังขยะอัตโนมัติ
+- Vercel WAF จำกัดคำขอแก้ไขข้อมูลและสร้าง Upload Session ของ Shop Order
+  ที่ 30 คำขอต่อ IP ต่อช่วงเวลา 10 นาที
 
-## 3. Authentication Boundaries
+## 3. ขอบเขตการยืนยันตัวตน
 
-### 3.1 Sheets
+### 3.1 Google Sheets
 
-The Service Account remains the Sheets principal. It must retain editor access
-to the spreadsheet. Drive scopes are removed from this principal's runtime
-configuration because it no longer creates or manages new attachments.
+Service Account ยังคงเป็นบัญชีที่ใช้เข้าถึงชีต และต้องมีสิทธิ์ Editor
+ใน Spreadsheet ต่อไป ระบบจะนำ Drive Scope ออกจากการตั้งค่าของบัญชีนี้
+เพราะ Service Account จะไม่สร้างหรือจัดการไฟล์แนบใหม่อีก
 
-### 3.2 Drive
+### 3.2 Google Drive
 
-The server initializes a Google OAuth client with:
+เซิร์ฟเวอร์สร้าง Google OAuth Client จาก:
 
-- OAuth Client ID;
-- OAuth Client Secret; and
-- a long-lived Refresh Token issued to `w10egat.project@gmail.com`.
+- OAuth Client ID
+- OAuth Client Secret
+- Refresh Token ระยะยาวของ `w10egat.project@gmail.com`
 
-The Refresh Token and client secret stay server-only. The browser receives only
-a short-lived resumable session URL after the server validates file metadata.
-The session URL is treated as a bearer secret and is never logged, persisted,
-placed in query strings, or returned after its upload operation completes.
+Refresh Token และ Client Secret อยู่เฉพาะฝั่งเซิร์ฟเวอร์ เบราว์เซอร์จะได้รับเพียง
+Resumable Session URL อายุสั้นหลังจากเซิร์ฟเวอร์ตรวจข้อมูลไฟล์แล้ว Session URL
+ถือเป็น Bearer Secret และห้ามบันทึกลง Log, ฐานข้อมูล, Query String
+หรือส่งกลับมาใช้อีกหลังอัปโหลดเสร็จ
 
-Required production variables are:
+Environment Variables ที่ Production ต้องมี:
 
-- `GOOGLE_DRIVE_OAUTH_CLIENT_ID`;
-- `GOOGLE_DRIVE_OAUTH_CLIENT_SECRET`;
-- `GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN`;
-- `SHOP_ORDER_DRIVE_FOLDER_ID`; and
-- `SHOP_ORDER_CRON_SECRET`.
+- `GOOGLE_DRIVE_OAUTH_CLIENT_ID`
+- `GOOGLE_DRIVE_OAUTH_CLIENT_SECRET`
+- `GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN`
+- `SHOP_ORDER_DRIVE_FOLDER_ID`
+- `SHOP_ORDER_CRON_SECRET`
 
-Existing Sheet variables remain required.
+ตัวแปรของ Google Sheet เดิมยังคงจำเป็น
 
-### 3.3 OAuth setup utility
+### 3.3 เครื่องมือตั้งค่า OAuth
 
-A local Node.js utility performs the one-time owner connection:
+Node.js Utility ในเครื่องจะเชื่อมบัญชีเจ้าของเพียงครั้งเดียวตามขั้นตอน:
 
-1. validate the supplied Client ID and Client Secret without printing them;
-2. start a loopback callback on `127.0.0.1`;
-3. open or print a Google authorization URL using `access_type=offline`,
-   `prompt=consent`, and the `drive.file` scope;
-4. exchange the callback code for tokens;
-5. create `Picture-OAuth` with the authenticated Drive client;
-6. print only the Refresh Token and created folder ID with explicit
-   instructions for adding them to Vercel; and
-7. exit without writing credentials to the repository.
+1. ตรวจ Client ID และ Client Secret โดยไม่แสดงค่าออกหน้าจอ
+2. เปิด Loopback Callback ที่ `127.0.0.1`
+3. เปิดหรือแสดง Google Authorization URL โดยใช้ `access_type=offline`,
+   `prompt=consent` และ Scope `drive.file`
+4. แลก Authorization Code เป็น Token
+5. สร้างโฟลเดอร์ `Picture-OAuth` ด้วย Drive Client ที่ยืนยันตัวตนแล้ว
+6. แสดงเฉพาะ Refresh Token และ Folder ID
+   พร้อมคำแนะนำให้นำไปตั้งค่าใน Vercel
+7. จบการทำงานโดยไม่เขียนข้อมูลลับลง Repository
 
-The OAuth consent configuration must be published in a state that does not
-cause the Refresh Token to expire after a short testing window. The connected
-Google account is the only required OAuth user.
+ต้องตั้ง OAuth Consent ให้อยู่ในสถานะที่ไม่ทำให้ Refresh Token
+หมดอายุจากข้อจำกัดช่วงทดสอบ บัญชี Google ที่เชื่อมเป็นผู้ใช้ OAuth
+เพียงบัญชีเดียวที่จำเป็น
 
-## 4. Attachment Data Flow
+## 4. กระบวนการทำงานของไฟล์แนบ
 
-### 4.1 Selection and preview
+### 4.1 การเลือกไฟล์และ Preview
 
-The browser:
+เบราว์เซอร์จะ:
 
-- accepts JPEG, PNG, WebP, and PDF;
-- rejects files over 10 MB before a network call;
-- validates extension, declared MIME type, and available magic bytes;
-- shows a small local preview for images;
-- shows a PDF icon and filename for PDFs; and
-- revokes local object URLs when the selection changes or the dialog closes.
+- รับ JPEG, PNG, WebP และ PDF
+- ปฏิเสธไฟล์เกิน 10 MB ก่อนเรียก Network
+- ตรวจนามสกุล MIME Type และ Magic Bytes ที่ตรวจได้
+- แสดง Preview ขนาดเล็กสำหรับรูปภาพ
+- แสดงไอคอน PDF และชื่อไฟล์สำหรับ PDF
+- ยกเลิก Object URL เมื่อเปลี่ยนไฟล์หรือปิด Dialog
 
-The original bytes are not recompressed or transformed.
+ระบบไม่บีบอัด แปลง หรือแก้ไขเนื้อไฟล์ต้นฉบับ
 
-### 4.2 Resumable session creation
+### 4.2 การสร้าง Resumable Session
 
-`POST /api/shop-order/upload-session` accepts only:
+`POST /api/shop-order/upload-session` รับเฉพาะข้อมูล:
 
 ```ts
 type UploadSessionRequest = {
@@ -141,61 +139,60 @@ type UploadSessionRequest = {
 };
 ```
 
-The server:
+เซิร์ฟเวอร์จะ:
 
-1. applies same-origin and JSON content-type checks;
-2. validates the six-digit order number and attachment metadata;
-3. creates the final sanitized filename;
-4. obtains an Access Token through the OAuth Refresh Token;
-5. pre-generates a Drive file ID;
-6. starts a resumable upload in `SHOP_ORDER_DRIVE_FOLDER_ID`;
-7. writes pending app properties containing the expected name, MIME, size,
-   creation timestamp, and order number; and
-8. returns the file ID, resumable session URL, and expiry timestamp.
+1. ตรวจ Same-origin และ JSON Content-Type
+2. ตรวจเลขออเดอร์หกหลักและข้อมูลไฟล์แนบ
+3. สร้างชื่อไฟล์ปลายทางตามรูปแบบที่กำหนด
+4. ขอ Access Token ผ่าน OAuth Refresh Token
+5. สร้าง Drive File ID ล่วงหน้า
+6. เริ่ม Resumable Upload ภายใน `SHOP_ORDER_DRIVE_FOLDER_ID`
+7. เขียน Pending App Properties ประกอบด้วยชื่อ, MIME, ขนาด,
+   เวลาสร้าง และเลขออเดอร์ที่คาดหวัง
+8. ส่ง File ID, Resumable Session URL และเวลาหมดอายุกลับไป
 
-The browser uploads the original bytes directly to the returned Google HTTPS
-session URL. It reports progress and retries recoverable network or 5xx
-failures up to three times with bounded exponential backoff. It does not retry
-validation, permission, token, quota, or permanent 4xx failures.
+เบราว์เซอร์ส่งไบต์ต้นฉบับตรงไปยัง Google HTTPS Session URL
+พร้อมแสดงความคืบหน้า หากเป็น Network Error หรือ 5xx ชั่วคราว
+ให้ลองใหม่ได้สูงสุดสามครั้งด้วย Bounded Exponential Backoff
+ระบบจะไม่ลองใหม่สำหรับ Validation Error, Permission Error, Token Error,
+Quota Error หรือ 4xx แบบถาวร
 
-### 4.3 Finalization
+### 4.3 การยืนยันไฟล์หลังอัปโหลด
 
-The order mutation sends the optional uploaded Drive file ID. Before writing
-the Sheet URL, the server uses the OAuth Drive client to verify:
+คำขอบันทึกออเดอร์ส่ง Drive File ID ที่อัปโหลดสำเร็จมาแบบไม่บังคับ
+ก่อนเขียน URL ลงชีต เซิร์ฟเวอร์ใช้ OAuth Drive Client ตรวจว่า:
 
-- the ID resolves to a file created by this OAuth application;
-- the file has the configured folder as its parent;
-- its pending app properties match the expected order number, name, MIME, and
-  size;
-- its byte size is exact;
-- its available leading-byte signature matches the accepted type; and
-- it is neither trashed nor already finalized for another order.
+- ID อ้างถึงไฟล์ที่ OAuth Application นี้สร้าง
+- Parent ของไฟล์เป็นโฟลเดอร์ที่ตั้งค่าไว้
+- Pending App Properties ตรงกับเลขออเดอร์ ชื่อ MIME และขนาดที่คาดหวัง
+- ขนาดไบต์ตรงกัน
+- Leading-byte Signature ตรงกับชนิดไฟล์ที่อนุญาต
+- ไฟล์ไม่อยู่ในถังขยะและยังไม่ถูก Finalize ให้กับออเดอร์อื่น
 
-After verification, the server:
+เมื่อตรวจผ่าน เซิร์ฟเวอร์จะ:
 
-1. grants `anyone` / `reader` link access;
-2. marks the file active and records its order number and finalization time;
-3. clears the pending deletion timestamp; and
-4. stores the canonical Drive web-view URL in column K.
+1. เพิ่มสิทธิ์ `anyone` / `reader`
+2. เปลี่ยนสถานะไฟล์เป็น Active พร้อมบันทึกเลขออเดอร์และเวลา Finalize
+3. ล้างกำหนดเวลาลบที่อาจมีอยู่
+4. บันทึก Canonical Drive Web-view URL ลงคอลัมน์ K
 
-### 4.4 Upload failure with successful order save
+### 4.4 อัปโหลดไม่สำเร็จแต่บันทึกออเดอร์สำเร็จ
 
-If session creation or byte upload fails, the form continues with the order
-mutation and no uploaded file ID. The row is saved with an empty attachment
-URL. The success message must include a persistent warning that the order was
-saved but the attachment was not, with an action to open the edit dialog and
-retry.
+หากสร้าง Session หรือส่งไฟล์ไม่สำเร็จ ฟอร์มจะบันทึกออเดอร์ต่อโดยไม่ส่ง
+Uploaded File ID แถวในชีตจะมี Attachment URL ว่าง
+ข้อความสำเร็จต้องมีคำเตือนที่มองเห็นชัดว่าออเดอร์ถูกบันทึกแล้วแต่ไฟล์แนบไม่สำเร็จ
+พร้อมปุ่มเปิด Edit Dialog เพื่อลองเพิ่มไฟล์อีกครั้ง
 
-If final verification fails, the server does not trust or store the file URL.
-It saves the order without an attachment and returns a partial-success result
-that distinguishes the successful Sheet mutation from the attachment failure.
+หากตรวจไฟล์หลังอัปโหลดไม่ผ่าน เซิร์ฟเวอร์จะไม่เชื่อถือหรือจัดเก็บ File URL
+แต่จะบันทึกออเดอร์โดยไม่มีไฟล์ พร้อมส่ง Partial-success Result
+ที่แยกความสำเร็จของชีตออกจากความล้มเหลวของไฟล์แนบ
 
-If the Sheet mutation itself fails after a completed upload, the file remains
-pending and is eligible for the 24-hour cleanup.
+หากการเขียนชีตล้มเหลวหลังไฟล์อัปโหลดเสร็จ ไฟล์ยังคงสถานะ Pending
+และเข้าสู่กระบวนการล้างหลัง 24 ชั่วโมง
 
-## 5. File Lifecycle
+## 5. วงจรชีวิตไฟล์
 
-OAuth-created files use app properties as the lifecycle source of truth:
+ไฟล์ที่ OAuth สร้างใช้ App Properties เป็นแหล่งข้อมูลหลักของสถานะ:
 
 ```ts
 type AttachmentLifecycle =
@@ -209,59 +206,57 @@ type AttachmentLifecycle =
     };
 ```
 
-### 5.1 Pending cleanup
+### 5.1 ล้างไฟล์ Pending
 
-A daily authenticated cleanup route lists OAuth-created pending files. A file
-older than 24 hours is moved to Drive trash. Recent pending files are retained.
+Route สำหรับ Cleanup ที่ยืนยันตัวตนแล้วทำงานวันละครั้ง
+โดยค้นหาไฟล์ Pending ที่ OAuth สร้าง ไฟล์ที่เก่ากว่า 24 ชั่วโมง
+จะถูกย้ายเข้าถังขยะ ส่วนไฟล์ที่ยังไม่ครบกำหนดจะยังคงอยู่
 
-### 5.2 Replacement
+### 5.2 การแทนที่ไฟล์
 
-An edit with a new attachment finalizes the new file and updates column K
-first. Only after the Sheet update succeeds does the server mark the previous
-OAuth-created attachment for deletion 30 days later.
+เมื่อแก้ไขพร้อมไฟล์ใหม่ ระบบจะ Finalize ไฟล์ใหม่และอัปเดตคอลัมน์ K ก่อน
+หลังจากเขียนชีตสำเร็จเท่านั้นจึงจะกำหนดให้ไฟล์ OAuth เดิมถูกลบในอีก 30 วัน
 
-If the previous link is a legacy Apps Script file, inaccessible to the
-`drive.file` client, or outside `Picture-OAuth`, it is left untouched.
+หากลิงก์เดิมเป็นไฟล์จาก Apps Script, OAuth Client ที่ใช้ `drive.file`
+เข้าถึงไม่ได้ หรือไฟล์อยู่นอก `Picture-OAuth` ระบบจะไม่แก้ไขไฟล์นั้น
 
-### 5.3 Order deletion
+### 5.3 การลบออเดอร์
 
-The Sheet row is cleared using the existing concurrency-safe behavior. After
-the Sheet mutation succeeds, an OAuth-created linked attachment is marked for
-deletion 30 days later. Legacy and unrecognized Drive links remain untouched.
+ระบบล้างแถวในชีตด้วยกระบวนการป้องกัน Concurrent Request แบบเดิม
+หลังแก้ไขชีตสำเร็จ ไฟล์แนบที่ OAuth สร้างจะถูกกำหนดให้ลบในอีก 30 วัน
+ลิงก์เดิมและลิงก์ Drive ที่ระบบไม่รู้จักจะไม่ถูกแก้ไข
 
-### 5.4 Scheduled deletion
+### 5.4 การลบตามกำหนด
 
-The daily cleanup route moves scheduled files to Drive trash only when
-`deleteAfter` is in the past. Trash is recoverable through Google Drive until
-the owner permanently deletes it or Drive applies its own trash retention
-policy. The application never permanently deletes Drive files.
+Cleanup Route รายวันจะย้ายไฟล์ Scheduled เข้า Drive Trash
+เมื่อ `deleteAfter` ผ่านไปแล้วเท่านั้น ผู้ใช้ยังกู้ไฟล์จากถังขยะ Google Drive ได้
+จนกว่าเจ้าของจะลบถาวรหรือ Drive ใช้นโยบายเก็บรักษาถังขยะของตนเอง
+แอปพลิเคชันจะไม่ลบไฟล์ Drive แบบถาวร
 
-Cleanup is idempotent. A missing or already-trashed file is treated as
-complete. A transient Drive failure is logged safely and retried on the next
-daily run.
+Cleanup ต้องเป็น Idempotent หากไม่พบไฟล์หรือไฟล์อยู่ในถังขยะแล้ว
+ให้ถือว่าสำเร็จ หาก Drive ล้มเหลวชั่วคราว ให้บันทึก Log อย่างปลอดภัย
+และลองใหม่ในการทำงานรายวันรอบถัดไป
 
-## 6. Thumbnail Flow
+## 6. กระบวนการ Thumbnail
 
-No thumbnail file is uploaded. For OAuth-created image and PDF attachments, a
-server route requests Drive metadata and returns a short-lived thumbnail
-response or redirect only after validating that:
+ระบบไม่อัปโหลดไฟล์ Thumbnail แยก สำหรับไฟล์ภาพและ PDF ที่ OAuth สร้าง
+Server Route จะขอ Thumbnail จาก Drive หลังตรวจว่า:
 
-- the requested file ID has the configured app-owned folder as parent;
-- the file is active;
-- its lifecycle order number matches the requested order; and
-- the file is not trashed.
+- File ID มีโฟลเดอร์ที่แอปสร้างเป็น Parent
+- ไฟล์มีสถานะ Active
+- เลขออเดอร์ใน Lifecycle ตรงกับออเดอร์ที่ร้องขอ
+- ไฟล์ไม่อยู่ในถังขยะ
 
-Thumbnail responses are `no-store`. The UI falls back to an image or PDF icon
-when Drive does not provide a thumbnail. Selecting the preview opens the
-canonical public Drive link in a new tab.
+Thumbnail Response ใช้ `no-store` หาก Drive ไม่มี Thumbnail ให้แสดงไอคอนรูป
+หรือ PDF แทน เมื่อกด Preview ให้เปิด Public Drive Link ต้นฉบับในแท็บใหม่
 
-Legacy file links continue to show the existing generic attachment action;
-the system does not attempt to derive authenticated thumbnails for them.
+ลิงก์ไฟล์เก่ายังคงใช้ปุ่มไฟล์แนบแบบเดิม
+ระบบจะไม่พยายามสร้าง Authenticated Thumbnail ให้ไฟล์เหล่านั้น
 
-## 7. API and Domain Changes
+## 7. การเปลี่ยนแปลง API และ Domain
 
-The existing `/api/shop-order` resource remains the Sheet CRUD boundary.
-Mutation success responses add an attachment outcome:
+Resource `/api/shop-order` เดิมยังคงเป็นขอบเขต CRUD ของชีต
+Success Response ของ Mutation เพิ่มผลลัพธ์ไฟล์แนบ:
 
 ```ts
 type AttachmentOutcome =
@@ -274,183 +269,190 @@ type AttachmentOutcome =
     };
 ```
 
-New or changed routes are:
+Route ที่เพิ่มหรือเปลี่ยน:
 
-- `POST /api/shop-order/upload-session` — OAuth resumable session creation;
-- `GET /api/shop-order/attachment-thumbnail` — validated thumbnail access;
-  and
-- `GET /api/shop-order/cleanup` — daily cron cleanup authenticated with
-  `Authorization: Bearer ${SHOP_ORDER_CRON_SECRET}`.
+- `POST /api/shop-order/upload-session` — สร้าง OAuth Resumable Session
+- `GET /api/shop-order/attachment-thumbnail` — เข้าถึง Thumbnail
+  หลังตรวจสิทธิ์และสถานะ
+- `GET /api/shop-order/cleanup` — Cleanup รายวันที่ตรวจ
+  `Authorization: Bearer ${SHOP_ORDER_CRON_SECRET}`
 
-The cleanup route accepts Vercel Cron only when the secret matches. It returns
-counts for scanned, trashed, skipped, and failed files without returning file
-names, IDs, URLs, or Drive error bodies.
+Cleanup Route รับคำขอจาก Vercel Cron เมื่อ Secret ตรงกันเท่านั้น
+Response แสดงจำนวนไฟล์ที่ตรวจ ย้ายขยะ ข้าม และล้มเหลว
+โดยไม่ส่งชื่อไฟล์ ID URL หรือ Drive Error Body กลับมา
 
-## 8. Error Handling and Recovery
+## 8. การจัดการข้อผิดพลาดและการกู้คืน
 
-Errors are classified without exposing credentials:
+ระบบจำแนกข้อผิดพลาดโดยไม่เปิดเผยข้อมูลลับ:
 
-- `DRIVE_OAUTH_CONFIGURATION_REQUIRED` — a required OAuth variable is absent;
-- `DRIVE_OAUTH_REAUTH_REQUIRED` — Refresh Token revoked, expired, or rejected;
-- `DRIVE_FOLDER_CONFIGURATION_REQUIRED` — configured folder missing or not
-  created/accessible under `drive.file`;
-- `DRIVE_QUOTA_EXCEEDED` — owner storage or API quota exhausted;
-- `DRIVE_UPLOAD_RETRYABLE` — network, 429, or temporary 5xx failure;
-- `DRIVE_UPLOAD_REJECTED` — permanent upload or metadata failure; and
-- `ORDER_SAVED_WITHOUT_ATTACHMENT` — Sheet mutation succeeded after an
-  attachment failure.
+- `DRIVE_OAUTH_CONFIGURATION_REQUIRED` — ตัวแปร OAuth ที่จำเป็นหายไป
+- `DRIVE_OAUTH_REAUTH_REQUIRED` — Refresh Token ถูกยกเลิก หมดอายุ
+  หรือถูกปฏิเสธ
+- `DRIVE_FOLDER_CONFIGURATION_REQUIRED` — ไม่พบโฟลเดอร์
+  หรือโฟลเดอร์ไม่ได้สร้าง/เข้าถึงได้ภายใต้ `drive.file`
+- `DRIVE_QUOTA_EXCEEDED` — พื้นที่ของเจ้าของหรือ API Quota เต็ม
+- `DRIVE_UPLOAD_RETRYABLE` — Network, 429 หรือ 5xx ชั่วคราว
+- `DRIVE_UPLOAD_REJECTED` — การอัปโหลดหรือข้อมูลไฟล์ผิดแบบถาวร
+- `ORDER_SAVED_WITHOUT_ATTACHMENT` — เขียนชีตสำเร็จหลังไฟล์แนบล้มเหลว
 
-Server logs include operation, safe category, HTTP status, Google reason code
-when non-sensitive, duration, deployment request ID, and correlation ID. Logs
-must never contain Access Tokens, Refresh Tokens, Client Secrets, authorization
-codes, resumable URLs, attachment bytes, original filenames, or complete
-Google response bodies.
+Server Log ประกอบด้วย Operation, Safe Category, HTTP Status,
+Google Reason Code ที่ไม่อ่อนไหว, Duration, Deployment Request ID
+และ Correlation ID เท่านั้น ห้าม Log Access Token, Refresh Token,
+Client Secret, Authorization Code, Resumable URL, ไบต์ไฟล์,
+ชื่อไฟล์ต้นฉบับ หรือ Google Response Body แบบเต็ม
 
-Re-running the local OAuth setup utility and replacing the Refresh Token in
-Vercel restores uploads after revocation. Existing files and Sheet links are
-not changed by reauthorization.
+หาก Refresh Token ถูกยกเลิก ให้รัน OAuth Setup Utility ใหม่
+และแทนค่า Refresh Token ใน Vercel การเชื่อมใหม่จะไม่เปลี่ยนไฟล์เดิม
+หรือลิงก์ในชีต
 
-## 9. Public Access and Abuse Controls
+## 9. การเปิดใช้งานสาธารณะและการป้องกันการใช้งานเกิน
 
-The approved product has no application login. This is an explicit risk:
-possession of the production URL is sufficient to submit Shop Order mutations.
+ผลิตภัณฑ์ที่อนุมัติไม่มี Login ของแอป ผู้ที่มี Production URL
+สามารถส่งคำขอแก้ไข Shop Order ได้ นี่เป็นความเสี่ยงที่ยอมรับโดยชัดแจ้ง
 
-Controls are defense-in-depth, not authentication:
+มาตรการต่อไปนี้เป็น Defense-in-depth ไม่ใช่ Authentication:
 
-- strict same-origin checks for browser mutations;
-- allowed content types and bounded body parsing;
-- the 10 MB attachment limit;
-- `drive.file` scope to limit OAuth blast radius;
-- folder, lifecycle, and metadata verification before a URL reaches Sheets;
-- Vercel WAF fixed-window rate limiting of 30 mutation/upload-session requests
-  per source IP per 10 minutes; and
-- secure, generic errors.
+- ตรวจ Same-origin อย่างเข้มงวดสำหรับ Browser Mutation
+- จำกัด Content-Type และขนาด Request Body
+- จำกัดไฟล์แนบ 10 MB
+- ใช้ Scope `drive.file` เพื่อลดผลกระทบหาก OAuth รั่ว
+- ตรวจ Folder, Lifecycle และ Metadata ก่อนบันทึก URL ลงชีต
+- ใช้ Vercel WAF Fixed Window จำกัด 30 Mutation/Upload-session Request
+  ต่อ IP ต่อ 10 นาที
+- ส่ง Error แบบทั่วไปและปลอดภัย
 
-The WAF rule covers non-GET Shop Order API requests while excluding the cleanup
-route. A `429` response does not fall back to an unprotected code path.
+WAF Rule ครอบคลุมคำขอ Shop Order API ที่ไม่ใช่ GET
+และไม่ครอบคลุม Cleanup Route หากได้รับ `429`
+ระบบห้ามย้อนกลับไปใช้เส้นทางที่ไม่มีการป้องกัน
 
-This design does not claim that a secret URL prevents intentional abuse. If
-usage expands beyond the clerk-only context, authentication and an email
-allowlist become required follow-up work.
+เอกสารนี้ไม่อ้างว่า URL ลับสามารถป้องกันการโจมตีโดยเจตนาได้
+หากจำนวนผู้ใช้ขยายเกินบริบทที่มีเฉพาะธุรการ
+ต้องเพิ่ม Authentication และ Email Allowlist เป็นงานถัดไป
 
-## 10. Performance
+## 10. ประสิทธิภาพ
 
-- File bytes never transit a Vercel Function.
-- No Base64 conversion is used.
-- OAuth Access Tokens are refreshed server-side only when needed by the Google
-  client library.
-- The browser uploads one original file and uses Drive-generated thumbnails.
-- Upload progress is based on bytes sent.
-- Retry is bounded to prevent duplicate or indefinite work.
-- Cleanup runs once daily and processes bounded pages rather than loading every
-  Drive item into memory.
-- Sheet reads, filters, summaries, and CRUD retain the current implementation.
+- ไบต์ของไฟล์ไม่ผ่าน Vercel Function
+- ไม่แปลง Base64
+- Google Client Library ต่ออายุ OAuth Access Token
+  ฝั่งเซิร์ฟเวอร์เมื่อจำเป็นเท่านั้น
+- เบราว์เซอร์อัปโหลดไฟล์ต้นฉบับหนึ่งไฟล์
+  และใช้ Thumbnail ที่ Drive สร้าง
+- Progress คำนวณจากจำนวนไบต์ที่ส่งจริง
+- Retry มีจำนวนจำกัดเพื่อป้องกันงานซ้ำหรือทำงานไม่สิ้นสุด
+- Cleanup ทำงานวันละครั้งและประมวลผลแบบแบ่งหน้า
+  ไม่โหลดรายการ Drive ทั้งหมดเข้าหน่วยความจำ
+- การอ่านชีต ตัวกรอง Summary และ CRUD ใช้ระบบปัจจุบันต่อไป
 
-## 11. Testing Strategy
+## 11. กลยุทธ์การทดสอบ
 
-### 11.1 Unit tests
+### 11.1 Unit Tests
 
-Cover:
+ครอบคลุม:
 
-- OAuth environment validation and lazy client initialization;
-- strict `drive.file` scope configuration;
-- final filename generation without the original filename;
-- JPEG, PNG, WebP, PDF, unsupported type, and 10 MB boundary validation;
-- Google error classification;
-- attachment lifecycle transitions;
-- 24-hour and 30-day cutoff calculations;
-- attachment outcome construction;
-- legacy-versus-OAuth Drive URL recognition; and
-- cleanup authorization.
+- การตรวจ OAuth Environment และ Lazy Client Initialization
+- การตั้ง Scope `drive.file` เท่านั้น
+- การสร้างชื่อไฟล์โดยไม่ใช้ชื่อเดิม
+- Validation ของ JPEG, PNG, WebP, PDF, ชนิดที่ไม่รองรับ
+  และขอบเขต 10 MB
+- การจำแนก Google Error
+- การเปลี่ยน Attachment Lifecycle
+- การคำนวณระยะ 24 ชั่วโมงและ 30 วัน
+- การสร้าง Attachment Outcome
+- การแยก Legacy Drive URL กับ OAuth Drive URL
+- การตรวจสิทธิ์ Cleanup
 
-### 11.2 Repository and API integration tests
+### 11.2 Repository และ API Integration Tests
 
-Using mocked Sheets, OAuth, Drive, clock, and fetch boundaries, verify:
+ใช้ Mock สำหรับ Sheets, OAuth, Drive, เวลา และ Fetch เพื่อตรวจ:
 
-- resumable session creation uses the OAuth token and app-owned folder;
-- Sheet calls still use the Service Account client;
-- missing/revoked OAuth credentials return safe actionable errors;
-- finalized metadata must match parent, lifecycle, order, MIME, and size;
-- public link permission is added only after verification;
-- a Drive failure saves the order without column K and reports partial success;
-- a Sheet failure leaves the uploaded file pending;
-- replacement schedules the prior OAuth file only after the Sheet succeeds;
-- legacy files remain unchanged;
-- deletion schedules OAuth files and leaves legacy files unchanged;
-- cleanup trashes stale pending and expired scheduled files only;
-- cleanup is idempotent and bounded;
-- thumbnail access rejects mismatched, pending, legacy, and trashed files; and
-- no API response exposes tokens or resumable URLs beyond the session creation
-  response that requires one.
+- Resumable Session ใช้ OAuth Token และโฟลเดอร์ที่แอปสร้าง
+- Sheet Call ยังใช้ Service Account Client
+- OAuth Configuration ที่หายหรือถูกยกเลิกส่ง Error ที่ปลอดภัย
+- Finalized Metadata ต้องตรงกับ Parent, Lifecycle, Order, MIME และ Size
+- เพิ่ม Public Link Permission หลัง Verification เท่านั้น
+- Drive ล้มเหลวแล้วออเดอร์ยังบันทึกโดยไม่มีคอลัมน์ K
+  พร้อม Partial-success
+- Sheet ล้มเหลวแล้วไฟล์ยังเป็น Pending
+- การแทนที่ไฟล์กำหนดเวลาลบไฟล์ OAuth เดิมหลังชีตสำเร็จเท่านั้น
+- ไม่เปลี่ยนไฟล์ Legacy
+- การลบออเดอร์กำหนดเวลาลบไฟล์ OAuth
+  และไม่เปลี่ยนไฟล์ Legacy
+- Cleanup ย้ายเฉพาะ Pending ที่ค้างและ Scheduled ที่ครบกำหนด
+- Cleanup เป็น Idempotent และประมวลผลแบบมีขอบเขต
+- Thumbnail ปฏิเสธไฟล์ที่ Order ไม่ตรง, Pending, Legacy หรืออยู่ในถังขยะ
+- API Response ไม่เปิดเผย Token หรือ Resumable URL
+  ยกเว้น Session Creation Response ที่จำเป็นต้องใช้ URL นั้น
 
-### 11.3 Client tests
+### 11.3 Client Tests
 
-Verify:
+ตรวจ:
 
-- image preview and PDF fallback;
-- exact upload progress;
-- bounded retry behavior;
-- permanent upload errors do not retry;
-- order save continues after upload failure;
-- partial-success warning remains visible and opens edit;
-- thumbnail fallback and original-file action;
-- object URL cleanup; and
-- pending state prevents duplicate form submission.
+- Image Preview และ PDF Fallback
+- Upload Progress ที่ตรงกับไบต์
+- Retry แบบมีขอบเขต
+- Permanent Upload Error ไม่ Retry
+- บันทึกออเดอร์ต่อเมื่ออัปโหลดล้มเหลว
+- คำเตือน Partial-success ยังคงมองเห็นและเปิด Edit ได้
+- Thumbnail Fallback และปุ่มเปิดไฟล์ต้นฉบับ
+- การยกเลิก Object URL
+- Pending State ป้องกันการ Submit ซ้ำ
 
-### 11.4 Setup and production verification
+### 11.4 การตั้งค่าและตรวจ Production
 
-Before production completion:
+ก่อนประกาศว่า Production เสร็จสมบูรณ์:
 
-1. run unit and integration tests;
-2. run scoped lint and TypeScript checks;
-3. run the production Next.js build;
-4. run the OAuth setup utility with the owner account;
-5. move `Picture-OAuth` under `WebApp ShopOrder`;
-6. set the OAuth, folder, and cron variables in Vercel;
-7. redeploy the saved source state;
-8. verify Sheet reads still return `200`;
-9. upload one approved small test image with explicit user permission;
-10. confirm ownership, parent folder, public link, Sheet column K, and thumbnail;
-11. verify a simulated Drive rejection produces a saved order without a link;
-12. confirm cleanup dry-run classification before allowing trash mutations; and
-13. configure and verify the WAF rule.
+1. รัน Unit และ Integration Tests
+2. รัน Scoped Lint และ TypeScript
+3. รัน Production Next.js Build
+4. รัน OAuth Setup Utility ด้วยบัญชีเจ้าของ
+5. ย้าย `Picture-OAuth` ไปใต้ `WebApp ShopOrder`
+6. ตั้ง OAuth, Folder และ Cron Variables ใน Vercel
+7. Redeploy Source State ที่บันทึกแล้ว
+8. ตรวจว่า Sheet Read ยังตอบ `200`
+9. อัปโหลดรูปทดสอบขนาดเล็กหนึ่งไฟล์เมื่อผู้ใช้อนุญาตโดยชัดแจ้ง
+10. ตรวจ Ownership, Parent Folder, Public Link, คอลัมน์ K และ Thumbnail
+11. จำลอง Drive Rejection และตรวจว่าออเดอร์ถูกบันทึกโดยไม่มีลิงก์
+12. ตรวจการจำแนก Cleanup แบบ Dry-run ก่อนอนุญาตให้ย้ายไฟล์เข้าถังขยะ
+13. ตั้งและตรวจ WAF Rule
 
-No production test may permanently delete a file or mutate a real order
-without explicit user approval.
+ห้าม Production Test ลบไฟล์ถาวรหรือแก้ข้อมูลออเดอร์จริง
+โดยไม่ได้รับอนุญาตจากผู้ใช้
 
-## 12. Documentation
+## 12. เอกสารประกอบ
 
-Update project documentation with:
+ปรับเอกสารโปรเจกต์ให้มี:
 
-- the split Sheets/Drive authentication model;
-- Google Cloud OAuth consent and Desktop Client setup;
-- the local owner-connection command;
-- required Vercel variables;
-- moving the app-created folder;
-- Refresh Token rotation and recovery;
-- WAF setup;
-- daily cleanup behavior;
-- legacy file limitations; and
-- a troubleshooting matrix for every safe error code.
+- รูปแบบ Authentication ที่แยก Sheets และ Drive
+- การตั้ง Google Cloud OAuth Consent และ Desktop Client
+- คำสั่งเชื่อมบัญชีเจ้าของในเครื่อง
+- Vercel Variables ที่ต้องใช้
+- วิธีการย้ายโฟลเดอร์ที่แอปสร้าง
+- การหมุนและกู้ Refresh Token
+- การตั้ง WAF
+- พฤติกรรม Cleanup รายวัน
+- ข้อจำกัดของ Legacy File
+- ตารางแก้ปัญหาสำหรับ Safe Error Code ทุกชนิด
 
-## 13. Acceptance Criteria
+## 13. เกณฑ์การยอมรับ
 
-The migration is accepted when:
+การย้ายระบบถือว่าสำเร็จเมื่อ:
 
-- Shop Order reads and writes Sheets with the existing Service Account;
-- new JPEG, PNG, WebP, and PDF files up to 10 MB are owned by
-  `w10egat.project@gmail.com`;
-- OAuth uses only `drive.file`;
-- new files are created inside the configured app-owned folder;
-- uploads go directly from browser to Drive with progress and bounded retry;
-- new files open through an `anyone with the link` viewer permission;
-- upload failure still saves the order without column K and clearly warns the
-  user;
-- pending files older than 24 hours are moved to trash;
-- replaced and order-deleted OAuth files are scheduled for trash after 30 days;
-- legacy Apps Script files remain untouched;
-- Google-generated thumbnails work with a safe fallback;
-- the production URL requires no end-user Google login;
-- mutation traffic is limited to 30 requests per IP per 10 minutes;
-- secrets and bearer URLs never appear in logs or client bundles; and
-- automated, build, browser, and approved production verification pass.
+- Shop Order อ่านและเขียนชีตด้วย Service Account เดิม
+- JPEG, PNG, WebP และ PDF ใหม่ขนาดไม่เกิน 10 MB
+  เป็นเจ้าของโดย `w10egat.project@gmail.com`
+- OAuth ใช้เฉพาะ `drive.file`
+- ไฟล์ใหม่ถูกสร้างในโฟลเดอร์ที่แอปสร้างและกำหนดไว้
+- อัปโหลดจากเบราว์เซอร์ตรงไป Drive พร้อม Progress และ Bounded Retry
+- ไฟล์ใหม่เปิดได้ด้วยสิทธิ์ `ทุกคนที่มีลิงก์`
+- เมื่ออัปโหลดล้มเหลว ออเดอร์ยังถูกบันทึกโดยคอลัมน์ K ว่าง
+  พร้อมคำเตือนชัดเจน
+- Pending File ที่เก่ากว่า 24 ชั่วโมงถูกย้ายเข้าถังขยะ
+- OAuth File ที่ถูกแทนที่หรือแยกออกจากออเดอร์
+  ถูกกำหนดย้ายเข้าถังขยะหลัง 30 วัน
+- Legacy Apps Script File ไม่ถูกเปลี่ยน
+- Google-generated Thumbnail ทำงานพร้อม Safe Fallback
+- ผู้ใช้ Production ไม่ต้องล็อกอิน Google
+- Mutation Traffic ถูกจำกัด 30 Request ต่อ IP ต่อ 10 นาที
+- Secret และ Bearer URL ไม่ปรากฏใน Log หรือ Client Bundle
+- Automated Test, Build, Browser Test และ Production Verification
+  ที่ได้รับอนุญาตผ่านทั้งหมด
