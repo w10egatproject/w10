@@ -67,6 +67,13 @@ export interface ShopOrderMutationResult {
   attachment: AttachmentOutcome;
 }
 
+export interface AttachmentCleanupSummary {
+  inspected: number;
+  trashed: number;
+  skipped: number;
+  failed: number;
+}
+
 export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: { code: string; message: string } };

@@ -4,6 +4,7 @@ import {
   buildAttachmentStorageName,
   deletionDate,
   driveFileIdFromCanonicalUrl,
+  isExpiredPending,
   parseAttachmentLifecycle,
 } from './attachment-lifecycle';
 import { assertUploadMetadata, matchesAllowedSignature } from './file-rules';
@@ -16,6 +17,7 @@ import {
   type DriveFailureCode,
 } from './drive-oauth';
 import type {
+  AttachmentCleanupSummary,
   ShopOrder,
   ShopOrderBootstrap,
   ShopOrderInput,
@@ -62,6 +64,9 @@ interface GoogleDriveClient {
   files: {
     generateIds(request: JsonRecord): Promise<{ data?: { ids?: string[] | null } }>;
     get(request: JsonRecord): Promise<{ data?: JsonRecord }>;
+    list(request: JsonRecord): Promise<{
+      data?: { files?: JsonRecord[] | null; nextPageToken?: string | null };
+    }>;
     update(request: JsonRecord): Promise<{ data?: JsonRecord }>;
   };
   permissions: {
@@ -98,6 +103,7 @@ export interface ShopOrderRepository {
   ): Promise<ShopOrderMutationResult>;
   remove(no: number): Promise<void>;
   createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
+  cleanupAttachments(): Promise<AttachmentCleanupSummary>;
 }
 
 interface LocatedOrder {
@@ -191,6 +197,16 @@ function normalizeAppProperties(
     }
   }
   return result;
+}
+
+function isDriveNotFound(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const response = Reflect.get(error, 'response');
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    Reflect.get(response, 'status') === 404
+  );
 }
 
 function assertGoogleUploadUrl(value: string | null): string {
@@ -921,6 +937,66 @@ export function createShopOrderRepository(
     );
   }
 
+  async function cleanupAttachments(): Promise<AttachmentCleanupSummary> {
+    const summary: AttachmentCleanupSummary = {
+      inspected: 0,
+      trashed: 0,
+      skipped: 0,
+      failed: 0,
+    };
+    const cleanupStartedAt = now();
+
+    for (const status of ['pending', 'scheduled_delete'] as const) {
+      let pageToken: string | undefined;
+      do {
+        const response = await drive.files.list({
+          q: `'${config.folderId}' in parents and trashed = false and appProperties has { key='status' and value='${status}' }`,
+          fields: 'nextPageToken,files(id,trashed,appProperties)',
+          pageSize: 1000,
+          ...(pageToken ? { pageToken } : {}),
+        });
+
+        for (const file of response.data?.files ?? []) {
+          summary.inspected += 1;
+          const fileId = safeString(file.id);
+          const lifecycle = parseAttachmentLifecycle(
+            normalizeAppProperties(file.appProperties),
+          );
+          const expired =
+            lifecycle?.status === 'pending'
+              ? isExpiredPending(lifecycle.pendingSince, cleanupStartedAt)
+              : lifecycle?.status === 'scheduled_delete'
+                ? Date.parse(lifecycle.deleteAfter) <= cleanupStartedAt.getTime()
+                : false;
+
+          if (!fileId || file.trashed === true || !expired) {
+            summary.skipped += 1;
+            continue;
+          }
+
+          try {
+            await drive.files.update({
+              fileId,
+              fields: 'id,trashed',
+              requestBody: { trashed: true },
+            });
+            summary.trashed += 1;
+          } catch (error) {
+            if (isDriveNotFound(error)) {
+              summary.skipped += 1;
+            } else {
+              summary.failed += 1;
+            }
+          }
+        }
+
+        pageToken = safeString(response.data?.nextPageToken) || undefined;
+      } while (pageToken);
+    }
+
+    return summary;
+  }
+
   return {
     load,
     listDepartments,
@@ -928,6 +1004,7 @@ export function createShopOrderRepository(
     update,
     remove,
     createUploadSession,
+    cleanupAttachments,
   };
 }
 

@@ -100,6 +100,7 @@ function makeDependencies() {
           trashed: false,
         },
       }),
+      list: vi.fn().mockResolvedValue({ data: { files: [] } }),
       update: vi.fn().mockResolvedValue({
         data: {
           webViewLink: 'https://drive.google.com/file/d/generated-id/view',
@@ -189,6 +190,197 @@ describe('ShopOrderRepository', () => {
   });
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('paginates app-owned pending and scheduled-delete files and trashes only exact-boundary expirations', async () => {
+    const { dependencies, drive } = makeDependencies();
+    dependencies.now = () => new Date('2026-07-27T00:00:00.000Z');
+    drive.files.list = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: {
+          files: [
+            {
+              id: 'pending-boundary',
+              trashed: false,
+              appProperties: {
+                status: 'pending',
+                pendingSince: '2026-07-26T00:00:00.000Z',
+                orderNumber: '123456',
+              },
+            },
+            {
+              id: 'pending-newer',
+              trashed: false,
+              appProperties: {
+                status: 'pending',
+                pendingSince: '2026-07-26T00:00:00.001Z',
+                orderNumber: '123456',
+              },
+            },
+          ],
+          nextPageToken: 'pending-page-2',
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          files: [
+            {
+              id: 'pending-malformed',
+              trashed: false,
+              appProperties: {
+                status: 'pending',
+                pendingSince: 'invalid',
+                orderNumber: '123456',
+              },
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          files: [
+            {
+              id: 'scheduled-boundary',
+              trashed: false,
+              appProperties: {
+                status: 'scheduled_delete',
+                deleteAfter: '2026-07-27T00:00:00.000Z',
+                orderNumber: '123456',
+                reason: 'replaced',
+              },
+            },
+            {
+              id: 'scheduled-future',
+              trashed: false,
+              appProperties: {
+                status: 'scheduled_delete',
+                deleteAfter: '2026-07-27T00:00:00.001Z',
+                orderNumber: '123456',
+                reason: 'order_deleted',
+              },
+            },
+          ],
+          nextPageToken: 'scheduled-page-2',
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { files: [] },
+      });
+    drive.files.update.mockResolvedValue({ data: {} });
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.cleanupAttachments()).resolves.toEqual({
+      inspected: 5,
+      trashed: 2,
+      skipped: 3,
+      failed: 0,
+    });
+    expect(drive.files.list).toHaveBeenNthCalledWith(1, {
+      q: "'folder-id' in parents and trashed = false and appProperties has { key='status' and value='pending' }",
+      fields: 'nextPageToken,files(id,trashed,appProperties)',
+      pageSize: 1000,
+    });
+    expect(drive.files.list).toHaveBeenNthCalledWith(2, {
+      q: "'folder-id' in parents and trashed = false and appProperties has { key='status' and value='pending' }",
+      fields: 'nextPageToken,files(id,trashed,appProperties)',
+      pageSize: 1000,
+      pageToken: 'pending-page-2',
+    });
+    expect(drive.files.list).toHaveBeenNthCalledWith(3, {
+      q: "'folder-id' in parents and trashed = false and appProperties has { key='status' and value='scheduled_delete' }",
+      fields: 'nextPageToken,files(id,trashed,appProperties)',
+      pageSize: 1000,
+    });
+    expect(drive.files.list).toHaveBeenNthCalledWith(4, {
+      q: "'folder-id' in parents and trashed = false and appProperties has { key='status' and value='scheduled_delete' }",
+      fields: 'nextPageToken,files(id,trashed,appProperties)',
+      pageSize: 1000,
+      pageToken: 'scheduled-page-2',
+    });
+    expect(drive.files.update.mock.calls).toEqual([
+      [
+        {
+          fileId: 'pending-boundary',
+          fields: 'id,trashed',
+          requestBody: { trashed: true },
+        },
+      ],
+      [
+        {
+          fileId: 'scheduled-boundary',
+          fields: 'id,trashed',
+          requestBody: { trashed: true },
+        },
+      ],
+    ]);
+  });
+
+  it('continues after per-file failures and treats already-trashed or missing files idempotently', async () => {
+    const { dependencies, drive } = makeDependencies();
+    dependencies.now = () => new Date('2026-07-27T00:00:00.000Z');
+    drive.files.list = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: {
+          files: [
+            {
+              id: 'already-trashed',
+              trashed: true,
+              appProperties: {
+                status: 'pending',
+                pendingSince: '2026-07-25T00:00:00.000Z',
+                orderNumber: '123456',
+              },
+            },
+            {
+              id: 'missing-race',
+              trashed: false,
+              appProperties: {
+                status: 'pending',
+                pendingSince: '2026-07-25T00:00:00.000Z',
+                orderNumber: '123456',
+              },
+            },
+            {
+              id: 'temporary-failure',
+              trashed: false,
+              appProperties: {
+                status: 'pending',
+                pendingSince: '2026-07-25T00:00:00.000Z',
+                orderNumber: '123456',
+              },
+            },
+            {
+              id: 'continues-after-failure',
+              trashed: false,
+              appProperties: {
+                status: 'pending',
+                pendingSince: '2026-07-25T00:00:00.000Z',
+                orderNumber: '123456',
+              },
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ data: { files: [] } });
+    drive.files.update
+      .mockRejectedValueOnce({ response: { status: 404 } })
+      .mockRejectedValueOnce({ response: { status: 503 } })
+      .mockResolvedValueOnce({ data: {} });
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.cleanupAttachments()).resolves.toEqual({
+      inspected: 4,
+      trashed: 1,
+      skipped: 2,
+      failed: 1,
+    });
+    expect(drive.files.update.mock.calls.map(([request]) => request.fileId)).toEqual([
+      'missing-race',
+      'temporary-failure',
+      'continues-after-failure',
+    ]);
   });
 
   it('loads raw A-K values and both suggestion lists', async () => {
