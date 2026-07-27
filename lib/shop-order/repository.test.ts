@@ -26,6 +26,10 @@ const uploadMetadata: UploadMetadata = {
   mimeType: 'image/png',
   size: PNG_BYTES.byteLength,
 };
+const uploadSessionRequest = {
+  orderNumber: '123456',
+  ...uploadMetadata,
+};
 
 function makeDependencies() {
   const sheets = {
@@ -120,6 +124,7 @@ function makeDependencies() {
       folderId: 'folder-id',
     },
     now: () => new Date('2026-07-25T00:00:00.000Z'),
+    randomId: () => 'a1b2c3d4-e5f6-4789-8abc-def012345678',
   } satisfies ShopOrderRepositoryDependencies;
 
   return {
@@ -160,13 +165,15 @@ describe('ShopOrderRepository', () => {
     });
   });
 
-  it('pre-generates an id and returns only a validated Google resumable URL', async () => {
+  it('creates pending Drive metadata with a generated name and no original filename', async () => {
     const { dependencies, drive, authenticatedFetch } = makeDependencies();
+    dependencies.config.folderId = 'oauth-folder-id';
+    dependencies.now = () => new Date('2026-07-27T08:09:10.000Z');
     const repository = createShopOrderRepository(dependencies);
 
     const session = await repository.createUploadSession({
-      ...uploadMetadata,
-      name: 'bad:name.png',
+      ...uploadSessionRequest,
+      name: 'ต้นฉบับลับ.png',
     });
 
     expect(drive.files.generateIds).toHaveBeenCalledWith({
@@ -174,43 +181,57 @@ describe('ShopOrderRepository', () => {
       space: 'drive',
       type: 'files',
     });
-    expect(authenticatedFetch).toHaveBeenCalledWith(
-      expect.stringContaining('uploadType=resumable'),
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          Authorization: 'Bearer access-token',
-          'X-Upload-Content-Length': String(uploadMetadata.size),
-        }),
-      }),
+    expect(authenticatedFetch).toHaveBeenCalledTimes(1);
+    const [requestUrl, fetchInit] = authenticatedFetch.mock.calls[0];
+    expect(requestUrl).toBe(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink',
     );
-    expect(JSON.parse(authenticatedFetch.mock.calls[0][1].body)).toMatchObject({
-      id: 'generated-id',
-      name: 'bad_name.png',
-      parents: ['folder-id'],
-      appProperties: {
-        shopOrderUpload: 'pending',
-        expectedName: 'bad_name.png',
+    expect(fetchInit).toMatchObject({
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer access-token',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Type': 'image/png',
+        'X-Upload-Content-Length': '8',
       },
     });
+    expect(JSON.parse(fetchInit.body as string)).toEqual({
+      id: 'generated-id',
+      name: 'SO-123456-20260727-080910-a1b2c3d4.png',
+      parents: ['oauth-folder-id'],
+      appProperties: {
+        status: 'pending',
+        pendingSince: '2026-07-27T08:09:10.000Z',
+        orderNumber: '123456',
+        expectedName: 'SO-123456-20260727-080910-a1b2c3d4.png',
+        expectedMime: 'image/png',
+        expectedSize: '8',
+      },
+    });
+    expect(fetchInit.body as string).not.toContain('ต้นฉบับลับ');
     expect(session).toEqual({
       fileId: 'generated-id',
       uploadUrl: 'https://www.googleapis.com/upload/session-id',
-      expiresAt: '2026-07-25T01:00:00.000Z',
+      expiresAt: '2026-07-27T09:09:10.000Z',
     });
   });
 
-  it('rejects a resumable URI outside the exact Google HTTPS origin', async () => {
+  it.each([
+    'https://www.googleapis.com.evil.test/session',
+    'https://www.googleapis.com:444/session',
+    'http://www.googleapis.com/session',
+    'https://user@www.googleapis.com/session',
+  ])('rejects a resumable URI outside the exact Google HTTPS origin: %s', async (location) => {
     const { dependencies, authenticatedFetch } = makeDependencies();
     authenticatedFetch.mockReset().mockResolvedValue(
       new Response(null, {
         status: 200,
-        headers: { location: 'https://www.googleapis.com.evil.test/session' },
+        headers: { location },
       }),
     );
     const repository = createShopOrderRepository(dependencies);
 
-    await expect(repository.createUploadSession(uploadMetadata))
+    await expect(repository.createUploadSession(uploadSessionRequest))
       .rejects.toThrow('resumable');
   });
 
@@ -221,11 +242,50 @@ describe('ShopOrderRepository', () => {
     );
     const repository = createShopOrderRepository(dependencies);
 
-    await expect(repository.createUploadSession(uploadMetadata)).rejects.toMatchObject({
+    await expect(repository.createUploadSession(uploadSessionRequest)).rejects.toMatchObject({
       code: 'DRIVE_ACCESS_FORBIDDEN',
       message: 'ไม่สามารถเข้าถึงโฟลเดอร์ Google Drive ได้',
     });
   });
+
+  it.each([
+    [401, undefined, 'DRIVE_OAUTH_REAUTH_REQUIRED'],
+    [404, undefined, 'DRIVE_FOLDER_CONFIGURATION_REQUIRED'],
+    [429, undefined, 'DRIVE_QUOTA_EXCEEDED'],
+    [
+      403,
+      {
+        error: {
+          errors: [{ reason: 'storageQuotaExceeded' }],
+        },
+      },
+      'DRIVE_QUOTA_EXCEEDED',
+    ],
+    [503, undefined, 'DRIVE_UNAVAILABLE'],
+  ])(
+    'maps a failed Drive session response %s to %s without exposing its body',
+    async (status, responseBody, expectedCode) => {
+      const { dependencies, authenticatedFetch } = makeDependencies();
+      authenticatedFetch.mockReset().mockResolvedValue(
+        new Response(
+          responseBody ? JSON.stringify(responseBody) : null,
+          {
+            status,
+            headers: responseBody
+              ? { 'Content-Type': 'application/json' }
+              : undefined,
+          },
+        ),
+      );
+      const repository = createShopOrderRepository(dependencies);
+
+      await expect(
+        repository.createUploadSession(uploadSessionRequest),
+      ).rejects.toMatchObject({
+        code: expectedCode,
+      });
+    },
+  );
 
   it.each([
     ['wrong parent', { parents: ['other-folder'] }],
@@ -493,4 +553,68 @@ describe('ShopOrderRepository', () => {
       vi.resetModules();
     }
   });
+
+  it.each([
+    'GOOGLE_DRIVE_OAUTH_CLIENT_ID',
+    'GOOGLE_DRIVE_OAUTH_CLIENT_SECRET',
+    'GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN',
+  ])(
+    'classifies a missing %s without exposing OAuth configuration',
+    async (missingVariable) => {
+      vi.resetModules();
+      const oauthSecret = 'oauth-secret-must-not-leak';
+      const previousEnvironment = { ...process.env };
+      Object.assign(process.env, {
+        GOOGLE_CLIENT_EMAIL: 'sheets@example.iam.gserviceaccount.com',
+        GOOGLE_PRIVATE_KEY:
+          '-----BEGIN PRIVATE KEY-----\\nkey\\n-----END PRIVATE KEY-----',
+        SHOP_ORDER_SHEET_ID: 'spreadsheet-id',
+        SHOP_ORDER_SHEET_NAME: 'Order1',
+        SHOP_ORDER_DRIVE_FOLDER_ID: 'folder-id',
+        GOOGLE_DRIVE_OAUTH_CLIENT_ID: oauthSecret,
+        GOOGLE_DRIVE_OAUTH_CLIENT_SECRET: oauthSecret,
+        GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN: oauthSecret,
+      });
+      delete process.env[missingVariable];
+
+      const JWT = vi.fn(function JwtConstructor() {
+        return {};
+      });
+      const OAuth2 = vi.fn();
+      vi.doMock('googleapis', () => ({
+        google: {
+          auth: { JWT, OAuth2 },
+          sheets: vi.fn(),
+          drive: vi.fn(),
+        },
+      }));
+      const errorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      try {
+        const repositoryModule = await import('./repository');
+
+        await expect(
+          repositoryModule.getShopOrderRepository(),
+        ).rejects.toMatchObject({
+          code: 'DRIVE_OAUTH_CONFIGURATION_REQUIRED',
+          message:
+            'การตั้งค่า Google Drive OAuth ไม่ครบ กรุณาติดต่อผู้ดูแลระบบ',
+        });
+        expect(JSON.stringify(errorSpy.mock.calls)).not.toContain(oauthSecret);
+        expect(OAuth2).not.toHaveBeenCalled();
+      } finally {
+        vi.doUnmock('googleapis');
+        for (const name of Object.keys(process.env)) {
+          if (!(name in previousEnvironment)) {
+            delete process.env[name];
+          }
+        }
+        Object.assign(process.env, previousEnvironment);
+        errorSpy.mockRestore();
+        vi.resetModules();
+      }
+    },
+  );
 });

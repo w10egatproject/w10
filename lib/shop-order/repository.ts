@@ -1,9 +1,13 @@
+import { randomUUID } from 'node:crypto';
+
+import { buildAttachmentStorageName } from './attachment-lifecycle';
 import { assertUploadMetadata, matchesAllowedSignature } from './file-rules';
 import { isoToSheetSerial, parseSheetRow } from './domain';
 import {
   classifyDriveOAuthError,
   createDriveOAuthClient,
   readDriveOAuthEnvironment,
+  type DriveOAuthEnvironment,
   type DriveFailureCode,
 } from './drive-oauth';
 import type {
@@ -12,6 +16,7 @@ import type {
   ShopOrderInput,
   UploadMetadata,
   UploadSession,
+  UploadSessionRequest,
 } from './types';
 
 const GOOGLE_SHEETS_SCOPE =
@@ -69,6 +74,7 @@ export interface ShopOrderRepositoryDependencies {
     folderId: string;
   };
   now?: () => Date;
+  randomId?: () => string;
 }
 
 export interface ShopOrderRepository {
@@ -81,7 +87,7 @@ export interface ShopOrderRepository {
     uploadedFileId?: string,
   ): Promise<ShopOrder>;
   remove(no: number): Promise<void>;
-  createUploadSession(metadata: UploadMetadata): Promise<UploadSession>;
+  createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
 }
 
 interface LocatedOrder {
@@ -96,9 +102,13 @@ interface VerifiedUpload {
   appProperties: Record<string, string>;
 }
 
+type ShopOrderRepositoryErrorCode =
+  | DriveFailureCode
+  | 'DRIVE_OAUTH_CONFIGURATION_REQUIRED';
+
 export class ShopOrderRepositoryError extends Error {
   constructor(
-    public readonly code: DriveFailureCode,
+    public readonly code: ShopOrderRepositoryErrorCode,
     message: string,
   ) {
     super(message);
@@ -167,14 +177,42 @@ function assertGoogleUploadUrl(value: string | null): string {
     throw new Error('Google Drive returned an invalid resumable upload URL');
   }
   if (
-    url.protocol !== 'https:' ||
-    url.hostname !== 'www.googleapis.com' ||
+    url.origin !== GOOGLE_UPLOAD_ORIGIN ||
     url.username ||
     url.password
   ) {
     throw new Error('Google Drive returned an invalid resumable upload URL');
   }
   return url.toString();
+}
+
+const DRIVE_FAILURE_MESSAGES: Readonly<Record<DriveFailureCode, string>> = {
+  DRIVE_OAUTH_REAUTH_REQUIRED:
+    'การเชื่อมต่อ Google Drive หมดอายุ',
+  DRIVE_QUOTA_EXCEEDED:
+    'พื้นที่จัดเก็บหรือโควตา Google Drive เต็ม',
+  DRIVE_FOLDER_CONFIGURATION_REQUIRED:
+    'ไม่พบโฟลเดอร์ Google Drive ที่กำหนด',
+  DRIVE_ACCESS_FORBIDDEN:
+    'ไม่สามารถเข้าถึงโฟลเดอร์ Google Drive ได้',
+  DRIVE_UNAVAILABLE:
+    'Google Drive ไม่พร้อมใช้งานชั่วคราว',
+};
+
+async function classifyUploadResponse(
+  response: Response,
+): Promise<DriveFailureCode> {
+  if (response.status === 429) return 'DRIVE_QUOTA_EXCEEDED';
+
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch {
+    data = undefined;
+  }
+  return classifyDriveOAuthError({
+    response: { status: response.status, data },
+  });
 }
 
 function normalizeOrderInput(order: ShopOrderInput): ShopOrderInput {
@@ -248,6 +286,7 @@ export function createShopOrderRepository(
     authenticatedFetch,
     config,
     now = () => new Date(),
+    randomId = randomUUID,
   } = dependencies;
   const orderSheet = quoteSheetName(config.sheetName);
   let numericSheetId: number | undefined;
@@ -435,9 +474,15 @@ export function createShopOrderRepository(
   }
 
   async function createUploadSession(
-    metadata: UploadMetadata,
+    request: UploadSessionRequest,
   ): Promise<UploadSession> {
-    const safeMetadata = assertUploadMetadata(metadata);
+    const safeMetadata = assertUploadMetadata(request);
+    const sessionCreatedAt = now();
+    const storageName = buildAttachmentStorageName(
+      { ...safeMetadata, orderNumber: request.orderNumber },
+      sessionCreatedAt,
+      randomId().replaceAll('-', '').slice(0, 8),
+    );
     const generated = await drive.files.generateIds({
       count: 1,
       space: 'drive',
@@ -460,31 +505,33 @@ export function createShopOrderRepository(
         },
         body: JSON.stringify({
           id: fileId,
-          name: safeMetadata.name,
+          name: storageName,
           parents: [config.folderId],
           appProperties: {
-            shopOrderUpload: 'pending',
-            expectedName: safeMetadata.name,
-            expectedSize: String(safeMetadata.size),
+            status: 'pending',
+            pendingSince: sessionCreatedAt.toISOString(),
+            orderNumber: request.orderNumber,
+            expectedName: storageName,
             expectedMime: safeMetadata.mimeType,
+            expectedSize: String(safeMetadata.size),
           },
         }),
       },
     );
-    if (response.status === 403) {
-      throw new ShopOrderRepositoryError(
-        'DRIVE_ACCESS_FORBIDDEN',
-        'ไม่สามารถเข้าถึงโฟลเดอร์ Google Drive ได้',
-      );
-    }
     if (!response.ok) {
-      throw new Error('ไม่สามารถเริ่มการอัปโหลดไฟล์ได้');
+      const code = await classifyUploadResponse(response);
+      throw new ShopOrderRepositoryError(
+        code,
+        DRIVE_FAILURE_MESSAGES[code],
+      );
     }
     const uploadUrl = assertGoogleUploadUrl(response.headers.get('location'));
     return {
       fileId,
       uploadUrl,
-      expiresAt: new Date(now().getTime() + SESSION_LIFETIME_MS).toISOString(),
+      expiresAt: new Date(
+        sessionCreatedAt.getTime() + SESSION_LIFETIME_MS,
+      ).toISOString(),
     };
   }
 
@@ -636,9 +683,18 @@ async function createDefaultRepository(): Promise<ShopOrderRepository> {
     key: privateKey,
     scopes: [GOOGLE_SHEETS_SCOPE],
   });
+  let driveOAuthEnvironment: DriveOAuthEnvironment;
+  try {
+    driveOAuthEnvironment = readDriveOAuthEnvironment(process.env);
+  } catch {
+    throw new ShopOrderRepositoryError(
+      'DRIVE_OAUTH_CONFIGURATION_REQUIRED',
+      'การตั้งค่า Google Drive OAuth ไม่ครบ กรุณาติดต่อผู้ดูแลระบบ',
+    );
+  }
   const driveAuth = createDriveOAuthClient(
     google,
-    readDriveOAuthEnvironment(process.env),
+    driveOAuthEnvironment,
   );
   const sheets = google.sheets({ version: 'v4', auth: sheetAuth });
   const drive = google.drive({ version: 'v3', auth: driveAuth });

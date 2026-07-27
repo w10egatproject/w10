@@ -49,9 +49,10 @@ beforeEach(() => {
 describe('Shop Order upload-session route', () => {
   it('validates metadata and returns a no-store created envelope', async () => {
     const metadata = {
-      name: 'photo.png',
+      orderNumber: '123456',
+      name: 'ต้นฉบับลับ.png',
       mimeType: 'image/png',
-      size: 1024,
+      size: 8,
     };
 
     const response = await POST(jsonRequest(metadata));
@@ -75,7 +76,12 @@ describe('Shop Order upload-session route', () => {
       },
     );
     const crossOrigin = jsonRequest(
-      { name: 'photo.png', mimeType: 'image/png', size: 1024 },
+      {
+        orderNumber: '123456',
+        name: 'photo.png',
+        mimeType: 'image/png',
+        size: 1024,
+      },
       { Origin: 'https://attacker.example' },
     );
 
@@ -104,6 +110,7 @@ describe('Shop Order upload-session route', () => {
       },
     );
     const oversized = jsonRequest({
+      orderNumber: '123456',
       name: 'large.pdf',
       mimeType: 'application/pdf',
       size: 10 * 1024 * 1024 + 1,
@@ -121,11 +128,31 @@ describe('Shop Order upload-session route', () => {
     expect(repository.createUploadSession).not.toHaveBeenCalled();
   });
 
+  it.each(['12345', '1234567', 'abcdef', '', 123456])(
+    'rejects an invalid six-digit order number %#',
+    async (orderNumber) => {
+      const response = await POST(jsonRequest({
+        orderNumber,
+        name: 'photo.png',
+        mimeType: 'image/png',
+        size: 1024,
+      }));
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({
+        ok: false,
+        error: { code: 'INVALID_UPLOAD_METADATA' },
+      });
+      expect(repository.createUploadSession).not.toHaveBeenCalled();
+    },
+  );
+
   it('returns a generic correlated 500 without logging credentials, metadata, or the session URL', async () => {
     const privateKey = '-----BEGIN PRIVATE KEY-----secret';
     const uploadUrl =
       'https://www.googleapis.com/upload/drive/v3/files?upload_id=secret';
     const metadata = {
+      orderNumber: '123456',
       name: 'private-customer-file.pdf',
       mimeType: 'application/pdf',
       size: 1024,
@@ -157,27 +184,61 @@ describe('Shop Order upload-session route', () => {
     });
   });
 
-  it('returns an actionable safe response when Drive folder permission is missing', async () => {
-    repository.createUploadSession.mockRejectedValueOnce(
-      Object.assign(new Error('hidden google response'), {
-        code: 'DRIVE_ACCESS_FORBIDDEN',
-      }),
-    );
+  it.each([
+    [
+      'DRIVE_OAUTH_CONFIGURATION_REQUIRED',
+      'DRIVE_OAUTH_CONFIGURATION_REQUIRED',
+      'การตั้งค่า Google Drive OAuth ไม่ครบ กรุณาติดต่อผู้ดูแลระบบ',
+    ],
+    [
+      'DRIVE_OAUTH_REAUTH_REQUIRED',
+      'DRIVE_OAUTH_REAUTH_REQUIRED',
+      'การเชื่อมต่อ Google Drive หมดอายุ กรุณาเชื่อมต่อบัญชีใหม่',
+    ],
+    [
+      'DRIVE_FOLDER_CONFIGURATION_REQUIRED',
+      'DRIVE_FOLDER_CONFIGURATION_REQUIRED',
+      'ไม่พบโฟลเดอร์ Google Drive ที่กำหนด กรุณาตรวจสอบการตั้งค่าโฟลเดอร์',
+    ],
+    [
+      'DRIVE_ACCESS_FORBIDDEN',
+      'DRIVE_FOLDER_CONFIGURATION_REQUIRED',
+      'ไม่พบโฟลเดอร์ Google Drive ที่กำหนด กรุณาตรวจสอบการตั้งค่าโฟลเดอร์',
+    ],
+    [
+      'DRIVE_QUOTA_EXCEEDED',
+      'DRIVE_QUOTA_EXCEEDED',
+      'พื้นที่จัดเก็บหรือโควตา Google Drive เต็ม กรุณาติดต่อผู้ดูแลระบบ',
+    ],
+    [
+      'DRIVE_UNAVAILABLE',
+      'DRIVE_UNAVAILABLE',
+      'Google Drive ไม่พร้อมใช้งานชั่วคราว กรุณาลองใหม่ภายหลัง',
+    ],
+  ])(
+    'returns a safe actionable response for %s',
+    async (repositoryCode, responseCode, message) => {
+      repository.createUploadSession.mockRejectedValueOnce(
+        Object.assign(new Error('hidden google response'), {
+          code: repositoryCode,
+        }),
+      );
 
-    const response = await POST(jsonRequest({
-      name: 'photo.png',
-      mimeType: 'image/png',
-      size: 1024,
-    }));
+      const response = await POST(jsonRequest({
+        orderNumber: '123456',
+        name: 'photo.png',
+        mimeType: 'image/png',
+        size: 1024,
+      }));
+      const body = await response.json();
 
-    expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({
-      ok: false,
-      error: {
-        code: 'DRIVE_CONFIGURATION_REQUIRED',
-        message:
-          'ระบบยังเชื่อมต่อ Google Drive ไม่ได้ กรุณาเปิด Google Drive API และแชร์โฟลเดอร์ให้ Service Account เป็น Editor',
-      },
-    });
-  });
+      expect(response.status).toBe(503);
+      expect(body).toEqual({
+        ok: false,
+        error: { code: responseCode, message },
+      });
+      expect(JSON.stringify(body)).not.toContain('Service Account');
+      expect(JSON.stringify(body)).not.toContain('hidden google response');
+    },
+  );
 });
