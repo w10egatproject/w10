@@ -51,6 +51,8 @@ export function ShopOrderSummary({
     },
   ];
 
+  const maxUnitCount = summary.popularUnits[0]?.count || 1;
+
   return (
     <aside className="space-y-4" aria-label="สรุปรายการ">
       <div className="grid grid-cols-3 gap-2 lg:grid-cols-1 xl:grid-cols-3">
@@ -117,18 +119,36 @@ export function ShopOrderSummary({
         </div>
       </section>
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-bold">หน่วยงานยอดนิยม</h2>
+        <h2 className="mb-3 text-sm font-bold text-slate-800">
+          หน่วยงานยอดนิยม
+        </h2>
         {summary.popularUnits.length ? (
-          <ol className="space-y-2 text-sm">
-            {summary.popularUnits.map((unit, index) => (
-              <li key={unit.name} className="flex items-center gap-2">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-700">
-                  {index + 1}
-                </span>
-                <span className="min-w-0 flex-1 truncate">{unit.name}</span>
-                <b>{unit.count}</b>
-              </li>
-            ))}
+          <ol className="space-y-3 text-sm">
+            {summary.popularUnits.map((unit, index) => {
+              const percent = Math.min(
+                100,
+                Math.max(4, Math.round((unit.count / maxUnitCount) * 100)),
+              );
+              return (
+                <li key={unit.name} className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-700">
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-medium text-slate-700">
+                      {unit.name}
+                    </span>
+                    <b className="text-slate-900">{unit.count}</b>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-indigo-600 transition-all duration-500"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <p className="text-sm text-slate-500">ยังไม่มีข้อมูลหน่วยงาน</p>
