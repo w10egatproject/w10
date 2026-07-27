@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import {
   buildAttachmentStorageName,
+  deletionDate,
+  driveFileIdFromCanonicalUrl,
   parseAttachmentLifecycle,
 } from './attachment-lifecycle';
 import { assertUploadMetadata, matchesAllowedSignature } from './file-rules';
@@ -647,6 +649,51 @@ export function createShopOrderRepository(
     }
   }
 
+  async function scheduleOwnedAttachmentDeletion(
+    fileUrl: string,
+    orderNumber: string,
+    reason: 'replaced' | 'order_deleted',
+  ): Promise<void> {
+    const fileId = driveFileIdFromCanonicalUrl(fileUrl);
+    if (!fileId) return;
+
+    try {
+      const response = await drive.files.get({
+        fileId,
+        fields: 'id,parents,appProperties,trashed',
+      });
+      const data = response.data ?? {};
+      const parents = Array.isArray(data.parents) ? data.parents : [];
+      const lifecycle = parseAttachmentLifecycle(
+        normalizeAppProperties(data.appProperties),
+      );
+      if (
+        data.id !== fileId ||
+        data.trashed !== false ||
+        !parents.includes(config.folderId) ||
+        lifecycle?.status !== 'active' ||
+        lifecycle.orderNumber !== orderNumber
+      ) {
+        return;
+      }
+
+      await drive.files.update({
+        fileId,
+        fields: 'id',
+        requestBody: {
+          appProperties: {
+            status: 'scheduled_delete',
+            deleteAfter: deletionDate(now()),
+            orderNumber,
+            reason,
+          },
+        },
+      });
+    } catch {
+      // Attachment retirement is best-effort after the Sheet mutation succeeds.
+    }
+  }
+
   async function createUploadSession(
     request: UploadSessionRequest,
   ): Promise<UploadSession> {
@@ -837,6 +884,13 @@ export function createShopOrderRepository(
         requestBody: { values: [serializeOrder(order, fileUrl)] },
       });
       await formatDateCells(rowNumber);
+      if (activatedUpload) {
+        await scheduleOwnedAttachmentDeletion(
+          current.order.fileUrl,
+          current.order.number,
+          'replaced',
+        );
+      }
       return {
         order: toShopOrder(no, order, fileUrl),
         attachment,
@@ -860,6 +914,11 @@ export function createShopOrderRepository(
       range: `${orderSheet}!A${rowNumber}:K${rowNumber}`,
       requestBody: {},
     });
+    await scheduleOwnedAttachmentDeletion(
+      current.order.fileUrl,
+      current.order.number,
+      'order_deleted',
+    );
   }
 
   return {

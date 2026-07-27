@@ -143,6 +143,42 @@ function makeDependencies() {
   };
 }
 
+function setCurrentAttachment(
+  sheets: ReturnType<typeof makeDependencies>['sheets'],
+  fileUrl: string,
+) {
+  sheets.spreadsheets.values.get.mockImplementation(
+    ({ range }: { range: string }) => {
+      if (range.includes('DepartmentList')) {
+        return Promise.resolve({ data: { values: [['หบพ-ช.']] } });
+      }
+      if (range.endsWith('!A2:A')) {
+        return Promise.resolve({ data: { values: [[1]] } });
+      }
+      if (/!A2:K2$/.test(range)) {
+        return Promise.resolve({
+          data: {
+            values: [[
+              1,
+              'หสบ-ช.',
+              'หบพ-ช.',
+              '123456',
+              46204,
+              'เรื่อง',
+              'W11',
+              '',
+              '',
+              '',
+              fileUrl,
+            ]],
+          },
+        });
+      }
+      return Promise.resolve({ data: { values: [] } });
+    },
+  );
+}
+
 describe('ShopOrderRepository', () => {
   it('normalizes quoted private keys with platform prefixes safely', () => {
     expect(
@@ -692,6 +728,356 @@ describe('ShopOrderRepository', () => {
       requestBody: {},
     });
     expect(drive.files.update).not.toHaveBeenCalled();
+  });
+
+  it('schedules the previous owned active attachment after a replacement is saved to Sheets', async () => {
+    const { dependencies, authenticatedFetch, sheets, drive } =
+      makeDependencies();
+    dependencies.now = () => new Date('2026-07-27T00:00:00.000Z');
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+    );
+    authenticatedFetch.mockReset().mockResolvedValue(
+      new Response(PNG_BYTES, { status: 206 }),
+    );
+    drive.files.get
+      .mockResolvedValueOnce({
+        data: {
+          id: 'generated-id',
+          name: storedUploadName,
+          mimeType: uploadMetadata.mimeType,
+          size: String(uploadMetadata.size),
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'pending',
+            pendingSince,
+            orderNumber: validOrder.number,
+            expectedName: storedUploadName,
+            expectedMime: uploadMetadata.mimeType,
+            expectedSize: String(uploadMetadata.size),
+          },
+          webViewLink:
+            'https://drive.google.com/file/d/generated-id/view',
+          trashed: false,
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          id: 'old-oauth-file-id',
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'active',
+            finalizedAt: '2026-07-01T00:00:00.000Z',
+            orderNumber: '123456',
+          },
+          trashed: false,
+        },
+      });
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(
+      repository.update(1, validOrder, 'generated-id'),
+    ).resolves.toMatchObject({
+      order: {
+        fileUrl:
+          'https://drive.google.com/file/d/generated-id/view',
+      },
+      attachment: { status: 'attached', fileId: 'generated-id' },
+    });
+
+    expect(drive.files.get).toHaveBeenLastCalledWith({
+      fileId: 'old-oauth-file-id',
+      fields: 'id,parents,appProperties,trashed',
+    });
+    expect(drive.files.update).toHaveBeenLastCalledWith({
+      fileId: 'old-oauth-file-id',
+      fields: 'id',
+      requestBody: {
+        appProperties: {
+          status: 'scheduled_delete',
+          deleteAfter: '2026-08-26T00:00:00.000Z',
+          orderNumber: '123456',
+          reason: 'replaced',
+        },
+      },
+    });
+    const scheduleCallIndex = drive.files.update.mock.calls.findIndex(
+      ([request]) => request.fileId === 'old-oauth-file-id',
+    );
+    expect(
+      sheets.spreadsheets.values.update.mock.invocationCallOrder.at(-1),
+    ).toBeLessThan(
+      drive.files.update.mock.invocationCallOrder[scheduleCallIndex],
+    );
+  });
+
+  it('schedules an owned active attachment after its order is cleared from Sheets', async () => {
+    const { dependencies, sheets, drive } = makeDependencies();
+    dependencies.now = () => new Date('2026-07-27T00:00:00.000Z');
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+    );
+    drive.files.get.mockResolvedValueOnce({
+      data: {
+        id: 'old-oauth-file-id',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-01T00:00:00.000Z',
+          orderNumber: '123456',
+        },
+        trashed: false,
+      },
+    });
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.remove(1)).resolves.toBeUndefined();
+
+    expect(drive.files.update).toHaveBeenCalledWith({
+      fileId: 'old-oauth-file-id',
+      fields: 'id',
+      requestBody: {
+        appProperties: {
+          status: 'scheduled_delete',
+          deleteAfter: '2026-08-26T00:00:00.000Z',
+          orderNumber: '123456',
+          reason: 'order_deleted',
+        },
+      },
+    });
+    expect(
+      sheets.spreadsheets.values.clear.mock.invocationCallOrder[0],
+    ).toBeLessThan(drive.files.update.mock.invocationCallOrder[0]);
+  });
+
+  it.each([
+    [
+      'a noncanonical legacy URL',
+      'https://example.com/legacy-file',
+      undefined,
+    ],
+    [
+      'a lookalike Drive URL',
+      'https://drive.google.com.evil.test/file/d/old-oauth-file-id/view',
+      undefined,
+    ],
+    [
+      'Drive metadata forbidden to this OAuth client',
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+      { error: { response: { status: 403 } } },
+    ],
+    [
+      'Drive metadata missing',
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+      { error: { response: { status: 404 } } },
+    ],
+    [
+      'a file in another parent folder',
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+      {
+        data: {
+          id: 'old-oauth-file-id',
+          parents: ['other-folder-id'],
+          appProperties: {
+            status: 'active',
+            finalizedAt: '2026-07-01T00:00:00.000Z',
+            orderNumber: '123456',
+          },
+          trashed: false,
+        },
+      },
+    ],
+    [
+      'a file without lifecycle metadata',
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+      {
+        data: {
+          id: 'old-oauth-file-id',
+          parents: ['folder-id'],
+          appProperties: {},
+          trashed: false,
+        },
+      },
+    ],
+    [
+      'a file that is not active',
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+      {
+        data: {
+          id: 'old-oauth-file-id',
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'pending',
+            pendingSince: '2026-07-01T00:00:00.000Z',
+            orderNumber: '123456',
+          },
+          trashed: false,
+        },
+      },
+    ],
+    [
+      'a file that is already trashed',
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+      {
+        data: {
+          id: 'old-oauth-file-id',
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'active',
+            finalizedAt: '2026-07-01T00:00:00.000Z',
+            orderNumber: '123456',
+          },
+          trashed: true,
+        },
+      },
+    ],
+  ])('safely skips scheduling %s after deleting the order', async (
+    _caseName,
+    fileUrl,
+    driveResult,
+  ) => {
+    const { dependencies, sheets, drive } = makeDependencies();
+    setCurrentAttachment(sheets, fileUrl);
+    if (driveResult && 'error' in driveResult) {
+      drive.files.get.mockRejectedValueOnce(driveResult.error);
+    } else if (driveResult) {
+      drive.files.get.mockResolvedValueOnce(driveResult);
+    }
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.remove(1)).resolves.toBeUndefined();
+
+    expect(sheets.spreadsheets.values.clear).toHaveBeenCalledTimes(1);
+    expect(drive.files.update).not.toHaveBeenCalled();
+  });
+
+  it('does not schedule an attachment when clearing its Sheet row fails', async () => {
+    const { dependencies, sheets, drive } = makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+    );
+    sheets.spreadsheets.values.clear.mockRejectedValueOnce(
+      new Error('sheet failed'),
+    );
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.remove(1)).rejects.toThrow('sheet failed');
+
+    expect(drive.files.get).not.toHaveBeenCalled();
+    expect(drive.files.update).not.toHaveBeenCalled();
+  });
+
+  it('keeps a successful Sheet delete when scheduling temporarily fails', async () => {
+    const { dependencies, sheets, drive } = makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+    );
+    drive.files.get.mockRejectedValueOnce({
+      response: { status: 500 },
+    });
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.remove(1)).resolves.toBeUndefined();
+
+    expect(sheets.spreadsheets.values.clear).toHaveBeenCalledTimes(1);
+    expect(drive.files.update).not.toHaveBeenCalled();
+  });
+
+  it('keeps a successful replacement when its retired attachment cannot be scheduled', async () => {
+    const { dependencies, authenticatedFetch, sheets, drive } =
+      makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+    );
+    authenticatedFetch.mockReset().mockResolvedValue(
+      new Response(PNG_BYTES, { status: 206 }),
+    );
+    drive.files.get
+      .mockResolvedValueOnce({
+        data: {
+          id: 'generated-id',
+          name: storedUploadName,
+          mimeType: uploadMetadata.mimeType,
+          size: String(uploadMetadata.size),
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'pending',
+            pendingSince,
+            orderNumber: validOrder.number,
+            expectedName: storedUploadName,
+            expectedMime: uploadMetadata.mimeType,
+            expectedSize: String(uploadMetadata.size),
+          },
+          webViewLink:
+            'https://drive.google.com/file/d/generated-id/view',
+          trashed: false,
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          id: 'old-oauth-file-id',
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'active',
+            finalizedAt: '2026-07-01T00:00:00.000Z',
+            orderNumber: '123456',
+          },
+          trashed: false,
+        },
+      });
+    drive.files.update
+      .mockResolvedValueOnce({
+        data: {
+          id: 'generated-id',
+          webViewLink:
+            'https://drive.google.com/file/d/generated-id/view',
+        },
+      })
+      .mockRejectedValueOnce({ response: { status: 500 } });
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(
+      repository.update(1, validOrder, 'generated-id'),
+    ).resolves.toMatchObject({
+      order: {
+        fileUrl:
+          'https://drive.google.com/file/d/generated-id/view',
+      },
+      attachment: { status: 'attached', fileId: 'generated-id' },
+    });
+
+    expect(sheets.spreadsheets.values.update).toHaveBeenCalled();
+    expect(drive.permissions.delete).not.toHaveBeenCalled();
+  });
+
+  it('does not inspect the old attachment when a replacement Sheet update fails', async () => {
+    const { dependencies, authenticatedFetch, sheets, drive } =
+      makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/old-oauth-file-id/view',
+    );
+    authenticatedFetch.mockReset().mockResolvedValue(
+      new Response(PNG_BYTES, { status: 206 }),
+    );
+    sheets.spreadsheets.values.update.mockRejectedValueOnce(
+      new Error('sheet failed'),
+    );
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(
+      repository.update(1, validOrder, 'generated-id'),
+    ).rejects.toThrow('sheet failed');
+
+    expect(drive.files.get).toHaveBeenCalledTimes(1);
+    expect(drive.files.get).not.toHaveBeenCalledWith(
+      expect.objectContaining({ fileId: 'old-oauth-file-id' }),
+    );
   });
 
   it('restores pending metadata and removes its new permission when Sheet append fails', async () => {
