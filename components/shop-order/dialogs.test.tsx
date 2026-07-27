@@ -119,4 +119,19 @@ describe('Shop Order dialogs', () => {
       screen.getByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' }),
     ).toBeDefined();
   });
+  it('accepts only the approved attachment extensions and labels a PDF preview', async () => {
+    const user = userEvent.setup();
+    render(
+      <OrderFormDialog mode="create" departments={[]} receivers={[]} pending={false} onClose={vi.fn()} onSubmit={vi.fn()} />,
+    );
+    const input = screen.getByLabelText(/ไฟล์แนบ/) as HTMLInputElement;
+    expect(input.getAttribute('accept')).toBe('.jpg,.jpeg,.png,.webp,.pdf');
+
+    await user.upload(
+      input,
+      new File(['%PDF-example'], 'report.pdf', { type: 'application/pdf' }),
+    );
+    expect(screen.getByText('PDF')).toBeDefined();
+    expect(screen.getByText('report.pdf')).toBeDefined();
+  });
 });

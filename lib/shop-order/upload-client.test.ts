@@ -99,7 +99,7 @@ describe('direct Drive resumable upload', () => {
     await expect(result).resolves.toBeUndefined();
   });
 
-  it.each([0, 199, 300, 308, 400, 500])(
+  it.each([199, 300, 308, 400])(
     'rejects unsuccessful HTTP status %s with a safe message',
     async (status) => {
       const request = createRequest(status);
@@ -121,7 +121,7 @@ describe('direct Drive resumable upload', () => {
       new File(['%PDF-example'], 'report.pdf', { type: 'application/pdf' }),
       session,
       vi.fn(),
-      () => request,
+      { requestFactory: () => request, retryDelaysMs: [] },
     );
 
     (request.onerror as EventListener)(new Event('error'));
@@ -139,10 +139,67 @@ describe('direct Drive resumable upload', () => {
       new File(['%PDF-example'], 'report.pdf', { type: 'application/pdf' }),
       session,
       vi.fn(),
-      () => request,
+      { requestFactory: () => request, retryDelaysMs: [] },
     );
 
     (request[handler] as EventListener)(new Event(handler.slice(2)));
     await expect(result).rejects.toThrow(message);
+  });
+  it('retries network failures with bounded delays and succeeds on the third attempt', async () => {
+    const requests = [createRequest(), createRequest(), createRequest()];
+    const requestFactory = vi.fn(() => requests.shift()!);
+    const wait = vi.fn().mockResolvedValue(undefined);
+    const result = uploadToDriveSession(
+      new File(['%PDF-example'], 'report.pdf', { type: 'application/pdf' }),
+      session,
+      vi.fn(),
+      { requestFactory, wait, retryDelaysMs: [250, 750] },
+    );
+
+    (requestFactory.mock.results[0].value.onerror as EventListener)(new Event('error'));
+    await vi.waitFor(() => expect(requestFactory).toHaveBeenCalledTimes(2));
+    (requestFactory.mock.results[1].value.ontimeout as EventListener)(new Event('timeout'));
+    await vi.waitFor(() => expect(requestFactory).toHaveBeenCalledTimes(3));
+    (requestFactory.mock.results[2].value.onload as EventListener)(new Event('load'));
+
+    await expect(result).resolves.toBeUndefined();
+    expect(wait).toHaveBeenNthCalledWith(1, 250);
+    expect(wait).toHaveBeenNthCalledWith(2, 750);
+  });
+
+  it.each([429, 500, 503])('retries transient HTTP status %s', async (status) => {
+    const requests = [createRequest(status), createRequest(200)];
+    const requestFactory = vi.fn(() => requests.shift()!);
+    const wait = vi.fn().mockResolvedValue(undefined);
+    const result = uploadToDriveSession(
+      new File(['%PDF-example'], 'report.pdf', { type: 'application/pdf' }),
+      session,
+      vi.fn(),
+      { requestFactory, wait, retryDelaysMs: [10] },
+    );
+
+    (requestFactory.mock.results[0].value.onload as EventListener)(new Event('load'));
+    await vi.waitFor(() => expect(requestFactory).toHaveBeenCalledTimes(2));
+    (requestFactory.mock.results[1].value.onload as EventListener)(new Event('load'));
+
+    await expect(result).resolves.toBeUndefined();
+    expect(wait).toHaveBeenCalledWith(10);
+  });
+
+  it.each([400, 401, 403, 404])('does not retry permanent HTTP status %s', async (status) => {
+    const request = createRequest(status);
+    const requestFactory = vi.fn(() => request);
+    const wait = vi.fn().mockResolvedValue(undefined);
+    const result = uploadToDriveSession(
+      new File(['%PDF-example'], 'report.pdf', { type: 'application/pdf' }),
+      session,
+      vi.fn(),
+      { requestFactory, wait, retryDelaysMs: [10, 20] },
+    );
+
+    (request.onload as EventListener)(new Event('load'));
+    await expect(result).rejects.toThrow('อัปโหลดไฟล์ไม่สำเร็จ');
+    expect(requestFactory).toHaveBeenCalledTimes(1);
+    expect(wait).not.toHaveBeenCalled();
   });
 });

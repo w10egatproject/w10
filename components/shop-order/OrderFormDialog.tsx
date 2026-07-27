@@ -81,11 +81,11 @@ export function OrderFormDialog({ mode, order, departments, receivers, pending, 
           <textarea rows={3} value={value.note} onChange={(e) => set({ note: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 p-3 font-normal" />
         </label>
         <label className="text-sm font-bold sm:col-span-2">ไฟล์แนบ (ไม่เกิน 10 MB)
-          <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx" capture="environment" onChange={(e) => selectFile(e.target.files?.[0])} className="mt-1 block w-full text-sm font-normal" />
+          <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" capture="environment" onChange={(e) => selectFile(e.target.files?.[0])} className="mt-1 block w-full text-sm font-normal" />
         </label>
         {file && <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 sm:col-span-2">
           {previewUrl ? <Image src={previewUrl} alt={`ตัวอย่างไฟล์ ${file.name}`} width={80} height={80} unoptimized className="h-20 w-20 rounded-lg object-cover" />
-            : <div className="grid h-20 w-20 place-items-center rounded-lg bg-slate-200 text-xs font-bold text-slate-600">ไฟล์</div>}
+            : <div className="grid h-20 w-20 place-items-center rounded-lg bg-slate-200 text-xs font-bold text-slate-600">{file.type === 'application/pdf' ? 'PDF' : 'ไฟล์'}</div>}
           <div className="min-w-0"><p className="truncate text-sm font-bold">{file.name}</p><p className="text-xs text-slate-500">{(file.size / 1024).toLocaleString('th-TH', { maximumFractionDigits: 1 })} KB</p></div>
         </div>}
         {pending && progress !== undefined && <div aria-live="polite" className="sm:col-span-2"><div className="h-2 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-indigo-600" style={{ width: `${progress}%` }} /></div><p className="mt-1 text-xs">กำลังอัปโหลด {progress}%</p></div>}

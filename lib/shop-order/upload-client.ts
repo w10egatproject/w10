@@ -1,23 +1,40 @@
 import type { UploadSession } from './types';
 
 type RequestFactory = () => XMLHttpRequest;
+type Wait = (delayMs: number) => Promise<void>;
 
-export function uploadToDriveSession(
+interface UploadOptions {
+  requestFactory?: RequestFactory;
+  wait?: Wait;
+  retryDelaysMs?: readonly number[];
+}
+
+class UploadAttemptError extends Error {
+  constructor(message: string, public readonly retryable: boolean) {
+    super(message);
+    this.name = 'UploadAttemptError';
+  }
+}
+
+const DEFAULT_RETRY_DELAYS_MS = [250, 750] as const;
+
+function defaultWait(delayMs: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, delayMs));
+}
+
+function uploadAttempt(
   file: File,
   session: UploadSession,
   onProgress: (percent: number) => void,
-  makeRequest: RequestFactory = () => new XMLHttpRequest(),
+  requestFactory: RequestFactory,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const request = makeRequest();
+    const request = requestFactory();
 
     request.open('PUT', session.uploadUrl);
     request.setRequestHeader('Content-Type', file.type);
     request.upload.onprogress = (event) => {
-      if (!event.lengthComputable || event.total <= 0) {
-        return;
-      }
-
+      if (!event.lengthComputable || event.total <= 0) return;
       const percent = Math.round((event.loaded / event.total) * 100);
       onProgress(Math.min(100, Math.max(0, percent)));
     };
@@ -26,17 +43,48 @@ export function uploadToDriveSession(
         resolve();
         return;
       }
-      reject(new Error('อัปโหลดไฟล์ไม่สำเร็จ'));
+      const retryable =
+        request.status === 0 ||
+        request.status === 429 ||
+        (request.status >= 500 && request.status < 600);
+      reject(new UploadAttemptError('อัปโหลดไฟล์ไม่สำเร็จ', retryable));
     };
     request.onerror = () => {
-      reject(new Error('การเชื่อมต่อขณะอัปโหลดขัดข้อง'));
+      reject(new UploadAttemptError('การเชื่อมต่อขณะอัปโหลดขัดข้อง', true));
     };
     request.onabort = () => {
-      reject(new Error('การอัปโหลดไฟล์ถูกยกเลิก'));
+      reject(new UploadAttemptError('การอัปโหลดไฟล์ถูกยกเลิก', false));
     };
     request.ontimeout = () => {
-      reject(new Error('หมดเวลารอการอัปโหลดไฟล์'));
+      reject(new UploadAttemptError('หมดเวลารอการอัปโหลดไฟล์', true));
     };
     request.send(file);
   });
+}
+
+export async function uploadToDriveSession(
+  file: File,
+  session: UploadSession,
+  onProgress: (percent: number) => void,
+  optionsOrFactory: UploadOptions | RequestFactory = {},
+): Promise<void> {
+  const options = typeof optionsOrFactory === 'function'
+    ? { requestFactory: optionsOrFactory }
+    : optionsOrFactory;
+  const requestFactory = options.requestFactory ?? (() => new XMLHttpRequest());
+  const wait = options.wait ?? defaultWait;
+  const retryDelaysMs = options.retryDelaysMs ?? DEFAULT_RETRY_DELAYS_MS;
+
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await uploadAttempt(file, session, onProgress, requestFactory);
+      return;
+    } catch (error) {
+      const retryable =
+        error instanceof UploadAttemptError && error.retryable;
+      const retryDelay = retryDelaysMs[attempt];
+      if (!retryable || retryDelay === undefined) throw error;
+      await wait(retryDelay);
+    }
+  }
 }

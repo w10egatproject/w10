@@ -7,7 +7,7 @@ import NavigationMenu from '@/components/navigation/NavigationMenu';
 import { filterAndSortOrders, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
 import { inspectLocalFile } from '@/lib/shop-order/file-rules';
 import { uploadToDriveSession } from '@/lib/shop-order/upload-client';
-import type { ApiResult, ShopOrder, ShopOrderBootstrap, ShopOrderFilters, ShopOrderInput, UploadSession } from '@/lib/shop-order/types';
+import type { ApiResult, ShopOrder, ShopOrderBootstrap, ShopOrderFilters, ShopOrderInput, ShopOrderMutationResult, UploadSession } from '@/lib/shop-order/types';
 import { OrderDetailDialog } from './OrderDetailDialog';
 import { OrderFormDialog } from './OrderFormDialog';
 import { ShopOrderSummary } from './ShopOrderSummary';
@@ -26,6 +26,10 @@ export function ShopOrderDashboard() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
   const [mutationPending, setMutationPending] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>();
+  const [attachmentWarning, setAttachmentWarning] = useState<{
+    message: string;
+    order: ShopOrder;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     setError('');
@@ -60,27 +64,62 @@ export function ShopOrderDashboard() {
   };
 
   const saveOrder = async ({ order, file }: { order: ShopOrderInput; file?: File }) => {
-    setMutationPending(true); setError('');
+    setMutationPending(true);
+    setError('');
+    setAttachmentWarning(null);
     try {
       let uploadedFileId: string | undefined;
+      let uploadFailed = false;
       if (file) {
         const metadata = await inspectLocalFile(file);
-        const session = await requestJson<UploadSession>('/api/shop-order/upload-session', { method: 'POST', body: JSON.stringify(metadata) });
-        setUploadProgress(0);
-        await uploadToDriveSession(file, session, setUploadProgress);
-        uploadedFileId = session.fileId;
+        try {
+          const session = await requestJson<UploadSession>(
+            '/api/shop-order/upload-session',
+            {
+              method: 'POST',
+              body: JSON.stringify({ orderNumber: order.number, ...metadata }),
+            },
+          );
+          setUploadProgress(0);
+          await uploadToDriveSession(file, session, setUploadProgress);
+          uploadedFileId = session.fileId;
+        } catch {
+          uploadFailed = true;
+          setUploadProgress(undefined);
+        }
       }
-      await requestJson('/api/shop-order', {
-        method: formMode === 'edit' ? 'PATCH' : 'POST',
-        body: JSON.stringify({ ...(formMode === 'edit' && selected ? { no: selected.no } : {}), order, uploadedFileId }),
-      });
-      setFormMode(null); setSelected(null); setUploadProgress(undefined);
+
+      const mutation = await requestJson<ShopOrderMutationResult>(
+        '/api/shop-order',
+        {
+          method: formMode === 'edit' ? 'PATCH' : 'POST',
+          body: JSON.stringify({
+            ...(formMode === 'edit' && selected ? { no: selected.no } : {}),
+            order,
+            uploadedFileId,
+          }),
+        },
+      );
+      const attachmentFailed =
+        uploadFailed ||
+        mutation.attachment.status === 'order_saved_without_attachment';
+      setFormMode(null);
+      setSelected(null);
+      setUploadProgress(undefined);
       await loadData();
+      if (attachmentFailed) {
+        setAttachmentWarning({
+          message:
+            'บันทึกออเดอร์แล้ว แต่แนบไฟล์ไม่สำเร็จ กรุณาเพิ่มไฟล์อีกครั้ง',
+          order: mutation.order,
+        });
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'บันทึกรายการไม่สำเร็จ');
-    } finally { setMutationPending(false); }
+    } finally {
+      setMutationPending(false);
+    }
   };
-
   const deleteOrder = async () => {
     if (!selected) return;
     setMutationPending(true); setError('');
@@ -105,6 +144,10 @@ export function ShopOrderDashboard() {
       <ShopOrderToolbar filters={filters} years={years} loading={loading} onChange={updateFilters} onRefresh={() => void loadData()} onAdd={() => { setSelected(null); setFormMode('create'); }} />
       {error && <div role="alert" className="mb-4 flex items-center justify-between rounded-xl bg-rose-50 p-4 text-sm font-bold text-rose-800">
         <span>{error}</span><button onClick={() => { setLoading(true); void loadData(); }} className="flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5"><RefreshCw className="h-4 w-4" /> ลองใหม่</button>
+      </div>}
+      {attachmentWarning && <div role="status" className="mb-4 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+        <span>{attachmentWarning.message}</span>
+        <button type="button" onClick={() => { setSelected(attachmentWarning.order); setFormMode('edit'); setAttachmentWarning(null); }} className="rounded-lg border border-amber-400 bg-white px-3 py-1.5">เพิ่มไฟล์อีกครั้ง</button>
       </div>}
       {loading && !data ? <div aria-label="กำลังโหลดข้อมูล" className="grid animate-pulse gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
         <div className="h-96 rounded-2xl bg-white/70" /><div className="h-72 rounded-2xl bg-white/70" />

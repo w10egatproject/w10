@@ -1,6 +1,18 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+const clientMocks = vi.hoisted(() => ({
+  inspectLocalFile: vi.fn(),
+  uploadToDriveSession: vi.fn(),
+}));
+
+vi.mock('@/lib/shop-order/file-rules', () => ({
+  inspectLocalFile: clientMocks.inspectLocalFile,
+}));
+vi.mock('@/lib/shop-order/upload-client', () => ({
+  uploadToDriveSession: clientMocks.uploadToDriveSession,
+}));
+
 import { ShopOrderDashboard } from './ShopOrderDashboard';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/shop-order' }));
@@ -39,6 +51,12 @@ const response = {
 
 describe('ShopOrderDashboard', () => {
   beforeEach(() => {
+    clientMocks.inspectLocalFile.mockResolvedValue({
+      name: 'photo.png',
+      mimeType: 'image/png',
+      size: 8,
+    });
+    clientMocks.uploadToDriveSession.mockResolvedValue(undefined);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: async () => response,
@@ -73,5 +91,121 @@ describe('ShopOrderDashboard', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole('button', { name: 'รีเฟรชข้อมูล' }));
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  });
+  it('saves without an attachment after upload failure and offers an edit retry', async () => {
+    const user = userEvent.setup();
+    const createdOrder = {
+      ...response.data.orders[1],
+      no: 3,
+      to: 'กอง ก',
+      number: '123456',
+      subject: 'งานใหม่',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => response })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          data: {
+            fileId: 'pending-file-id',
+            uploadUrl: 'https://www.googleapis.com/upload/session-secret',
+            expiresAt: '2026-07-27T10:00:00.000Z',
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          data: { order: createdOrder, attachment: { status: 'none' } },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ...response,
+          data: { ...response.data, orders: [...response.data.orders, createdOrder] },
+        }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+    clientMocks.uploadToDriveSession.mockRejectedValueOnce(
+      new Error('การเชื่อมต่อขณะอัปโหลดขัดข้อง'),
+    );
+
+    render(<ShopOrderDashboard />);
+    await screen.findByText('งานเสร็จ');
+    await user.click(screen.getByRole('button', { name: 'เพิ่ม' }));
+    await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
+    await user.type(screen.getByLabelText('เลขที่'), '123456');
+    await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.upload(
+      screen.getByLabelText(/ไฟล์แนบ/),
+      new File(['png'], 'photo.png', { type: 'image/png' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'บันทึก' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+    const sessionBody = JSON.parse(fetchMock.mock.calls[1][1].body as string);
+    expect(sessionBody.orderNumber).toBe('123456');
+    const mutationBody = JSON.parse(fetchMock.mock.calls[2][1].body as string);
+    expect(mutationBody.uploadedFileId).toBeUndefined();
+    expect((await screen.findByRole('status')).textContent).toContain(
+      'บันทึกออเดอร์แล้ว แต่แนบไฟล์ไม่สำเร็จ',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'เพิ่มไฟล์อีกครั้ง' }));
+    expect(screen.getByRole('dialog').textContent).toContain('แก้ไขรายการ 3');
+  });
+
+  it('shows the same warning for a server partial-success outcome', async () => {
+    const user = userEvent.setup();
+    const createdOrder = { ...response.data.orders[1], no: 3, to: 'กอง ก', number: '123456', subject: 'งานใหม่' };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => response })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, data: { fileId: 'file-id', uploadUrl: 'https://www.googleapis.com/upload/session', expiresAt: '2026-07-27T10:00:00.000Z' } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, data: { order: createdOrder, attachment: { status: 'order_saved_without_attachment', code: 'ORDER_SAVED_WITHOUT_ATTACHMENT', message: 'บันทึกออเดอร์แล้ว แต่ไม่สามารถแนบไฟล์ได้' } } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => response });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<ShopOrderDashboard />);
+    await screen.findByText('งานเสร็จ');
+    await user.click(screen.getByRole('button', { name: 'เพิ่ม' }));
+    await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
+    await user.type(screen.getByLabelText('เลขที่'), '123456');
+    await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.upload(screen.getByLabelText(/ไฟล์แนบ/), new File(['png'], 'photo.png', { type: 'image/png' }));
+    await user.click(screen.getByRole('button', { name: 'บันทึก' }));
+
+    expect((await screen.findByRole('status')).textContent).toContain(
+      'บันทึกออเดอร์แล้ว แต่แนบไฟล์ไม่สำเร็จ',
+    );
+  });
+
+  it('keeps a locally invalid file in the form without any mutation request', async () => {
+    const user = userEvent.setup();
+    clientMocks.inspectLocalFile.mockRejectedValueOnce(
+      new Error('รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF'),
+    );
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => response,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<ShopOrderDashboard />);
+    await screen.findByText('งานเสร็จ');
+    await user.click(screen.getByRole('button', { name: 'เพิ่ม' }));
+    await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
+    await user.type(screen.getByLabelText('เลขที่'), '123456');
+    await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.upload(screen.getByLabelText(/ไฟล์แนบ/), new File(['bad'], 'photo.png', { type: 'image/png' }));
+    await user.click(screen.getByRole('button', { name: 'บันทึก' }));
+
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'รองรับเฉพาะไฟล์ JPEG, PNG, WebP และ PDF',
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('dialog')).toBeDefined();
   });
 });
