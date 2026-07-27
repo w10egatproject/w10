@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
-import { buildAttachmentStorageName } from './attachment-lifecycle';
+import {
+  buildAttachmentStorageName,
+  parseAttachmentLifecycle,
+} from './attachment-lifecycle';
 import { assertUploadMetadata, matchesAllowedSignature } from './file-rules';
 import { isoToSheetSerial, parseSheetRow } from './domain';
 import {
@@ -14,6 +17,7 @@ import type {
   ShopOrder,
   ShopOrderBootstrap,
   ShopOrderInput,
+  ShopOrderMutationResult,
   UploadMetadata,
   UploadSession,
   UploadSessionRequest,
@@ -59,7 +63,8 @@ interface GoogleDriveClient {
     update(request: JsonRecord): Promise<{ data?: JsonRecord }>;
   };
   permissions: {
-    create(request: JsonRecord): Promise<unknown>;
+    create(request: JsonRecord): Promise<{ data?: JsonRecord }>;
+    delete(request: JsonRecord): Promise<unknown>;
   };
 }
 
@@ -80,12 +85,15 @@ export interface ShopOrderRepositoryDependencies {
 export interface ShopOrderRepository {
   load(): Promise<ShopOrderBootstrap>;
   listDepartments(): Promise<string[]>;
-  create(order: ShopOrderInput, uploadedFileId?: string): Promise<ShopOrder>;
+  create(
+    order: ShopOrderInput,
+    uploadedFileId?: string,
+  ): Promise<ShopOrderMutationResult>;
   update(
     no: number,
     order: ShopOrderInput,
     uploadedFileId?: string,
-  ): Promise<ShopOrder>;
+  ): Promise<ShopOrderMutationResult>;
   remove(no: number): Promise<void>;
   createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
 }
@@ -98,9 +106,15 @@ interface LocatedOrder {
 interface VerifiedUpload {
   fileId: string;
   metadata: UploadMetadata;
-  webViewLink: string;
   appProperties: Record<string, string>;
 }
+
+interface ActivatedUpload extends VerifiedUpload {
+  permissionId: string;
+  webViewLink: string;
+}
+
+type CompensatableUpload = VerifiedUpload & { permissionId: string };
 
 type ShopOrderRepositoryErrorCode =
   | DriveFailureCode
@@ -113,6 +127,17 @@ export class ShopOrderRepositoryError extends Error {
   ) {
     super(message);
     this.name = 'ShopOrderRepositoryError';
+  }
+}
+
+class AttachmentFinalizationError extends Error {
+  constructor(
+    public readonly failureCode:
+      | DriveFailureCode
+      | 'DRIVE_UPLOAD_REJECTED',
+  ) {
+    super('Attachment finalization failed');
+    this.name = 'AttachmentFinalizationError';
   }
 }
 
@@ -389,88 +414,237 @@ export function createShopOrderRepository(
     });
   }
 
-  async function verifyAndFinalizeUpload(
+  function rejectedAttachment(): AttachmentFinalizationError {
+    return new AttachmentFinalizationError('DRIVE_UPLOAD_REJECTED');
+  }
+
+  function pendingProperties(
+    upload: VerifiedUpload,
+  ): Record<string, string> {
+    return {
+      status: 'pending',
+      pendingSince: upload.appProperties.pendingSince,
+      orderNumber: upload.appProperties.orderNumber,
+      expectedName: upload.metadata.name,
+      expectedMime: upload.metadata.mimeType,
+      expectedSize: String(upload.metadata.size),
+    };
+  }
+
+  function attachmentWarning(): ShopOrderMutationResult['attachment'] {
+    return {
+      status: 'order_saved_without_attachment',
+      code: 'ORDER_SAVED_WITHOUT_ATTACHMENT',
+      message:
+        'บันทึกออเดอร์แล้ว แต่ไม่สามารถแนบไฟล์ได้ กรุณาแก้ไขรายการเพื่อลองใหม่',
+    };
+  }
+
+  async function verifyPendingUpload(
     fileId: string,
+    requestedOrderNumber: string,
   ): Promise<VerifiedUpload> {
-    if (!fileId || typeof fileId !== 'string') {
-      throw new Error('รหัสไฟล์ไม่ถูกต้อง');
+    if (!/^[A-Za-z0-9_-]+$/.test(fileId)) {
+      throw rejectedAttachment();
     }
-    const metadataResponse = await drive.files.get({
-      fileId,
-      fields:
-        'id,name,mimeType,size,parents,appProperties,webViewLink,trashed',
-    });
+    let metadataResponse: Awaited<
+      ReturnType<GoogleDriveClient['files']['get']>
+    >;
+    try {
+      metadataResponse = await drive.files.get({
+        fileId,
+        fields:
+          'id,name,mimeType,size,parents,appProperties,webViewLink,trashed',
+      });
+    } catch (error) {
+      throw new AttachmentFinalizationError(
+        classifyDriveOAuthError(error),
+      );
+    }
     const data = metadataResponse.data ?? {};
     const appProperties = normalizeAppProperties(data.appProperties);
-    const expectedMetadata = assertUploadMetadata({
-      name: appProperties.expectedName ?? '',
-      mimeType: appProperties.expectedMime ?? '',
-      size: Number(appProperties.expectedSize),
-    });
+    let expectedMetadata: UploadMetadata;
+    try {
+      expectedMetadata = assertUploadMetadata({
+        name: appProperties.expectedName ?? '',
+        mimeType: appProperties.expectedMime ?? '',
+        size: Number(appProperties.expectedSize),
+      });
+    } catch {
+      throw rejectedAttachment();
+    }
     const parents = Array.isArray(data.parents) ? data.parents : [];
     const actualMetadata = {
       name: safeString(data.name),
       mimeType: safeString(data.mimeType).toLowerCase(),
       size: Number(data.size),
     };
+    const lifecycle = parseAttachmentLifecycle(appProperties);
 
     if (
       data.id !== fileId ||
       data.trashed !== false ||
       !parents.includes(config.folderId) ||
-      appProperties.shopOrderUpload !== 'pending' ||
+      lifecycle?.status !== 'pending' ||
+      lifecycle.orderNumber !== requestedOrderNumber ||
       actualMetadata.name !== expectedMetadata.name ||
       actualMetadata.mimeType !== expectedMetadata.mimeType ||
       actualMetadata.size !== expectedMetadata.size
     ) {
-      throw new Error('ข้อมูลไฟล์อัปโหลดไม่ตรงกับที่อนุญาต');
+      throw rejectedAttachment();
     }
 
-    const accessToken = await getAccessToken();
-    const mediaResponse = await authenticatedFetch(
-      `${GOOGLE_UPLOAD_ORIGIN}/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Range: LEADING_BYTE_RANGE,
+    let mediaResponse: Response;
+    try {
+      const accessToken = await getAccessToken();
+      mediaResponse = await authenticatedFetch(
+        `${GOOGLE_UPLOAD_ORIGIN}/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Range: LEADING_BYTE_RANGE,
+          },
         },
-      },
-    );
+      );
+    } catch (error) {
+      if (error instanceof ShopOrderRepositoryError) {
+        const code =
+          error.code === 'DRIVE_OAUTH_CONFIGURATION_REQUIRED'
+            ? 'DRIVE_UNAVAILABLE'
+            : error.code;
+        throw new AttachmentFinalizationError(code);
+      }
+      throw new AttachmentFinalizationError(
+        classifyDriveOAuthError(error),
+      );
+    }
     if (!mediaResponse.ok) {
-      throw new Error('ไม่สามารถตรวจสอบไฟล์อัปโหลดได้');
+      throw new AttachmentFinalizationError(
+        await classifyUploadResponse(mediaResponse),
+      );
     }
-    const leadingBytes = new Uint8Array(await mediaResponse.arrayBuffer());
+    let leadingBytes: Uint8Array;
+    try {
+      leadingBytes = new Uint8Array(await mediaResponse.arrayBuffer());
+    } catch (error) {
+      throw new AttachmentFinalizationError(
+        classifyDriveOAuthError(error),
+      );
+    }
     if (!matchesAllowedSignature(expectedMetadata, leadingBytes)) {
-      throw new Error('Uploaded file signature is not allowed');
+      throw rejectedAttachment();
     }
 
-    await drive.permissions.create({
-      fileId,
-      requestBody: { type: 'anyone', role: 'reader' },
-    });
-    const finalized = await drive.files.update({
-      fileId,
-      fields: 'webViewLink',
-      requestBody: {
-        appProperties: {
-          shopOrderUpload: 'finalized',
-          expectedName: expectedMetadata.name,
-          expectedMime: expectedMetadata.mimeType,
-          expectedSize: String(expectedMetadata.size),
-        },
-      },
-    });
-    const webViewLink = safeString(finalized.data?.webViewLink);
-    if (!webViewLink.startsWith('https://drive.google.com/')) {
-      throw new Error('Google Drive did not return a public file link');
-    }
     return {
       fileId,
       metadata: expectedMetadata,
-      webViewLink,
       appProperties,
     };
+  }
+
+  async function activateUpload(
+    upload: VerifiedUpload,
+  ): Promise<ActivatedUpload> {
+    let permissionId: string;
+    try {
+      const permission = await drive.permissions.create({
+        fileId: upload.fileId,
+        fields: 'id',
+        requestBody: { type: 'anyone', role: 'reader' },
+      });
+      permissionId = safeString(permission.data?.id);
+      if (!permissionId) {
+        throw rejectedAttachment();
+      }
+    } catch (error) {
+      if (error instanceof AttachmentFinalizationError) throw error;
+      throw new AttachmentFinalizationError(
+        classifyDriveOAuthError(error),
+      );
+    }
+
+    let finalized: Awaited<
+      ReturnType<GoogleDriveClient['files']['update']>
+    >;
+    try {
+      finalized = await drive.files.update({
+        fileId: upload.fileId,
+        fields: 'id,webViewLink',
+        requestBody: {
+          appProperties: {
+            status: 'active',
+            finalizedAt: now().toISOString(),
+            orderNumber: upload.appProperties.orderNumber,
+            expectedName: upload.metadata.name,
+            expectedMime: upload.metadata.mimeType,
+            expectedSize: String(upload.metadata.size),
+          },
+        },
+      });
+    } catch (error) {
+      await restorePendingUpload({ ...upload, permissionId });
+      throw new AttachmentFinalizationError(
+        classifyDriveOAuthError(error),
+      );
+    }
+    const webViewLink = safeString(finalized.data?.webViewLink);
+    let parsedLink: URL;
+    try {
+      parsedLink = new URL(webViewLink);
+    } catch {
+      await restorePendingUpload({ ...upload, permissionId });
+      throw rejectedAttachment();
+    }
+    if (
+      parsedLink.protocol !== 'https:' ||
+      parsedLink.hostname !== 'drive.google.com' ||
+      parsedLink.pathname !== `/file/d/${upload.fileId}/view` ||
+      parsedLink.username ||
+      parsedLink.password ||
+      parsedLink.port
+    ) {
+      await restorePendingUpload({ ...upload, permissionId });
+      throw rejectedAttachment();
+    }
+    return {
+      ...upload,
+      permissionId,
+      webViewLink,
+    };
+  }
+
+  async function finalizeUpload(
+    fileId: string,
+    requestedOrderNumber: string,
+  ): Promise<ActivatedUpload> {
+    return activateUpload(
+      await verifyPendingUpload(fileId, requestedOrderNumber),
+    );
+  }
+
+  async function restorePendingUpload(
+    upload: CompensatableUpload,
+  ): Promise<void> {
+    try {
+      await drive.files.update({
+        fileId: upload.fileId,
+        fields: 'id',
+        requestBody: {
+          appProperties: pendingProperties(upload),
+        },
+      });
+    } catch {
+      // Compensation must not replace the original Sheet failure.
+    }
+    try {
+      await drive.permissions.delete({
+        fileId: upload.fileId,
+        permissionId: upload.permissionId,
+      });
+    } catch {
+      // Compensation must not replace the original Sheet failure.
+    }
   }
 
   async function createUploadSession(
@@ -565,55 +739,114 @@ export function createShopOrderRepository(
   async function create(
     input: ShopOrderInput,
     uploadedFileId?: string,
-  ): Promise<ShopOrder> {
+  ): Promise<ShopOrderMutationResult> {
     const order = normalizeOrderInput(input);
     await assertDepartmentAllowed(order.to);
-    const fileUrl = uploadedFileId
-      ? (await verifyAndFinalizeUpload(uploadedFileId)).webViewLink
-      : '';
-    const appended = await sheets.spreadsheets.values.append({
-      spreadsheetId: config.spreadsheetId,
-      range: `${orderSheet}!A:K`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      includeValuesInResponse: false,
-      requestBody: { values: [['', ...serializeOrder(order, fileUrl)]] },
-    });
-    const rowNumber = parseUpdatedRow(appended.data?.updates?.updatedRange);
-    const no = rowNumber - 1;
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: config.spreadsheetId,
-      range: `${orderSheet}!A${rowNumber}`,
-      valueInputOption: 'RAW',
-      requestBody: { values: [[no]] },
-    });
-    await formatDateCells(rowNumber);
-    return toShopOrder(no, order, fileUrl);
+    let activatedUpload: ActivatedUpload | undefined;
+    let attachment: ShopOrderMutationResult['attachment'] = {
+      status: 'none',
+    };
+    if (uploadedFileId) {
+      try {
+        activatedUpload = await finalizeUpload(
+          uploadedFileId,
+          order.number,
+        );
+        attachment = {
+          status: 'attached',
+          fileId: activatedUpload.fileId,
+          fileUrl: activatedUpload.webViewLink,
+        };
+      } catch (error) {
+        if (!(error instanceof AttachmentFinalizationError)) throw error;
+        attachment = attachmentWarning();
+      }
+    }
+    const fileUrl = activatedUpload?.webViewLink ?? '';
+    try {
+      const appended = await sheets.spreadsheets.values.append({
+        spreadsheetId: config.spreadsheetId,
+        range: `${orderSheet}!A:K`,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS',
+        includeValuesInResponse: false,
+        requestBody: { values: [['', ...serializeOrder(order, fileUrl)]] },
+      });
+      const rowNumber = parseUpdatedRow(
+        appended.data?.updates?.updatedRange,
+      );
+      const no = rowNumber - 1;
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: config.spreadsheetId,
+        range: `${orderSheet}!A${rowNumber}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[no]] },
+      });
+      await formatDateCells(rowNumber);
+      return {
+        order: toShopOrder(no, order, fileUrl),
+        attachment,
+      };
+    } catch (error) {
+      if (activatedUpload) {
+        await restorePendingUpload(activatedUpload);
+      }
+      throw error;
+    }
   }
 
   async function update(
     no: number,
     input: ShopOrderInput,
     uploadedFileId?: string,
-  ): Promise<ShopOrder> {
+  ): Promise<ShopOrderMutationResult> {
     const order = normalizeOrderInput(input);
     await assertDepartmentAllowed(order.to);
     const current = await readLocatedOrder(no);
-    const fileUrl = uploadedFileId
-      ? (await verifyAndFinalizeUpload(uploadedFileId)).webViewLink
-      : current.order.fileUrl;
-    const rowNumber = await locateRow(no);
-    if (rowNumber !== current.rowNumber) {
-      throw new Error('รายการมีการเปลี่ยนแปลง กรุณาลองใหม่');
+    let activatedUpload: ActivatedUpload | undefined;
+    let attachment: ShopOrderMutationResult['attachment'] = {
+      status: 'none',
+    };
+    if (uploadedFileId) {
+      try {
+        activatedUpload = await finalizeUpload(
+          uploadedFileId,
+          order.number,
+        );
+        attachment = {
+          status: 'attached',
+          fileId: activatedUpload.fileId,
+          fileUrl: activatedUpload.webViewLink,
+        };
+      } catch (error) {
+        if (!(error instanceof AttachmentFinalizationError)) throw error;
+        attachment = attachmentWarning();
+      }
     }
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: config.spreadsheetId,
-      range: `${orderSheet}!B${rowNumber}:K${rowNumber}`,
-      valueInputOption: 'RAW',
-      requestBody: { values: [serializeOrder(order, fileUrl)] },
-    });
-    await formatDateCells(rowNumber);
-    return toShopOrder(no, order, fileUrl);
+    const fileUrl =
+      activatedUpload?.webViewLink ?? current.order.fileUrl;
+    try {
+      const rowNumber = await locateRow(no);
+      if (rowNumber !== current.rowNumber) {
+        throw new Error('รายการมีการเปลี่ยนแปลง กรุณาลองใหม่');
+      }
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: config.spreadsheetId,
+        range: `${orderSheet}!B${rowNumber}:K${rowNumber}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [serializeOrder(order, fileUrl)] },
+      });
+      await formatDateCells(rowNumber);
+      return {
+        order: toShopOrder(no, order, fileUrl),
+        attachment,
+      };
+    } catch (error) {
+      if (activatedUpload) {
+        await restorePendingUpload(activatedUpload);
+      }
+      throw error;
+    }
   }
 
   async function remove(no: number): Promise<void> {

@@ -3,6 +3,7 @@ import type {
   ShopOrder,
   ShopOrderBootstrap,
   ShopOrderInput,
+  ShopOrderMutationResult,
 } from '@/lib/shop-order/types';
 
 const repository = vi.hoisted(() => ({
@@ -37,6 +38,10 @@ const savedOrder: ShopOrder = {
   fileUrl: '',
   ...validOrderInput,
 };
+const savedMutation: ShopOrderMutationResult = {
+  order: savedOrder,
+  attachment: { status: 'none' },
+};
 
 const bootstrap: ShopOrderBootstrap = {
   orders: [savedOrder],
@@ -65,8 +70,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   repository.load.mockResolvedValue(bootstrap);
   repository.listDepartments.mockResolvedValue(['หน่วยงาน ก']);
-  repository.create.mockResolvedValue(savedOrder);
-  repository.update.mockResolvedValue(savedOrder);
+  repository.create.mockResolvedValue(savedMutation);
+  repository.update.mockResolvedValue(savedMutation);
   repository.remove.mockResolvedValue(undefined);
 });
 
@@ -79,7 +84,7 @@ describe('Shop Order route handlers', () => {
     expect(await response.json()).toEqual({ ok: true, data: bootstrap });
   });
 
-  it('creates an order and returns the created resource', async () => {
+  it('creates an order and returns its mutation outcome', async () => {
     const response = await POST(
       jsonRequest({
         order: validOrderInput,
@@ -89,7 +94,10 @@ describe('Shop Order route handlers', () => {
 
     expect(response.status).toBe(201);
     expect(response.headers.get('Cache-Control')).toContain('no-store');
-    expect(await response.json()).toEqual({ ok: true, data: savedOrder });
+    expect(await response.json()).toEqual({
+      ok: true,
+      data: savedMutation,
+    });
     expect(repository.create).toHaveBeenCalledWith(
       validOrderInput,
       'generated-file-id',
@@ -114,7 +122,7 @@ describe('Shop Order route handlers', () => {
     expect(patchResponse.status).toBe(200);
     expect(await patchResponse.json()).toEqual({
       ok: true,
-      data: savedOrder,
+      data: savedMutation,
     });
     expect(repository.update).toHaveBeenCalledWith(
       7,
