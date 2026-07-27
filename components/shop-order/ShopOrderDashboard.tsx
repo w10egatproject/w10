@@ -153,7 +153,13 @@ export function ShopOrderDashboard() {
         <div className="h-96 rounded-2xl bg-white/70" /><div className="h-72 rounded-2xl bg-white/70" />
       </div> : <div data-testid="shop-order-layout" className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
         <div className="order-2 min-w-0 lg:order-1"><ShopOrderTable orders={pagination.items} page={pagination.page} totalPages={pagination.totalPages} total={pagination.total} onPage={setPage} onSelect={setSelected} /></div>
-        <div className="order-1 lg:order-2"><ShopOrderSummary summary={summary} /></div>
+        <div className="order-1 lg:order-2">
+          <ShopOrderSummary
+            summary={summary}
+            activeStatus={filters.status}
+            onStatusSelect={(status) => updateFilters({ ...filters, status })}
+          />
+        </div>
       </div>}
       {data && <p className="mt-4 text-right text-xs text-slate-500">อัปเดตล่าสุด {new Date(data.generatedAt).toLocaleString('th-TH')}</p>}
       {selected && !formMode && <OrderDetailDialog order={selected} pending={mutationPending} onClose={() => setSelected(null)} onEdit={() => setFormMode('edit')} onDelete={() => void deleteOrder()} />}

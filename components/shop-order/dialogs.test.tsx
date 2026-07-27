@@ -66,7 +66,7 @@ describe('Shop Order dialogs', () => {
     expect(onDelete).toHaveBeenCalled();
   });
 
-  it('shows a small verified thumbnail that links to the original attachment', () => {
+  it('shows a verified thumbnail for the attachment on the left without external link', () => {
     const attachmentOrder = {
       ...order,
       fileUrl: 'https://drive.google.com/file/d/current-file-id/view',
@@ -87,16 +87,10 @@ describe('Shop Order dialogs', () => {
     expect(preview.getAttribute('src')).toBe(
       '/api/shop-order/attachment-thumbnail?no=7',
     );
-    expect(preview.className).toContain('h-20');
-    const originalLink = screen.getByRole('link', {
-      name: 'เปิดไฟล์ต้นฉบับ',
-    });
-    expect(originalLink.getAttribute('href')).toBe(attachmentOrder.fileUrl);
-    expect(originalLink.getAttribute('target')).toBe('_blank');
-    expect(originalLink.getAttribute('rel')).toContain('noopener');
+    expect(screen.queryByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' })).toBeNull();
   });
 
-  it('falls back without removing the original link when thumbnail loading fails', () => {
+  it('falls back gracefully when thumbnail loading fails', () => {
     render(
       <OrderDetailDialog
         order={{
@@ -115,9 +109,7 @@ describe('Shop Order dialogs', () => {
     );
 
     expect(screen.getByText('ไม่พบรูปตัวอย่าง')).toBeDefined();
-    expect(
-      screen.getByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' }),
-    ).toBeDefined();
+    expect(screen.queryByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' })).toBeNull();
   });
   it('accepts only the approved attachment extensions and labels a PDF preview', async () => {
     const user = userEvent.setup();
