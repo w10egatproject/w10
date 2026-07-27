@@ -57,7 +57,66 @@ describe('Shop Order dialogs', () => {
     expect(screen.getAllByText('หมายเหตุ')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'ลบรายการ' }));
     expect(screen.getByRole('alertdialog')).toBeDefined();
+    expect(
+      screen.getByText(
+        'ไฟล์แนบที่ระบบ OAuth จัดการจะถูกตั้งเวลาย้ายเข้าถังขยะ Google Drive หลัง 30 วัน ส่วนไฟล์เดิม (Legacy) จะไม่ถูกจัดการ',
+      ),
+    ).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'ยืนยันลบ' }));
     expect(onDelete).toHaveBeenCalled();
+  });
+
+  it('shows a small verified thumbnail that links to the original attachment', () => {
+    const attachmentOrder = {
+      ...order,
+      fileUrl: 'https://drive.google.com/file/d/current-file-id/view',
+    };
+    render(
+      <OrderDetailDialog
+        order={attachmentOrder}
+        pending={false}
+        onClose={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    const preview = screen.getByRole('img', {
+      name: 'ตัวอย่างไฟล์แนบรายการ 7',
+    });
+    expect(preview.getAttribute('src')).toBe(
+      '/api/shop-order/attachment-thumbnail?no=7',
+    );
+    expect(preview.className).toContain('h-20');
+    const originalLink = screen.getByRole('link', {
+      name: 'เปิดไฟล์ต้นฉบับ',
+    });
+    expect(originalLink.getAttribute('href')).toBe(attachmentOrder.fileUrl);
+    expect(originalLink.getAttribute('target')).toBe('_blank');
+    expect(originalLink.getAttribute('rel')).toContain('noopener');
+  });
+
+  it('falls back without removing the original link when thumbnail loading fails', () => {
+    render(
+      <OrderDetailDialog
+        order={{
+          ...order,
+          fileUrl: 'https://drive.google.com/file/d/current-file-id/view',
+        }}
+        pending={false}
+        onClose={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    fireEvent.error(
+      screen.getByRole('img', { name: 'ตัวอย่างไฟล์แนบรายการ 7' }),
+    );
+
+    expect(screen.getByText('ไม่พบรูปตัวอย่าง')).toBeDefined();
+    expect(
+      screen.getByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' }),
+    ).toBeDefined();
   });
 });

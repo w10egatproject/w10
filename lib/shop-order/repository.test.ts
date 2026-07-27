@@ -1474,4 +1474,323 @@ describe('ShopOrderRepository', () => {
       }
     },
   );
+
+  it.each(['image/png', 'application/pdf'])(
+    'returns an authenticated image thumbnail for an active owned %s attachment on the current Sheet order',
+    async (mimeType) => {
+      const { dependencies, sheets, drive, authenticatedFetch } =
+        makeDependencies();
+      const thumbnailBytes = new Uint8Array([1, 2, 3, 4]);
+      const thumbnailLink =
+        'https://lh3.googleusercontent.com/drive-thumbnail-id=s220';
+      setCurrentAttachment(
+        sheets,
+        'https://drive.google.com/file/d/current-file-id/view',
+      );
+      drive.files.get.mockResolvedValueOnce({
+        data: {
+          id: 'current-file-id',
+          mimeType,
+          parents: ['folder-id'],
+          appProperties: {
+            status: 'active',
+            finalizedAt: '2026-07-27T08:09:10.000Z',
+            orderNumber: '123456',
+          },
+          thumbnailLink,
+          trashed: false,
+        },
+      });
+      authenticatedFetch.mockReset().mockResolvedValueOnce(
+        new Response(thumbnailBytes, {
+          status: 200,
+          headers: { 'Content-Type': 'image/png' },
+        }),
+      );
+      const repository = createShopOrderRepository(dependencies);
+
+      await expect(repository.getAttachmentThumbnail(1)).resolves.toEqual({
+        bytes: thumbnailBytes,
+        contentType: 'image/png',
+      });
+
+      expect(drive.files.get).toHaveBeenCalledWith({
+        fileId: 'current-file-id',
+        fields:
+          'id,mimeType,parents,appProperties,thumbnailLink,trashed',
+      });
+      expect(authenticatedFetch).toHaveBeenCalledWith(thumbnailLink, {
+        method: 'GET',
+        headers: { Authorization: 'Bearer access-token' },
+        redirect: 'error',
+      });
+    },
+  );
+
+  it.each([
+    [
+      'a legacy URL',
+      'https://example.com/legacy-file',
+      undefined,
+    ],
+    [
+      'a mismatched Drive response id',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'different-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: false,
+      },
+    ],
+    [
+      'a file in another parent',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['other-folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: false,
+      },
+    ],
+    [
+      'a file for another order number',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '654321',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: false,
+      },
+    ],
+    [
+      'a pending file',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'pending',
+          pendingSince: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: false,
+      },
+    ],
+    [
+      'a trashed file',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: true,
+      },
+    ],
+    [
+      'an unsupported file type',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'current-file-id',
+        mimeType: 'image/gif',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: false,
+      },
+    ],
+    [
+      'a file without a thumbnail',
+      'https://drive.google.com/file/d/current-file-id/view',
+      {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        trashed: false,
+      },
+    ],
+  ])(
+    'returns null without fetching thumbnail bytes for %s',
+    async (_caseName, fileUrl, driveMetadata) => {
+      const { dependencies, sheets, drive, authenticatedFetch } =
+        makeDependencies();
+      setCurrentAttachment(sheets, fileUrl);
+      if (driveMetadata) {
+        drive.files.get.mockResolvedValueOnce({ data: driveMetadata });
+      }
+      authenticatedFetch.mockClear();
+      const repository = createShopOrderRepository(dependencies);
+
+      await expect(repository.getAttachmentThumbnail(1)).resolves.toBeNull();
+
+      expect(authenticatedFetch).not.toHaveBeenCalled();
+      if (!driveMetadata) {
+        expect(drive.files.get).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it('rejects non-Google thumbnail links before sending an OAuth token', async () => {
+    const { dependencies, sheets, drive, authenticatedFetch } =
+      makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/current-file-id/view',
+    );
+    drive.files.get.mockResolvedValueOnce({
+      data: {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink: 'https://attacker.example/steal-token',
+        trashed: false,
+      },
+    });
+    authenticatedFetch.mockClear();
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.getAttachmentThumbnail(1)).resolves.toBeNull();
+
+    expect(authenticatedFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns null when Drive responds with non-image or oversized thumbnail bytes', async () => {
+    const { dependencies, sheets, drive, authenticatedFetch } =
+      makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/current-file-id/view',
+    );
+    const metadata = {
+      id: 'current-file-id',
+      mimeType: 'image/png',
+      parents: ['folder-id'],
+      appProperties: {
+        status: 'active',
+        finalizedAt: '2026-07-27T08:09:10.000Z',
+        orderNumber: '123456',
+      },
+      thumbnailLink:
+        'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+      trashed: false,
+    };
+    drive.files.get.mockResolvedValue({ data: metadata });
+    authenticatedFetch
+      .mockReset()
+      .mockResolvedValueOnce(
+        new Response('not an image', {
+          status: 200,
+          headers: { 'Content-Type': 'text/html' },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array(2 * 1024 * 1024 + 1), {
+          status: 200,
+          headers: { 'Content-Type': 'image/png' },
+        }),
+      );
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.getAttachmentThumbnail(1)).resolves.toBeNull();
+    await expect(repository.getAttachmentThumbnail(1)).resolves.toBeNull();
+  });
+
+  it('cancels the thumbnail response stream immediately after it exceeds 2 MiB', async () => {
+    const { dependencies, sheets, drive, authenticatedFetch } =
+      makeDependencies();
+    setCurrentAttachment(
+      sheets,
+      'https://drive.google.com/file/d/current-file-id/view',
+    );
+    drive.files.get.mockResolvedValueOnce({
+      data: {
+        id: 'current-file-id',
+        mimeType: 'image/png',
+        parents: ['folder-id'],
+        appProperties: {
+          status: 'active',
+          finalizedAt: '2026-07-27T08:09:10.000Z',
+          orderNumber: '123456',
+        },
+        thumbnailLink:
+          'https://lh3.googleusercontent.com/drive-thumbnail-id=s220',
+        trashed: false,
+      },
+    });
+    const cancel = vi.fn();
+    let chunkIndex = 0;
+    const body = new ReadableStream<Uint8Array>(
+      {
+        pull(controller) {
+          if (chunkIndex === 0) {
+            controller.enqueue(new Uint8Array(2 * 1024 * 1024));
+          } else if (chunkIndex === 1) {
+            controller.enqueue(new Uint8Array([1]));
+          } else {
+            controller.close();
+          }
+          chunkIndex += 1;
+        },
+        cancel,
+      },
+      { highWaterMark: 0 },
+    );
+    authenticatedFetch.mockReset().mockResolvedValueOnce(
+      new Response(body, {
+        status: 200,
+        headers: { 'Content-Type': 'image/png' },
+      }),
+    );
+    const repository = createShopOrderRepository(dependencies);
+
+    await expect(repository.getAttachmentThumbnail(1)).resolves.toBeNull();
+
+    expect(cancel).toHaveBeenCalledTimes(1);
+  });
 });

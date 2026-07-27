@@ -33,6 +33,18 @@ const GOOGLE_UPLOAD_ORIGIN = 'https://www.googleapis.com';
 const SOURCE_DEPARTMENT = 'หสบ-ช.';
 const LEADING_BYTE_RANGE = 'bytes=0-31';
 const SESSION_LIFETIME_MS = 60 * 60 * 1000;
+const MAX_THUMBNAIL_BYTES = 2 * 1024 * 1024;
+const SUPPORTED_ATTACHMENT_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+const SAFE_THUMBNAIL_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
 
 type JsonRecord = Record<string, unknown>;
 
@@ -103,6 +115,9 @@ export interface ShopOrderRepository {
   ): Promise<ShopOrderMutationResult>;
   remove(no: number): Promise<void>;
   createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
+  getAttachmentThumbnail(
+    no: number,
+  ): Promise<{ bytes: Uint8Array; contentType: string } | null>;
   cleanupAttachments(): Promise<AttachmentCleanupSummary>;
 }
 
@@ -227,6 +242,62 @@ function assertGoogleUploadUrl(value: string | null): string {
     throw new Error('Google Drive returned an invalid resumable upload URL');
   }
   return url.toString();
+}
+
+function safeGoogleThumbnailUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  try {
+    const url = new URL(value);
+    if (
+      url.protocol !== 'https:' ||
+      !url.hostname.endsWith('.googleusercontent.com') ||
+      url.username ||
+      url.password ||
+      url.port
+    ) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+async function readThumbnailBytes(
+  response: Response,
+): Promise<Uint8Array | null> {
+  if (!response.body) return null;
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_THUMBNAIL_BYTES) {
+        try {
+          await reader.cancel();
+        } catch {
+          // The size boundary still applies if stream cancellation fails.
+        }
+        return null;
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  if (totalBytes === 0) return null;
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
 }
 
 const DRIVE_FAILURE_MESSAGES: Readonly<Record<DriveFailureCode, string>> = {
@@ -387,6 +458,26 @@ export function createShopOrderRepository(
     if (!row || parseSequence(row[0]) !== no) {
       throw new Error('รายการมีการเปลี่ยนแปลง กรุณาลองใหม่');
     }
+    return { rowNumber, order: parseSheetRow(row) };
+  }
+
+  async function readLocatedOrderForThumbnail(
+    no: number,
+  ): Promise<LocatedOrder | null> {
+    if (!Number.isSafeInteger(no) || no < 1) return null;
+    const rows = await readSequenceRows();
+    const index = rows.findIndex((row) => parseSequence(row[0]) === no);
+    if (index < 0) return null;
+
+    const rowNumber = index + 2;
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: config.spreadsheetId,
+      range: `${orderSheet}!A${rowNumber}:K${rowNumber}`,
+      valueRenderOption: 'UNFORMATTED_VALUE',
+      dateTimeRenderOption: 'SERIAL_NUMBER',
+    });
+    const row = response.data?.values?.[0];
+    if (!row || parseSequence(row[0]) !== no) return null;
     return { rowNumber, order: parseSheetRow(row) };
   }
 
@@ -772,6 +863,85 @@ export function createShopOrderRepository(
     };
   }
 
+  async function getAttachmentThumbnail(
+    no: number,
+  ): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+    const current = await readLocatedOrderForThumbnail(no);
+    if (!current) return null;
+
+    const fileId = driveFileIdFromCanonicalUrl(current.order.fileUrl);
+    if (!fileId) return null;
+
+    let metadataResponse: Awaited<
+      ReturnType<GoogleDriveClient['files']['get']>
+    >;
+    try {
+      metadataResponse = await drive.files.get({
+        fileId,
+        fields:
+          'id,mimeType,parents,appProperties,thumbnailLink,trashed',
+      });
+    } catch (error) {
+      if (isDriveNotFound(error)) return null;
+      throw error;
+    }
+
+    const metadata = metadataResponse.data ?? {};
+    const parents = Array.isArray(metadata.parents)
+      ? metadata.parents
+      : [];
+    const mimeType = safeString(metadata.mimeType).toLowerCase();
+    const lifecycle = parseAttachmentLifecycle(
+      normalizeAppProperties(metadata.appProperties),
+    );
+    const thumbnailUrl = safeGoogleThumbnailUrl(metadata.thumbnailLink);
+    if (
+      metadata.id !== fileId ||
+      metadata.trashed !== false ||
+      !parents.includes(config.folderId) ||
+      lifecycle?.status !== 'active' ||
+      lifecycle.orderNumber !== current.order.number ||
+      !SUPPORTED_ATTACHMENT_MIME_TYPES.has(mimeType) ||
+      !thumbnailUrl
+    ) {
+      return null;
+    }
+
+    const accessToken = await getAccessToken();
+    const response = await authenticatedFetch(thumbnailUrl, {
+      method: 'GET',
+      redirect: 'error',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+
+    const contentType = response.headers
+      .get('Content-Type')
+      ?.split(';', 1)[0]
+      .trim()
+      .toLowerCase();
+    if (!contentType || !SAFE_THUMBNAIL_MIME_TYPES.has(contentType)) {
+      return null;
+    }
+
+    const contentLength = Number(response.headers.get('Content-Length'));
+    if (
+      Number.isFinite(contentLength) &&
+      contentLength > MAX_THUMBNAIL_BYTES
+    ) {
+      try {
+        await response.body?.cancel();
+      } catch {
+        // The response is rejected regardless of cancellation outcome.
+      }
+      return null;
+    }
+
+    const bytes = await readThumbnailBytes(response);
+    if (!bytes) return null;
+    return { bytes, contentType };
+  }
+
   async function load(): Promise<ShopOrderBootstrap> {
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: config.spreadsheetId,
@@ -1004,6 +1174,7 @@ export function createShopOrderRepository(
     update,
     remove,
     createUploadSession,
+    getAttachmentThumbnail,
     cleanupAttachments,
   };
 }
