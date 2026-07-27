@@ -37,11 +37,50 @@ describe('Shop Order dialogs', () => {
     vi.unstubAllGlobals();
   });
 
-  it('submits an accessible form with the approved fields', async () => {
+  it('removes the selected file preview when clicking the delete file button', async () => {
+    const user = userEvent.setup();
+    const createObjectURL = vi.fn(() => 'blob:preview');
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL }));
+
+    render(
+      <OrderFormDialog
+        mode="create"
+        departments={[]}
+        receivers={[]}
+        pending={false}
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const file = new File(['image'], 'sample.png', { type: 'image/png' });
+    const fileInput = screen.getByLabelText(/ไฟล์แนบ/) as HTMLInputElement;
+    await user.upload(fileInput, file);
+
+    expect(screen.getByRole('img', { name: 'ตัวอย่างไฟล์ sample.png' })).toBeDefined();
+
+    const removeBtn = screen.getByRole('button', { name: 'ลบไฟล์' });
+    await user.click(removeBtn);
+
+    expect(screen.queryByRole('img', { name: 'ตัวอย่างไฟล์ sample.png' })).toBeNull();
+    const updatedFileInput = screen.getByLabelText(/ไฟล์แนบ/) as HTMLInputElement;
+    expect(updatedFileInput.value).toBe('');
+
+    vi.unstubAllGlobals();
+  });
+
+  it('submits an accessible form with the approved fields and default today dates', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<OrderFormDialog mode="create" departments={['กอง ก']} receivers={['สมชาย']} pending={false} onClose={vi.fn()} onSubmit={onSubmit} />);
     expect(screen.getByRole('dialog').getAttribute('aria-modal')).toBe('true');
+
+    const dateInInput = screen.getByLabelText(/วันที่รับ/) as HTMLInputElement;
+    const dateOutInput = screen.getByLabelText(/วันที่ออก/) as HTMLInputElement;
+    expect(dateInInput.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(dateOutInput.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
     await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
     await user.type(screen.getByLabelText('เลขที่'), '123456');
     await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');

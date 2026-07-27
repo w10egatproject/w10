@@ -55,8 +55,7 @@ export async function PUT(request: Request): Promise<Response> {
         ? driveResponse.status
         : 500,
     );
-  } catch (error) {
-    console.error('Upload proxy internal error:', error);
-    return internalError('upload_proxy');
+  } catch {
+    return internalError('upload_proxy', 'proxy_error');
   }
 }

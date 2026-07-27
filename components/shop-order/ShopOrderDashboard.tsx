@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ClipboardList, RefreshCw } from 'lucide-react';
+import { CheckCircle, ClipboardList, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
 import { filterAndSortOrders, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
@@ -26,6 +26,7 @@ export function ShopOrderDashboard() {
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
   const [mutationPending, setMutationPending] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>();
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [attachmentWarning, setAttachmentWarning] = useState<{
     message: string;
     order: ShopOrder;
@@ -113,6 +114,8 @@ export function ShopOrderDashboard() {
             'บันทึกออเดอร์แล้ว แต่แนบไฟล์ไม่สำเร็จ กรุณาเพิ่มไฟล์อีกครั้ง',
           order: mutation.order,
         });
+      } else {
+        setShowSaveSuccess(true);
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'บันทึกรายการไม่สำเร็จ');
@@ -120,6 +123,7 @@ export function ShopOrderDashboard() {
       setMutationPending(false);
     }
   };
+
   const deleteOrder = async () => {
     if (!selected) return;
     setMutationPending(true); setError('');
@@ -164,6 +168,46 @@ export function ShopOrderDashboard() {
       {data && <p className="mt-4 text-right text-xs text-slate-500">อัปเดตล่าสุด {new Date(data.generatedAt).toLocaleString('th-TH')}</p>}
       {selected && !formMode && <OrderDetailDialog order={selected} pending={mutationPending} onClose={() => setSelected(null)} onEdit={() => setFormMode('edit')} onDelete={() => void deleteOrder()} />}
       {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}
+
+      {/* Save Success Modal */}
+      {showSaveSuccess && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 animate-in fade-in-50 duration-150"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setShowSaveSuccess(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="save-success-title"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setShowSaveSuccess(false);
+            }}
+            className="flex w-full max-w-sm flex-col items-center rounded-2xl bg-white p-6 text-center shadow-2xl animate-in zoom-in-95 duration-150"
+          >
+            <div className="mb-4 grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-inner">
+              <CheckCircle className="h-10 w-10 text-emerald-600" />
+            </div>
+            <h3
+              id="save-success-title"
+              className="text-lg font-black text-slate-800"
+            >
+              บันทึกข้อมูลสำเร็จ!
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              รายการ Shop Order ถูกบันทึกข้อมูลเรียบร้อยแล้ว
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowSaveSuccess(false)}
+              className="mt-5 w-full rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors"
+            >
+              ตกลง
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
