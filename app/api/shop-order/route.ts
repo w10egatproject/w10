@@ -82,7 +82,8 @@ export async function GET(): Promise<Response> {
   try {
     const repository = await getShopOrderRepository();
     return jsonSuccess(await repository.load());
-  } catch {
+  } catch (error) {
+    console.error('API shop-order GET error:', error);
     return internalError('load');
   }
 }
@@ -105,7 +106,8 @@ export async function POST(request: Request): Promise<Response> {
       await repository.create(order, uploadedFile.value),
       201,
     );
-  } catch {
+  } catch (error) {
+    console.error('API shop-order POST error:', error);
     return internalError('create');
   }
 }
@@ -137,7 +139,8 @@ export async function PATCH(request: Request): Promise<Response> {
         uploadedFile.value,
       ),
     );
-  } catch {
+  } catch (error) {
+    console.error('API shop-order PATCH error:', error);
     return internalError('update');
   }
 }
@@ -154,7 +157,8 @@ export async function DELETE(request: Request): Promise<Response> {
     const repository = await getShopOrderRepository();
     await repository.remove(parsed.value.no);
     return jsonSuccess({ no: parsed.value.no });
-  } catch {
+  } catch (error) {
+    console.error('API shop-order DELETE error:', error);
     return internalError('delete');
   }
 }

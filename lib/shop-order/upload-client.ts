@@ -31,7 +31,17 @@ function uploadAttempt(
   return new Promise((resolve, reject) => {
     const request = requestFactory();
 
-    request.open('PUT', session.uploadUrl);
+    const isDirectGoogleUrl = session.uploadUrl.startsWith(
+      'https://www.googleapis.com/',
+    );
+    const targetUrl = isDirectGoogleUrl
+      ? '/api/shop-order/upload-proxy'
+      : session.uploadUrl;
+
+    request.open('PUT', targetUrl);
+    if (isDirectGoogleUrl) {
+      request.setRequestHeader('x-upload-url', session.uploadUrl);
+    }
     request.setRequestHeader('Content-Type', file.type);
     request.upload.onprogress = (event) => {
       if (!event.lengthComputable || event.total <= 0) return;

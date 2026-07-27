@@ -224,7 +224,7 @@ function isDriveNotFound(error: unknown): boolean {
   );
 }
 
-function assertGoogleUploadUrl(value: string | null): string {
+export function assertGoogleUploadUrl(value: string | null): string {
   if (!value) {
     throw new Error('Google Drive did not return a resumable upload URL');
   }

@@ -38,7 +38,11 @@ describe('direct Drive resumable upload', () => {
     const onProgress = vi.fn();
 
     const result = uploadToDriveSession(file, session, onProgress, () => request);
-    expect(request.open).toHaveBeenCalledWith('PUT', session.uploadUrl);
+    expect(request.open).toHaveBeenCalledWith('PUT', '/api/shop-order/upload-proxy');
+    expect(request.setRequestHeader).toHaveBeenCalledWith(
+      'x-upload-url',
+      session.uploadUrl,
+    );
     expect(request.setRequestHeader).toHaveBeenCalledWith(
       'Content-Type',
       'application/pdf',
