@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { CheckCircle, ClipboardList, RefreshCw } from 'lucide-react';
+import { CheckCircle, ClipboardList, RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
 import { filterAndSortOrders, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
@@ -27,6 +27,7 @@ export function ShopOrderDashboard() {
   const [mutationPending, setMutationPending] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>();
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
   const [attachmentWarning, setAttachmentWarning] = useState<{
     message: string;
     order: ShopOrder;
@@ -129,7 +130,9 @@ export function ShopOrderDashboard() {
     setMutationPending(true); setError('');
     try {
       await requestJson('/api/shop-order', { method: 'DELETE', body: JSON.stringify({ no: selected.no }) });
-      setSelected(null); await loadData();
+      setSelected(null);
+      await loadData();
+      setShowDeleteSuccess(true);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'ลบรายการไม่สำเร็จ'); }
     finally { setMutationPending(false); }
   };
@@ -202,6 +205,46 @@ export function ShopOrderDashboard() {
               type="button"
               onClick={() => setShowSaveSuccess(false)}
               className="mt-5 w-full rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors"
+            >
+              ตกลง
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Success Modal */}
+      {showDeleteSuccess && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 animate-in fade-in-50 duration-150"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setShowDeleteSuccess(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-success-title"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setShowDeleteSuccess(false);
+            }}
+            className="flex w-full max-w-sm flex-col items-center rounded-2xl bg-white p-6 text-center shadow-2xl animate-in zoom-in-95 duration-150"
+          >
+            <div className="mb-4 grid h-16 w-16 place-items-center rounded-full bg-rose-100 text-rose-600 shadow-inner">
+              <Trash2 className="h-9 w-9 text-rose-600" />
+            </div>
+            <h3
+              id="delete-success-title"
+              className="text-lg font-black text-slate-800"
+            >
+              ลบรายการสำเร็จ!
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              ลบรายการ Shop Order เรียบร้อยแล้ว
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDeleteSuccess(false)}
+              className="mt-5 w-full rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-rose-700 transition-colors"
             >
               ตกลง
             </button>
