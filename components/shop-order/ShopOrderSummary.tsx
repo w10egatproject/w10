@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import type { ShopOrderFilters, ShopOrderSummary as Summary } from '@/lib/shop-order/types';
 
@@ -13,6 +14,12 @@ export function ShopOrderSummary({
   activeStatus = 'all',
   onStatusSelect,
 }: ShopOrderSummaryProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const chart = [
     { name: 'รอดำเนินการ', value: summary.wait },
     { name: 'เสร็จสิ้น', value: summary.done },
@@ -82,20 +89,22 @@ export function ShopOrderSummary({
       >
         <h2 className="text-sm font-bold text-white">สรุปสถานะ</h2>
         <div className="relative mx-auto h-44 max-w-56">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chart}
-                dataKey="value"
-                innerRadius={48}
-                outerRadius={67}
-                strokeWidth={0}
-              >
-                <Cell fill="#f59e0b" />
-                <Cell fill="#10b981" />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          {isMounted && (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <PieChart>
+                <Pie
+                  data={chart}
+                  dataKey="value"
+                  innerRadius={48}
+                  outerRadius={67}
+                  strokeWidth={0}
+                >
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#10b981" />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <strong className="text-xl">{donePercent}%</strong>
             <span className="text-[10px] text-slate-300">เสร็จสิ้น</span>

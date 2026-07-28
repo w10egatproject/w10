@@ -1269,6 +1269,11 @@ async function createDefaultRepository(): Promise<ShopOrderRepository> {
 }
 
 export function getShopOrderRepository(): Promise<ShopOrderRepository> {
-  defaultRepositoryPromise ??= createDefaultRepository();
+  if (!defaultRepositoryPromise) {
+    defaultRepositoryPromise = createDefaultRepository().catch((error) => {
+      defaultRepositoryPromise = undefined;
+      throw error;
+    });
+  }
   return defaultRepositoryPromise;
 }

@@ -1461,6 +1461,13 @@ describe('ShopOrderRepository', () => {
         });
         expect(JSON.stringify(errorSpy.mock.calls)).not.toContain(oauthSecret);
         expect(OAuth2).not.toHaveBeenCalled();
+
+        // Second call should re-attempt repository creation
+        await expect(
+          repositoryModule.getShopOrderRepository(),
+        ).rejects.toMatchObject({
+          code: 'DRIVE_OAUTH_CONFIGURATION_REQUIRED',
+        });
       } finally {
         vi.doUnmock('googleapis');
         for (const name of Object.keys(process.env)) {
