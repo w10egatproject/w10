@@ -144,6 +144,7 @@ export function OrderFormDialog({
               placeholder="เลือกหน่วยงาน"
               onChange={(val) => set({ to: val })}
               disabled={pending}
+              allowCustom
             />
           </label>
           <label className="text-sm font-bold">
@@ -189,25 +190,25 @@ export function OrderFormDialog({
           </label>
           <label className="text-sm font-bold">
             หน่วยงานรับ
-            <input
+            <CustomSelect
               value={value.receivingUnit}
-              onChange={(e) => set({ receivingUnit: e.target.value })}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-300 px-3 font-normal"
+              options={departments}
+              placeholder="เลือกหรือพิมพ์หน่วยงานรับ"
+              onChange={(val) => set({ receivingUnit: val })}
+              disabled={pending}
+              allowCustom
             />
           </label>
           <label className="text-sm font-bold">
             ผู้รับ
-            <input
-              list="shop-order-receivers"
+            <CustomSelect
               value={value.receiverName}
-              onChange={(e) => set({ receiverName: e.target.value })}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-300 px-3 font-normal"
+              options={receivers}
+              placeholder="เลือกหรือพิมพ์ผู้รับ"
+              onChange={(val) => set({ receiverName: val })}
+              disabled={pending}
+              allowCustom
             />
-            <datalist id="shop-order-receivers">
-              {receivers.map((r) => (
-                <option key={r} value={r} />
-              ))}
-            </datalist>
           </label>
           <label className="text-sm font-bold sm:col-span-2">
             หมายเหตุ

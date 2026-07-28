@@ -11,6 +11,7 @@ interface CustomSelectProps {
   label?: string;
   required?: boolean;
   disabled?: boolean;
+  allowCustom?: boolean;
 }
 
 export function CustomSelect({
@@ -20,6 +21,7 @@ export function CustomSelect({
   placeholder = 'เลือกรายการ',
   required,
   disabled,
+  allowCustom,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -50,6 +52,16 @@ export function CustomSelect({
     opt.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const trimmedSearch = search.trim();
+  const hasExactMatch = options.some(
+    (opt) => opt.toLowerCase() === trimmedSearch.toLowerCase(),
+  );
+  const showCustomOption = allowCustom && trimmedSearch !== '' && !hasExactMatch;
+
+  const allOptions = Array.from(
+    new Set([...options, ...(value ? [value] : [])]),
+  );
+
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Native select for accessibility, testing-library, and form validation */}
@@ -62,7 +74,7 @@ export function CustomSelect({
         className="sr-only absolute h-0 w-0 opacity-0 pointer-events-none"
       >
         <option value="">{placeholder}</option>
-        {options.map((opt) => (
+        {allOptions.map((opt) => (
           <option key={opt} value={opt}>
             {opt}
           </option>
@@ -97,7 +109,7 @@ export function CustomSelect({
           role="listbox"
           className="absolute z-50 mt-1.5 max-h-60 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-150"
         >
-          {options.length > 5 && (
+          {(options.length > 5 || allowCustom) && (
             <div className="relative mb-1 px-1 pt-1">
               <Search className="absolute left-3 top-3 h-3.5 w-3.5 text-slate-400" />
               <input
@@ -105,13 +117,35 @@ export function CustomSelect({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="ค้นหา..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && showCustomOption) {
+                    e.preventDefault();
+                    onChange(trimmedSearch);
+                    setIsOpen(false);
+                  }
+                }}
+                placeholder={allowCustom ? 'ค้นหาหรือพิมพ์เพื่อเลือก...' : 'ค้นหา...'}
                 className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs font-normal text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
           )}
 
           <div className="max-h-48 overflow-y-auto space-y-0.5">
+            {showCustomOption && (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(trimmedSearch);
+                  setIsOpen(false);
+                }}
+                className="flex w-full items-center justify-between rounded-xl bg-indigo-50/80 px-3 py-2 text-left text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors mb-1"
+              >
+                <span className="truncate">
+                  + ใช้ข้อความนี้: &quot;<strong>{trimmedSearch}</strong>&quot;
+                </span>
+              </button>
+            )}
+
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = value === opt;
@@ -138,11 +172,11 @@ export function CustomSelect({
                   </button>
                 );
               })
-            ) : (
+            ) : !showCustomOption ? (
               <div className="px-3 py-4 text-center text-xs text-slate-400">
                 ไม่พบข้อมูล
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}
