@@ -72,7 +72,7 @@ describe('ShopOrderDashboard', () => {
     await user.selectOptions(screen.getByLabelText('สถานะ'), 'wait');
     expect(screen.queryByText('งานเสร็จ')).toBeNull();
     expect(screen.getByText('งานรอ')).toBeDefined();
-    expect(screen.getByTestId('kpi-total').textContent).toContain('1');
+    expect(screen.getByTestId('kpi-total').textContent).toContain('2');
     expect(screen.getByTestId('status-summary').textContent).toContain('รอดำเนินการ');
   });
 

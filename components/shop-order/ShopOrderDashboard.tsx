@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { CheckCircle, ClipboardList, RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
-import { filterAndSortOrders, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
+import { filterAndSortOrders, getOrderStatus, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
 import { inspectLocalFile } from '@/lib/shop-order/file-rules';
 import { uploadToDriveSession } from '@/lib/shop-order/upload-client';
 import type { ApiResult, ShopOrder, ShopOrderBootstrap, ShopOrderFilters, ShopOrderInput, ShopOrderMutationResult, UploadSession } from '@/lib/shop-order/types';
@@ -51,8 +51,9 @@ export function ShopOrderDashboard() {
     const timer = window.setTimeout(() => void loadData(), 0);
     return () => window.clearTimeout(timer);
   }, [loadData]);
-  const filtered = useMemo(() => filterAndSortOrders(data?.orders ?? [], filters), [data, filters]);
-  const summary = useMemo(() => summarizeOrders(filtered), [filtered]);
+  const baseFiltered = useMemo(() => filterAndSortOrders(data?.orders ?? [], { ...filters, status: 'all' }), [data, filters]);
+  const summary = useMemo(() => summarizeOrders(baseFiltered), [baseFiltered]);
+  const filtered = useMemo(() => filters.status === 'all' ? baseFiltered : baseFiltered.filter((o) => getOrderStatus(o) === filters.status), [baseFiltered, filters.status]);
   const pagination = useMemo(() => paginateOrders(filtered, page, 20), [filtered, page]);
   const years = useMemo(() => Array.from(new Set((data?.orders ?? []).flatMap((o) => o.dateIn ? [String(Number(o.dateIn.slice(0, 4)) + 543)] : []))).sort().reverse(), [data]);
 
