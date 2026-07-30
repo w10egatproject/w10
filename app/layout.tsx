@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Prompt } from "next/font/google";
 import "./globals.css";
+import ShellMigrationGate from "@/components/layout/ShellMigrationGate";
 
 const prompt = Prompt({
   weight: ["300", "400", "500", "600", "700"],
@@ -26,7 +27,7 @@ export default function RootLayout({
       lang="th"
       className={`${prompt.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><ShellMigrationGate>{children}</ShellMigrationGate></body>
     </html>
   );
 }
