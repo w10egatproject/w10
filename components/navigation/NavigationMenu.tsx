@@ -1,15 +1,7 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
 import {
-  ArrowLeft,
   ChevronDown,
-  Clock,
-  Package,
-  ClipboardList,
-  ShoppingBag,
-  ShoppingCart,
-  UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,70 +15,15 @@ import {
   useState,
 } from 'react';
 
+import { navigationDestinations } from './navigationDestinations';
+
 interface NavigationMenuProps {
   buttonClassName: string;
   accentClassName?: string;
   itemHoverClassName?: string;
 }
 
-interface NavigationDestination {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  iconClassName?: string;
-  hoverClassName: string;
-}
-
 const CLOSE_DELAY_MS = 150;
-
-const destinations: readonly NavigationDestination[] = [
-  {
-    href: '/',
-    label: 'หน้าหลัก',
-    icon: ArrowLeft,
-    iconClassName: 'text-slate-500',
-    hoverClassName: 'hover:bg-slate-50',
-  },
-  {
-    href: '/purchasing',
-    label: 'จัดซื้อจัดจ้าง',
-    icon: ShoppingCart,
-    hoverClassName: 'hover:bg-yellow-50',
-  },
-  {
-    href: '/purchasing-all',
-    label: 'สถานะการซื้อจ้างทั้งหมด',
-    icon: ShoppingBag,
-    hoverClassName: 'hover:bg-yellow-50',
-  },
-  {
-    href: '/beml-inventory',
-    label: 'คลังอะไหล่ BEML',
-    icon: Package,
-    hoverClassName: 'hover:bg-yellow-50/50',
-  },
-  {
-    href: '/ot-summary',
-    label: 'สรุป OT ลูกจ้าง',
-    icon: Clock,
-    iconClassName: 'text-sky-500',
-    hoverClassName: 'hover:bg-sky-50',
-  },
-  {
-    href: '/ot-employee',
-    label: 'สรุป OT พนักงาน',
-    icon: UserRound,
-    iconClassName: 'text-amber-500',
-    hoverClassName: 'hover:bg-amber-50',
-  },
-  {
-    href: '/shop-order',
-    label: 'Shop Order',
-    icon: ClipboardList,
-    iconClassName: 'text-indigo-500',
-    hoverClassName: 'hover:bg-indigo-50',
-  },
-];
 
 export function NavigationMenu({
   buttonClassName,
@@ -96,8 +33,8 @@ export function NavigationMenu({
   const pathname = usePathname();
   const visibleDestinations =
     pathname === '/'
-      ? destinations.filter((destination) => destination.href !== '/')
-      : destinations;
+      ? navigationDestinations.filter((destination) => destination.href !== '/')
+      : navigationDestinations;
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
