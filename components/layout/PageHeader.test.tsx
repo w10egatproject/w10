@@ -30,6 +30,31 @@ describe('PageHeader contract', () => {
     expect(screen.getByText('ตรวจสอบข้อมูลการทำงานล่วงเวลา')).toBeDefined();
   });
 
+  it('supports the console-card presentation with a leading icon and compact refresh state', () => {
+    render(
+      <PageHeader
+        variant="console-card"
+        icon={<span data-testid="page-header-icon">clock</span>}
+        title="สรุป OT พนักงาน"
+        description="EGAT EMPLOYEE OT SUMMARY"
+        syncStatus="loading"
+        isRefreshing
+        onRefresh={vi.fn()}
+        filters={<div>พบ B2:AL20</div>}
+      />,
+    );
+
+    const header = screen.getByRole('banner');
+
+    expect(header.getAttribute('data-variant')).toBe('console-card');
+    expect(screen.getByTestId('page-header-icon')).toBeDefined();
+    expect(screen.getByText('EGAT EMPLOYEE OT SUMMARY')).toBeDefined();
+    expect(screen.getByText('พบ B2:AL20')).toBeDefined();
+    expect(screen.getByText('กำลังรีเฟรช…')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'รีเฟรชข้อมูล' })).toBeDefined();
+  });
+
+
   it('does not render a refresh button when no refresh callback is provided', () => {
     render(<PageHeader title="สรุป OT" />);
 

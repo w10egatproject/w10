@@ -82,7 +82,7 @@ describe('/ot-employee pilot route', () => {
     expect(screen.queryByRole('button', { name: 'เมนูหน้า' })).toBeNull();
   });
 
-  it('keeps source-sheet links inside the console PageHeader actions', async () => {
+  it('keeps source-sheet links in a separate card below the console hero', async () => {
     mockEmployeeFetch();
 
     render(<OtEmployeePage />);
@@ -102,12 +102,26 @@ describe('/ot-employee pilot route', () => {
 
     expect(pageHeader).not.toBeNull();
     expect(sourceLinks.length).toBeGreaterThan(0);
-    expect(pageHeader?.contains(sourceLinks[0])).toBe(true);
+    const sourceCard = screen.getByRole('region', { name: 'แหล่งข้อมูล' });
+
+    expect(pageHeader?.contains(sourceLinks[0])).toBe(false);
+    expect(sourceCard.contains(sourceLinks[0])).toBe(true);
+    expect(sourceCard).not.toBe(pageHeader);
     expect(sourceLinks[0].getAttribute('href')).toBe(
       'https://docs.google.com/spreadsheets/d/1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA/edit?gid=1501422016#gid=1501422016',
     );
   });
 
+  it('renders the existing employee error message in an alert card', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('อ่านข้อมูล OT พนักงานไม่สำเร็จ กรุณาแชร์ชีทให้ service account ของระบบก่อน')));
+
+    render(<OtEmployeePage />);
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert.textContent).toContain('อ่านข้อมูล OT พนักงานไม่สำเร็จ กรุณาแชร์ชีทให้ service account ของระบบก่อน');
+    expect(alert.querySelector('h2')).not.toBeNull();
+  });
   it('preserves employee rows and does not render contractor data', async () => {
     mockEmployeeFetch();
 

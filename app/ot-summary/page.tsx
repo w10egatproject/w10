@@ -1,10 +1,11 @@
 ﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, UserRound } from 'lucide-react';
+import { AlertCircle, Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, UserRound } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { SourceSheetCard } from '@/components/layout/SourceSheetCard';
 import { RouteChromeAdapter } from '@/components/layout/RouteChromeAdapter';
 
 type EmployeeOtRow = {
@@ -507,7 +508,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
   });
 
   return (
-    <div className="min-h-screen bg-[#dedede] p-4 text-slate-900 md:p-8 font-sans">
+    <div className={`min-h-screen text-slate-900 font-sans ${chrome === 'console' ? 'bg-[var(--surface-mist)] p-3 sm:p-4 md:p-6 lg:p-8' : 'bg-[#dedede] p-4 md:p-8'}`}>
       <RouteChromeAdapter
         mode={chrome}
         legacy={
@@ -597,52 +598,57 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
           </>
         }
         console={
-          <PageHeader
-            title={pageTitle}
-            description={pageSubtitle}
-            syncStatus={error ? 'error' : isLoading ? 'loading' : data ? 'ready' : 'idle'}
-            isRefreshing={isLoading}
-            onRefresh={handleRefresh}
-            filters={
-              <div className="flex min-h-11 items-center gap-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-mist)] px-3 text-sm font-semibold text-[var(--text-primary)]">
-                <Filter size={16} aria-hidden="true" />
-                {rangeLabel}
-              </div>
-            }
-            actions={
-              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-                {sourceSheetLinks.map((sourceSheet) => (
-                  <a
-                    key={sourceSheet.href}
-                    href={sourceSheet.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={sourceSheet.description}
-                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${sourceSheet.buttonClass}`}
-                  >
-                    <ExternalLink size={16} strokeWidth={2.5} aria-hidden="true" />
-                    เปิด Google Sheet {sourceSheet.label}
-                  </a>
-                ))}
-              </div>
-            }
-          />
+          <div className="flex flex-col gap-4">
+            <PageHeader
+              variant="console-card"
+              icon={<HeaderIcon size={28} strokeWidth={2.5} />}
+              title={pageTitle}
+              description={pageSubtitle.toUpperCase()}
+              syncStatus={error ? 'error' : isLoading ? 'loading' : data ? 'ready' : 'idle'}
+              isRefreshing={isLoading}
+              onRefresh={handleRefresh}
+              filters={
+                <div className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--surface-muted)] px-3 text-sm font-semibold text-[var(--text-primary)] lg:w-[280px]">
+                  <Filter size={16} aria-hidden="true" />
+                  <span>{isEmployeePage ? 'พบ B2:AL20' : 'พบ B2:AO34'}</span>
+                </div>
+              }
+            />
+            <SourceSheetCard
+              title={isEmployeePage ? 'ชีท OT พนักงาน' : 'ชีท OT ลูกจ้าง'}
+              description="เปิดเก็บข้อมูลบน Google Sheet"
+              links={sourceSheetLinks}
+            />
+          </div>
         }
       />
+      <div className={chrome === 'console' ? 'mt-4' : undefined}>
       <AnimatePresence mode="wait">
         {error ? (
-          <motion.div 
+          <motion.div
             key="error"
-            className="rounded-2xl border-2 border-red-100 bg-red-50 p-6 text-base font-black text-red-700 shadow-sm"
-            initial={{ opacity: 0, scale: 0.9 }}
+            role={chrome === 'console' ? 'alert' : undefined}
+            aria-live={chrome === 'console' ? 'assertive' : undefined}
+            className={chrome === 'console' ? 'flex items-start gap-3 rounded-2xl border border-[#f3b4b4] bg-[#fff1f1] p-4 text-[var(--alert-rose)] shadow-sm sm:p-5' : 'rounded-2xl border-2 border-red-100 bg-red-50 p-6 text-base font-black text-red-700 shadow-sm'}
+            initial={{ opacity: 0, scale: chrome === 'console' ? 0.98 : 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            {error}
+            {chrome === 'console' ? (
+              <>
+                <div aria-hidden="true" className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#ffe0e0] text-[var(--alert-rose)]">
+                  <AlertCircle size={21} strokeWidth={2.25} />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base font-bold text-[var(--alert-rose)]">โหลดข้อมูล OT ไม่สำเร็จ</h2>
+                  <p className="mt-1 break-words text-sm font-semibold leading-6 text-[#7f1d1d]">{error}</p>
+                </div>
+              </>
+            ) : error}
           </motion.div>
         ) : isLoading || !data ? (
           <motion.div 
             key="loading"
-            className="flex items-center justify-center gap-3 rounded-[2rem] border-2 border-[#dbeafe] bg-[#e8f5ff]/95 p-20 text-base font-black text-slate-400 shadow-sm uppercase tracking-widest"
+            className={chrome === 'console' ? 'flex items-center justify-center gap-3 rounded-2xl border border-[#cbdff0] bg-[#edf7ff] p-8 text-base font-bold text-slate-600 shadow-sm sm:p-10 md:p-12 uppercase tracking-widest' : 'flex items-center justify-center gap-3 rounded-[2rem] border-2 border-[#dbeafe] bg-[#e8f5ff]/95 p-20 text-base font-black text-slate-400 shadow-sm uppercase tracking-widest'}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -652,7 +658,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
         ) : (
           <motion.div 
             key="content"
-            className="flex flex-col gap-8"
+            className={`flex flex-col ${chrome === 'console' ? 'gap-5' : 'gap-8'}`}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -834,6 +840,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
