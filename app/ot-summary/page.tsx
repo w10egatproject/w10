@@ -1,9 +1,11 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, UserRound } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { RouteChromeAdapter } from '@/components/layout/RouteChromeAdapter';
 
 type EmployeeOtRow = {
   sequence: number;
@@ -442,8 +444,9 @@ const renderOtErrorTable = (rows: OtErrorRow[], type: 'employee' | 'contractor')
 
 
 type OtWorkerType = 'contractor' | 'employee';
+export type OtChrome = 'legacy' | 'console';
 
-export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: OtWorkerType }) {
+export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' }: { workerType?: OtWorkerType; chrome?: OtChrome }) {
   const [data, setData] = useState<OtSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -505,87 +508,127 @@ export function OtSummaryContent({ workerType = 'contractor' }: { workerType?: O
 
   return (
     <div className="min-h-screen bg-[#dedede] p-4 text-slate-900 md:p-8 font-sans">
-      <motion.header 
-        className="sticky top-0 z-50 mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-2xl md:rounded-3xl border-b-4 border-[#ffd56d] shadow-md shadow-slate-200/70"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
-        <div className="flex items-center gap-4">
-          <motion.div 
-            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5c607f] text-[#ffef9a] shadow-lg"
-            whileHover={{ rotate: 10, scale: 1.1 }}
-          >
-            <HeaderIcon size={28} strokeWidth={2.5} />
-          </motion.div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">{pageTitle}</h1>
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
-          </div>
-        </div>
+      <RouteChromeAdapter
+        mode={chrome}
+        legacy={
+          <>
+                <motion.header
+                  className="sticky top-0 z-50 mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-2xl md:rounded-3xl border-b-4 border-[#ffd56d] shadow-md shadow-slate-200/70"
+                  initial={{ y: -50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                >
+                  <div className="flex items-center gap-4">
+                    <motion.div
+                      className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5c607f] text-[#ffef9a] shadow-lg"
+                      whileHover={{ rotate: 10, scale: 1.1 }}
+                    >
+                      <HeaderIcon size={28} strokeWidth={2.5} />
+                    </motion.div>
+                    <div>
+                      <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">{pageTitle}</h1>
+                      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
+                    </div>
+                  </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <AnimatePresence>
-            {isLoading && (
-              <motion.span 
-                className="flex items-center text-xs font-black text-[#d4a300] mr-2 bg-yellow-50 px-2 py-1 rounded-lg uppercase"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-              >
-                Updating...
-              </motion.span>
-            )}
-          </AnimatePresence>
-          <div className="flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm font-black text-[#4A4A49] shadow-inner">
-            <Filter size={16} className="text-slate-400" />
-            {rangeLabel}
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60"
-          >
-            <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-            รีเฟรชข้อมูล
-          </motion.button>
-          <NavigationMenu
-            buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
-            accentClassName="text-[#d4a300]"
+                  <div className="flex flex-wrap items-center gap-3">
+                    <AnimatePresence>
+                      {isLoading && (
+                        <motion.span
+                          className="flex items-center text-xs font-black text-[#d4a300] mr-2 bg-yellow-50 px-2 py-1 rounded-lg uppercase"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                        >
+                          Updating...
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm font-black text-[#4A4A49] shadow-inner">
+                      <Filter size={16} className="text-slate-400" />
+                      {rangeLabel}
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60"
+                    >
+                      <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
+                      รีเฟรชข้อมูล
+                    </motion.button>
+                    <NavigationMenu
+                      buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
+                      accentClassName="text-[#d4a300]"
+                    />
+                  </div>
+                </motion.header>
+
+                {/* Source-sheet quick action: keep the original Google Sheet one click below the OT navbar. */}
+                <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[#4A4A49] shadow-sm md:flex-row md:items-center md:justify-between md:px-5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f5ff] text-[#0284c7]">
+                      <FileSpreadsheet size={20} strokeWidth={2.5} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-[#061b3d]">{isEmployeePage ? 'ชีท OT พนักงาน' : 'ชีท OT ลูกจ้าง'}</p>
+                      <p className="truncate text-xs font-bold text-slate-600">เปิดแท็บต้นทางใน Google Sheet</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                    {sourceSheetLinks.map((sourceSheet) => (
+                      <a
+                        key={sourceSheet.href}
+                        href={sourceSheet.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={sourceSheet.description}
+                        className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${sourceSheet.buttonClass}`}
+                      >
+                        <ExternalLink size={16} strokeWidth={2.5} />
+                        เปิด Google Sheet {sourceSheet.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+
+          </>
+        }
+        console={
+          <PageHeader
+            title={pageTitle}
+            description={pageSubtitle}
+            syncStatus={error ? 'error' : isLoading ? 'loading' : data ? 'ready' : 'idle'}
+            isRefreshing={isLoading}
+            onRefresh={handleRefresh}
+            filters={
+              <div className="flex min-h-11 items-center gap-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-mist)] px-3 text-sm font-semibold text-[var(--text-primary)]">
+                <Filter size={16} aria-hidden="true" />
+                {rangeLabel}
+              </div>
+            }
+            actions={
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                {sourceSheetLinks.map((sourceSheet) => (
+                  <a
+                    key={sourceSheet.href}
+                    href={sourceSheet.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={sourceSheet.description}
+                    className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${sourceSheet.buttonClass}`}
+                  >
+                    <ExternalLink size={16} strokeWidth={2.5} aria-hidden="true" />
+                    เปิด Google Sheet {sourceSheet.label}
+                  </a>
+                ))}
+              </div>
+            }
           />
-        </div>
-      </motion.header>
-
-      {/* Source-sheet quick action: keep the original Google Sheet one click below the OT navbar. */}
-      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[#4A4A49] shadow-sm md:flex-row md:items-center md:justify-between md:px-5">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f5ff] text-[#0284c7]">
-            <FileSpreadsheet size={20} strokeWidth={2.5} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-black text-[#061b3d]">{isEmployeePage ? 'ชีท OT พนักงาน' : 'ชีท OT ลูกจ้าง'}</p>
-            <p className="truncate text-xs font-bold text-slate-600">เปิดแท็บต้นทางใน Google Sheet</p>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-          {sourceSheetLinks.map((sourceSheet) => (
-            <a
-              key={sourceSheet.href}
-              href={sourceSheet.href}
-              target="_blank"
-              rel="noreferrer"
-              title={sourceSheet.description}
-              className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${sourceSheet.buttonClass}`}
-            >
-              <ExternalLink size={16} strokeWidth={2.5} />
-              เปิด Google Sheet {sourceSheet.label}
-            </a>
-          ))}
-        </div>
-      </div>
-
+        }
+      />
       <AnimatePresence mode="wait">
         {error ? (
           <motion.div 
