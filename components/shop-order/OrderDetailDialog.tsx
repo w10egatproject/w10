@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
+import { driveFileDownloadUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
 
 function AttachmentPreview({ order }: { order: ShopOrder }) {
-  const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const [previewSource, setPreviewSource] = useState<'proxy' | 'direct' | 'failed'>('proxy');
+  const directPreviewUrl = driveFileDownloadUrlFromCanonicalUrl(order.fileUrl);
 
   if (!order.fileUrl) {
     return (
@@ -16,7 +18,7 @@ function AttachmentPreview({ order }: { order: ShopOrder }) {
 
   return (
     <div className="flex h-44 w-full items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-2 overflow-hidden">
-      {thumbnailFailed ? (
+      {previewSource === 'failed' ? (
         <div className="flex h-full w-full items-center justify-center rounded-lg bg-slate-100 text-center text-xs font-bold text-slate-500">
           ไม่พบรูปตัวอย่าง
         </div>
@@ -24,10 +26,20 @@ function AttachmentPreview({ order }: { order: ShopOrder }) {
         // The authenticated, no-store proxy must be requested directly.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/api/shop-order/attachment-thumbnail?no=${order.no}`}
+          src={
+            previewSource === 'proxy'
+              ? `/api/shop-order/attachment-thumbnail?no=${order.no}`
+              : directPreviewUrl ?? ''
+          }
           alt={`ตัวอย่างไฟล์แนบรายการ ${order.no}`}
           className="h-full w-full rounded-lg object-contain"
-          onError={() => setThumbnailFailed(true)}
+          onError={() => {
+            if (previewSource === 'proxy' && directPreviewUrl) {
+              setPreviewSource('direct');
+              return;
+            }
+            setPreviewSource('failed');
+          }}
         />
       )}
     </div>

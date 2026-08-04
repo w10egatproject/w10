@@ -13,6 +13,7 @@ interface CustomDatePickerProps {
   value: string | null;
   onChange: (value: string | null) => void;
   placeholder?: string;
+  required?: boolean;
   disabled?: boolean;
 }
 
@@ -50,6 +51,7 @@ export function CustomDatePicker({
   value,
   onChange,
   placeholder = 'เลือกวันที่',
+  required,
   disabled,
 }: CustomDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -110,6 +112,7 @@ export function CustomDatePicker({
       <input
         type="date"
         tabIndex={-1}
+        required={required}
         disabled={disabled}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value || null)}

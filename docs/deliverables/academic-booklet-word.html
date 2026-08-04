@@ -1,0 +1,894 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>รายงานโครงงาน สหกิจศึกษา - W10 Dashboard</title>
+<style>
+  @font-face {
+      font-family: 'TH Sarabun New';
+      src: local('TH Sarabun New'), local('Sarabun');
+  }
+  @page {
+      size: 210mm 297mm;
+      margin: 25mm 25mm 25mm 30mm;
+      mso-header-margin: 15mm;
+      mso-footer-margin: 15mm;
+  }
+  body {
+      font-family: 'TH Sarabun New', 'Sarabun', sans-serif;
+      font-size: 16pt;
+      color: #2c3e50;
+      line-height: 1.5;
+  }
+  h1 { font-size: 28pt; color: #1a5276; border-bottom: 3px solid #d4a300; padding-bottom: 5pt; margin-top: 20pt; font-weight: bold; }
+  h2 { font-size: 22pt; color: #1a5276; margin-top: 15pt; font-weight: bold; }
+  h3 { font-size: 18pt; color: #1a5276; margin-top: 10pt; font-weight: bold; }
+  .cover-title { font-size: 36pt; color: #1a5276; font-weight: bold; text-align: center; }
+  .cover-subtitle { font-size: 20pt; color: #2c3e50; text-align: center; font-weight: bold; }
+  .divider { border-bottom: 3px solid #d4a300; margin: 20pt 0; }
+  .page-break { page-break-after: always; clear: both; }
+  .indent { text-indent: 1cm; text-align: justify; margin-top: 5pt; margin-bottom: 5pt; }
+  .justify { text-align: justify; }
+  .center { text-align: center; }
+  .right { text-align: right; }
+  table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 15pt; margin-top: 10pt; }
+  table.data-table th, table.data-table td { border: 1px solid #dee2e6; padding: 8pt 10pt; font-size: 16pt; }
+  table.data-table th { background-color: #1a5276; color: white; font-weight: bold; text-align: center; }
+  table.data-table tr:nth-child(even) { background-color: #f8f9fa; }
+  table.layout-table { width: 100%; border-collapse: collapse; }
+  table.layout-table th, table.layout-table td { border: none; padding: 5pt; background-color: transparent; }
+  .placeholder { background-color: #fff3cd; font-style: italic; }
+  .section-label { font-size: 14pt; color: #d4a300; text-transform: uppercase; letter-spacing: 2pt; font-weight: bold; display: block; margin-bottom: -15pt; }
+  .screenshot { border: 2px dashed #bdc3c7; background-color: #f8f9fa; padding: 40pt 20pt; text-align: center; color: #7f8c8d; margin: 15pt 0; font-weight: bold; }
+  .callout-info { background-color: #ebf5fb; border-left: 5px solid #2e86c1; padding: 10pt; margin: 15pt 0; }
+  .callout-warning { background-color: #fcf3cf; border-left: 5px solid #d4a300; padding: 10pt; margin: 15pt 0; }
+  .footer { text-align: center; font-size: 12pt; color: #7f8c8d; border-top: 1px solid #dee2e6; padding-top: 5pt; margin-top: 30pt; }
+  .toc-leader { border-bottom: 1px dotted #2c3e50; width: 100%; display: inline-block; }
+  ul, ol { margin-left: 1cm; margin-top: 5pt; margin-bottom: 10pt; }
+  li { margin-bottom: 5pt; }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1: COVER PAGE -->
+<div class="page-break">
+    <br><br>
+    <table class="layout-table" style="width: 50%; margin: 0 auto;">
+        <tr>
+            <td style="text-align: right; width: 33%;"><img src="รูปทำรูปเล่ม/lptc_logo.png" width="60" height="60" style="width:60px;height:60px;" alt="LPTC"></td>
+            <td style="text-align: center; width: 34%;"><img src="รูปทำรูปเล่ม/lptc_it_logo.png" width="60" height="60" style="width:60px;height:60px;" alt="LPTC IT"></td>
+            <td style="text-align: left; width: 33%;"><img src="รูปทำรูปเล่ม/egat_logo.png" width="60" height="60" style="width:60px;height:60px;" alt="EGAT"></td>
+        </tr>
+    </table>
+    <br>
+    <div class="center" style="font-size: 18pt;">รายงานโครงงาน สหกิจศึกษา</div>
+    <div class="cover-title" style="font-size: 32pt;">W10 Dashboard</div>
+    <div class="cover-subtitle" style="font-size: 18pt;">ระบบแดชบอร์ดติดตามงานซ่อมบำรุงและจัดซื้อจัดจ้าง<br>กองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10</div>
+    
+    <div class="divider" style="width: 80%; margin: 15pt auto;"></div>
+    
+    <table class="layout-table" style="width: 80%; margin: 0 auto; font-size: 16pt;">
+        <tr><td style="width: 30%; font-weight: bold;">จัดทำโดย</td><td><span class="placeholder">[ชื่อ-นามสกุลนักศึกษา]</span></td></tr>
+        <tr><td style="font-weight: bold;">รหัสนักศึกษา</td><td><span class="placeholder">[รหัสนักศึกษา]</span></td></tr>
+        <tr><td style="font-weight: bold;">ระดับชั้น</td><td>ประกาศนียบัตรวิชาชีพ (ปวช.)</td></tr>
+        <tr><td style="font-weight: bold;">สาขาวิชา</td><td>เทคโนโลยีสารสนเทศ</td></tr>
+        <tr><td style="font-weight: bold;">สถานศึกษา</td><td>วิทยาลัยเทคนิคลำปาง</td></tr>
+        <tr><td style="font-weight: bold;">สถานประกอบการ</td><td>การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย (กฟผ.) โรงไฟฟ้าแม่เมาะ</td></tr>
+        <tr><td style="font-weight: bold;">ช่วงฝึกงาน</td><td>11 พฤษภาคม – 4 กันยายน 2569</td></tr>
+    </table>
+    
+    <br><br>
+    <div class="center" style="border: 2px solid #1a5276; padding: 10pt; width: 60%; margin: 0 auto; font-size: 16pt; font-weight: bold; background-color: #ebf5fb;">
+        รายงานโครงงานฝึกประสบการณ์วิชาชีพ
+    </div>
+    <br>
+    <div class="center" style="font-size: 16pt; font-weight: bold;">ปีการศึกษา 2569</div>
+</div>
+
+<!-- PAGE 2: INNER COVER -->
+<div class="page-break">
+    <br><br><br>
+    <div class="center" style="font-size: 20pt;">รายงานโครงงาน สหกิจศึกษา</div>
+    <div class="cover-title">W10 Dashboard</div>
+    <div class="cover-subtitle">ระบบแดชบอร์ดติดตามงานซ่อมบำรุงและจัดซื้อจัดจ้าง<br>กองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10</div>
+    
+    <div class="divider" style="width: 80%; margin: 20pt auto;"></div>
+    <br>
+    
+    <table class="layout-table" style="width: 80%; margin: 0 auto; font-size: 18pt;">
+        <tr><td style="width: 35%; font-weight: bold;">ผู้จัดทำ</td><td><span class="placeholder">[ชื่อ-นามสกุลนักศึกษา]</span></td></tr>
+        <tr><td style="font-weight: bold;">รหัสนักศึกษา</td><td><span class="placeholder">[รหัสนักศึกษา]</span></td></tr>
+        <tr><td style="font-weight: bold;">ระดับชั้น</td><td>ประกาศนียบัตรวิชาชีพ (ปวช.)</td></tr>
+        <tr><td style="font-weight: bold;">สาขาวิชา</td><td>เทคโนโลยีสารสนเทศ</td></tr>
+        <tr><td style="font-weight: bold;">สถานศึกษา</td><td>วิทยาลัยเทคนิคลำปาง</td></tr>
+        <tr><td style="font-weight: bold;">อาจารย์นิเทศ</td><td><span class="placeholder">[ชื่อ-นามสกุลอาจารย์นิเทศ]</span></td></tr>
+        <tr><td colspan="2"><br></td></tr>
+        <tr><td style="font-weight: bold;">สถานประกอบการ</td><td>กฟผ. โรงไฟฟ้าแม่เมาะ</td></tr>
+        <tr><td style="font-weight: bold;">หน่วยงาน</td><td>กองบำรุงรักษา W10</td></tr>
+        <tr><td style="font-weight: bold;">หัวหน้างาน</td><td><span class="placeholder">[ชื่อ-นามสกุลหัวหน้างาน]</span></td></tr>
+        <tr><td style="font-weight: bold;">พี่เลี้ยง</td><td><span class="placeholder">[ชื่อ-นามสกุลพี่เลี้ยง]</span></td></tr>
+        <tr><td style="font-weight: bold;">ช่วงฝึกงาน</td><td>11 พฤษภาคม – 4 กันยายน 2569</td></tr>
+    </table>
+    
+    <br><br><br>
+    <div class="center" style="font-size: 16pt;">
+        รายงานฉบับนี้เป็นส่วนหนึ่งของการศึกษาวิชาฝึกประสบการณ์วิชาชีพ<br>
+        ภาคเรียนที่ 1 ปีการศึกษา 2569
+    </div>
+</div>
+
+<!-- PAGE 3: ACKNOWLEDGMENTS -->
+<div class="page-break">
+    <br><br>
+    <h1 class="center" style="border: none;">กิตติกรรมประกาศ</h1>
+    <br>
+    <div class="indent">
+        รายงานโครงงานสหกิจศึกษาฉบับนี้ สำเร็จลุล่วงไปได้ด้วยดีเนื่องจากได้รับความช่วยเหลือและคำแนะนำอย่างดียิ่งจาก <span class="placeholder">[ชื่อ-นามสกุลอาจารย์นิเทศ]</span> อาจารย์นิเทศประจำสาขาวิชาเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคลำปาง ที่ได้ให้คำปรึกษาและตรวจทานแก้ไขข้อบกพร่องต่างๆ ของรายงานฉบับนี้จนสมบูรณ์ ผู้จัดทำขอขอบพระคุณเป็นอย่างสูง
+    </div>
+    <div class="indent">
+        ขอขอบพระคุณ <span class="placeholder">[ชื่อ-นามสกุลหัวหน้างาน]</span> หัวหน้างานกองบำรุงรักษา W10 และ <span class="placeholder">[ชื่อ-นามสกุลพี่เลี้ยง]</span> พี่เลี้ยงประจำสถานประกอบการ ที่ได้ให้โอกาสในการเข้าฝึกประสบการณ์วิชาชีพ ตลอดจนมอบหมายงานที่ท้าทาย ให้คำแนะนำ ถ่ายทอดความรู้ และประสบการณ์ในการทำงานจริง ซึ่งเป็นประโยชน์อย่างยิ่งต่อการพัฒนาทักษะวิชาชีพ
+    </div>
+    <div class="indent">
+        ขอขอบพระคุณพี่ๆ พนักงานกองบำรุงรักษา W10 ทุกท่าน ที่ให้ความเมตตา ดูแลและให้ความช่วยเหลือในด้านต่างๆ ตลอดระยะเวลาการฝึกประสบการณ์วิชาชีพ ทำให้ผู้จัดทำได้รับความรู้ ความเข้าใจในกระบวนการทำงาน และสามารถปรับตัวเข้ากับการทำงานในองค์กรได้อย่างรวดเร็ว
+    </div>
+    <div class="indent">
+        สุดท้ายนี้ ขอขอบพระคุณ การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย (กฟผ.) โรงไฟฟ้าแม่เมาะ ที่เปิดโอกาสให้นักศึกษาได้เข้ามาเรียนรู้และฝึกปฏิบัติงานจริง ประสบการณ์ที่ได้รับจากการฝึกงานในครั้งนี้ ผู้จัดทำจะนำไปประยุกต์ใช้ในการศึกษาและการประกอบอาชีพในอนาคตต่อไป
+    </div>
+    <br><br><br>
+    <table class="layout-table" style="width: 100%;">
+        <tr>
+            <td style="width: 60%;"></td>
+            <td class="center">
+                <span class="placeholder">[ชื่อ-นามสกุลผู้จัดทำ]</span><br>
+                ผู้จัดทำ
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- PAGE 4: TABLE OF CONTENTS -->
+<div class="page-break">
+    <br><br>
+    <h1 class="center" style="border: none;">สารบัญ</h1>
+    <br>
+    <table class="layout-table" style="width: 100%; font-size: 16pt;">
+        <tr>
+            <td style="font-weight: bold; width: 85%;">เรื่อง</td>
+            <td style="font-weight: bold; width: 15%; text-align: right;">หน้า</td>
+        </tr>
+        <tr><td>กิตติกรรมประกาศ</td><td class="right">ก</td></tr>
+        <tr><td>บทคัดย่อ</td><td class="right">ข</td></tr>
+        <tr><td>สารบัญ</td><td class="right">ค</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 1 บทนำ</td><td class="right" style="padding-top: 10pt;">1</td></tr>
+        <tr><td style="padding-left: 20pt;">1.1 ความเป็นมาและความสำคัญ</td><td class="right">1</td></tr>
+        <tr><td style="padding-left: 20pt;">1.2 วัตถุประสงค์</td><td class="right">1</td></tr>
+        <tr><td style="padding-left: 20pt;">1.3 ขอบเขต</td><td class="right">1</td></tr>
+        <tr><td style="padding-left: 20pt;">1.4 ประโยชน์</td><td class="right">1</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 2 ทฤษฎีและเทคโนโลยีที่เกี่ยวข้อง</td><td class="right" style="padding-top: 10pt;">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.1 Next.js and React</td><td class="right">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.2 TypeScript</td><td class="right">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.3 Google Sheets API</td><td class="right">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.4 Google Drive API and OAuth 2.0</td><td class="right">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.5 Vercel Platform</td><td class="right">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.6 Tailwind CSS v4</td><td class="right">2</td></tr>
+        <tr><td style="padding-left: 20pt;">2.7 เครื่องมืออื่นๆ ที่เกี่ยวข้อง</td><td class="right">2</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 3 สถานประกอบการ</td><td class="right" style="padding-top: 10pt;">3</td></tr>
+        <tr><td style="padding-left: 20pt;">3.1 กฟผ. Overview</td><td class="right">3</td></tr>
+        <tr><td style="padding-left: 20pt;">3.2 โรงไฟฟ้าแม่เมาะ</td><td class="right">3</td></tr>
+        <tr><td style="padding-left: 20pt;">3.3 กองบำรุงรักษา W10</td><td class="right">3</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 4 การวิเคราะห์และออกแบบระบบ</td><td class="right" style="padding-top: 10pt;">4</td></tr>
+        <tr><td style="padding-left: 20pt;">4.1 ความต้องการของระบบ (Requirements)</td><td class="right">4</td></tr>
+        <tr><td style="padding-left: 20pt;">4.2 สถาปัตยกรรมระบบ (System Architecture)</td><td class="right">4</td></tr>
+        <tr><td style="padding-left: 20pt;">4.3 แผนภาพกระแสข้อมูล (Data Flow Diagram)</td><td class="right">4</td></tr>
+        <tr><td style="padding-left: 20pt;">4.4 โครงสร้างข้อมูล (Data Structure)</td><td class="right">5</td></tr>
+        <tr><td style="padding-left: 20pt;">4.5 โครงสร้างเส้นทาง (Route Structure)</td><td class="right">5</td></tr>
+        <tr><td style="padding-left: 20pt;">4.6 โครงสร้าง Shop Order (Schema)</td><td class="right">6</td></tr>
+        <tr><td style="padding-left: 20pt;">4.7 กระบวนการอัปโหลดไฟล์ (Upload Flow)</td><td class="right">6</td></tr>
+        <tr><td style="padding-left: 20pt;">4.8 วงจรชีวิตของไฟล์แนบ (Attachment Lifecycle)</td><td class="right">6</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 5 การพัฒนาระบบ</td><td class="right" style="padding-top: 10pt;">7</td></tr>
+        <tr><td style="padding-left: 20pt;">5.1 หน้าหลัก (Home Dashboard)</td><td class="right">7</td></tr>
+        <tr><td style="padding-left: 20pt;">5.2 ระบบจัดซื้อจัดจ้าง (Purchasing)</td><td class="right">7</td></tr>
+        <tr><td style="padding-left: 20pt;">5.3 ระบบคลังสินค้า BEML (BEML Inventory)</td><td class="right">8</td></tr>
+        <tr><td style="padding-left: 20pt;">5.4 ระบบสรุปการทำงานล่วงเวลา (OT Summary)</td><td class="right">8</td></tr>
+        <tr><td style="padding-left: 20pt;">5.5 ระบบติดตามงานซ่อมบำรุง (Shop Order)</td><td class="right">9</td></tr>
+        <tr><td style="padding-left: 20pt;">5.6 ระบบ API</td><td class="right">10</td></tr>
+        <tr><td style="padding-left: 20pt;">5.7 ความปลอดภัยและการจัดการข้อผิดพลาด</td><td class="right">10</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 6 การทดสอบระบบ</td><td class="right" style="padding-top: 10pt;">11</td></tr>
+        <tr><td style="padding-left: 20pt;">6.1 ขอบเขตการทดสอบ (Unit Test Coverage)</td><td class="right">11</td></tr>
+        <tr><td style="padding-left: 20pt;">6.2 ผลการทดสอบ (Test Results)</td><td class="right">11</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">บทที่ 7 สรุปผลและข้อเสนอแนะ</td><td class="right" style="padding-top: 10pt;">12</td></tr>
+        <tr><td style="padding-left: 20pt;">7.1 สรุปผลการดำเนินงาน</td><td class="right">12</td></tr>
+        <tr><td style="padding-left: 20pt;">7.2 ปัญหาและอุปสรรค</td><td class="right">12</td></tr>
+        <tr><td style="padding-left: 20pt;">7.3 ข้อเสนอแนะ</td><td class="right">12</td></tr>
+        
+        <tr><td style="font-weight: bold; padding-top: 10pt;">ภาคผนวก</td><td class="right" style="padding-top: 10pt;">13</td></tr>
+    </table>
+</div>
+
+<!-- PAGE 5: ABSTRACT -->
+<div class="page-break">
+    <br><br>
+    <h1 class="center" style="border: none;">บทคัดย่อ</h1>
+    <br>
+    <div class="indent">
+        รายงานโครงงานสหกิจศึกษาฉบับนี้ นำเสนอการพัฒนาระบบ <b>"W10 Dashboard"</b> ซึ่งเป็นเว็บแอปพลิเคชันสำหรับติดตามงานซ่อมบำรุงและจัดซื้อจัดจ้าง ของกองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10 (W10) การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย โดยมีที่มาจากปัญหาการจัดเก็บข้อมูลที่กระจัดกระจายอยู่ใน Google Sheets หลายไฟล์ ขาดมุมมองที่รวมศูนย์ (Unified View) และไม่มีระบบจัดการ Shop Order ที่รองรับการเพิ่ม ลบ แก้ไข (CRUD) พร้อมการแนบไฟล์เอกสาร
+    </div>
+    <div class="indent">
+        แนวทางในการแก้ปัญหา คือการพัฒนาระบบขึ้นมาใหม่โดยใช้เทคโนโลยีที่ทันสมัย ได้แก่ Next.js 16 ร่วมกับ React 19 และ TypeScript สำหรับการพัฒนาส่วนหน้าบ้านและหลังบ้าน เชื่อมต่อข้อมูลผ่าน Google Sheets API และจัดการไฟล์เอกสารผ่าน Google Drive API ร่วมกับระบบยืนยันตัวตน OAuth 2.0 โดยนำไปติดตั้งใช้งานจริง (Deploy) บนแพลตฟอร์ม Vercel 
+    </div>
+    <div class="indent">
+        ผลลัพธ์จากการพัฒนาระบบ ได้หน้าเว็บหลักจำนวน 7 หน้า ที่สามารถเชื่อมต่อข้อมูลแบบเรียลไทม์ มีระบบการทดสอบ Unit Test จำนวน 270 รายการจาก 25 ไฟล์ ซึ่งผ่านการทดสอบ 100% สามารถทำการ Production Build ได้สำเร็จ และนำขึ้นใช้งานจริงบน Vercel ได้อย่างมีประสิทธิภาพ 
+    </div>
+    <div class="indent">
+        ประโยชน์ที่ได้รับจากการพัฒนาระบบนี้คือ พนักงานสามารถดูข้อมูลจากแหล่งต่างๆ ผ่านหน้าแดชบอร์ดเดียว ลดระยะเวลาในการค้นหาข้อมูล และมีระบบจัดการ Shop Order ที่เป็นระเบียบ พร้อมระบบจัดการไฟล์แนบที่มีประสิทธิภาพ ช่วยเพิ่มความสะดวกรวดเร็วและลดข้อผิดพลาดในการปฏิบัติงาน
+    </div>
+    <br><br>
+    <div>
+        <b>คำสำคัญ:</b> แดชบอร์ด, Next.js, Google Sheets API, OAuth 2.0, ระบบติดตามงานซ่อมบำรุง, สหกิจศึกษา
+    </div>
+</div>
+
+<!-- PAGE 6: CHAPTER 1 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 1</span>
+    <h1>บทนำ</h1>
+
+    <h2>1.1 ความเป็นมาและความสำคัญ</h2>
+    <div class="indent">
+        การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย (กฟผ.) โรงไฟฟ้าแม่เมาะ เป็นหน่วยงานที่มีความสำคัญในการผลิตกระแสไฟฟ้าเพื่อตอบสนองความต้องการของประเทศ กองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10 (W10) มีหน้าที่รับผิดชอบในการดูแลรักษาเครื่องจักรและอุปกรณ์ต่างๆ ภายในโรงไฟฟ้าให้มีสภาพพร้อมใช้งานอยู่เสมอ 
+    </div>
+    <div class="indent">
+        ในการปฏิบัติงานของ W10 มีการจัดเก็บข้อมูลงานซ่อมบำรุง การจัดซื้อจัดจ้าง การเบิกจ่ายวัสดุคงคลัง และการทำงานล่วงเวลาในรูปแบบของ Google Sheets จำนวนหลายไฟล์ ซึ่งทำให้เกิดปัญหาข้อมูลกระจัดกระจาย พนักงานต้องใช้เวลามากในการค้นหาข้อมูลจากหลายแหล่ง ขาดหน้าจอที่สามารถแสดงภาพรวม (Dashboard) และที่สำคัญคือระบบเดิมไม่มีความสามารถในการเพิ่ม ลบ แก้ไข ข้อมูล Shop Order พร้อมทั้งการแนบไฟล์เอกสารอ้างอิงได้อย่างสะดวก
+    </div>
+
+    <h2>1.2 วัตถุประสงค์</h2>
+    <ol>
+        <li>เพื่อพัฒนาระบบแดชบอร์ดที่รวมศูนย์ข้อมูลจาก Google Sheets หลายไฟล์ให้อยู่ในหน้าจอเดียว (Unified Dashboard)</li>
+        <li>เพื่อพัฒนาระบบจัดการข้อมูล Shop Order ที่รองรับการเพิ่ม ลบ แก้ไข (CRUD) และสามารถแนบไฟล์เอกสารได้</li>
+        <li>เพื่อลดระยะเวลาในการค้นหาข้อมูล และเพิ่มประสิทธิภาพในการทำงานของพนักงานกองบำรุงรักษา W10</li>
+        <li>เพื่อนำเสนอข้อมูลในรูปแบบภาพ (Visual Data) เช่น กราฟหรือแผนภูมิ ที่เข้าใจง่ายและช่วยในการตัดสินใจ</li>
+        <li>เพื่อให้นักศึกษาได้เรียนรู้และประยุกต์ใช้เทคโนโลยีการพัฒนาเว็บแอปพลิเคชันสมัยใหม่ในสภาพแวดล้อมการทำงานจริง</li>
+    </ol>
+
+    <h2>1.3 ขอบเขตของโครงงาน</h2>
+    <ol>
+        <li>พัฒนาระบบในรูปแบบเว็บแอปพลิเคชัน (Web Application)</li>
+        <li>ใช้ฐานข้อมูลหลักจาก Google Sheets ของหน่วยงาน</li>
+        <li>ระบบสามารถทำ CRUD Operations กับข้อมูล Shop Order และอัปโหลดไฟล์ขนาดไม่เกิน 10MB ต่อไฟล์</li>
+        <li>ใช้ระบบ OAuth 2.0 ผ่าน Google Drive API ในการจัดการสิทธิ์การเข้าถึงและการอัปโหลดไฟล์</li>
+        <li>นำระบบขึ้นใช้งานจริง (Deploy) บนแพลตฟอร์ม Vercel</li>
+        <li>ระบบเปิดให้ใช้งานภายในโดยไม่ต้องมีการล็อกอิน (No Login) เพื่อความรวดเร็วในการเข้าถึง</li>
+        <li>ระบบประกอบด้วย 7 หน้าหลัก ได้แก่ Home, Purchasing (Active/All), BEML Inventory, OT Summary (Overview/Employee), และ Shop Order</li>
+    </ol>
+
+    <h2>1.4 ประโยชน์ที่คาดว่าจะได้รับ</h2>
+    <ol>
+        <li>มีระบบแดชบอร์ดที่ช่วยให้ผู้บริหารและพนักงานสามารถติดตามสถานะงานต่างๆ ได้อย่างรวดเร็วและแม่นยำ</li>
+        <li>ลดข้อผิดพลาดและความซ้ำซ้อนในการจัดการข้อมูลงานซ่อมบำรุง</li>
+        <li>เพิ่มประสิทธิภาพในการจัดเก็บและค้นหาเอกสารอ้างอิงที่เกี่ยวข้องกับ Shop Order</li>
+        <li>พนักงานสามารถเข้าถึงข้อมูลจากอุปกรณ์ใดก็ได้ผ่านเว็บบราวเซอร์</li>
+        <li>นักศึกษาได้รับประสบการณ์จริงในการพัฒนาระบบสารสนเทศสำหรับองค์กรขนาดใหญ่</li>
+    </ol>
+</div>
+
+<!-- PAGE 7: CHAPTER 2 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 2</span>
+    <h1>ทฤษฎีและเทคโนโลยีที่เกี่ยวข้อง</h1>
+
+    <h2>2.1 Next.js and React</h2>
+    <div class="indent">
+        โครงงานนี้ใช้เฟรมเวิร์ก Next.js เวอร์ชัน 16 ซึ่งรองรับคุณสมบัติใหม่ของ React 19 โดย Next.js มีจุดเด่นในเรื่องของการทำ Server-Side Rendering (SSR) และ API Routes ซึ่งช่วยให้สามารถสร้างระบบ Backend และ Frontend ไว้ในโปรเจกต์เดียวกันได้ ช่วยเพิ่มประสิทธิภาพในการโหลดหน้าเว็บและความปลอดภัยของโค้ดที่ทำงานบนเซิร์ฟเวอร์
+    </div>
+
+    <h2>2.2 TypeScript</h2>
+    <div class="indent">
+        ใช้ภาษา TypeScript ในโหมด Strict เพื่อเพิ่มความปลอดภัยของประเภทข้อมูล (Type Safety) ในขั้นตอนการเขียนโค้ด ช่วยลดข้อผิดพลาดที่อาจเกิดขึ้นระหว่างการทำงาน (Runtime Errors) และทำให้โค้ดอ่านง่ายและง่ายต่อการบำรุงรักษา
+    </div>
+
+    <h2>2.3 Google Sheets API</h2>
+    <div class="indent">
+        เนื่องจากหน่วยงานใช้ Google Sheets ในการเก็บข้อมูลอยู่แล้ว จึงนำ Google Sheets API มาใช้เป็นฐานข้อมูล (Database) ของระบบ โดยใช้ Service Account ในการเข้าถึงข้อมูล เพื่อให้ระบบสามารถอ่านและเขียนข้อมูลได้อย่างอัตโนมัติโดยไม่ต้องให้ผู้ใช้ต้องล็อกอินบัญชี Google
+    </div>
+
+    <h2>2.4 Google Drive API and OAuth 2.0</h2>
+    <div class="indent">
+        ใช้สำหรับการอัปโหลดไฟล์แนบของ Shop Order ไปยัง Google Drive โดยกำหนดขอบเขต (Scope) เป็น <code>drive.file</code> ซึ่งให้สิทธิ์ระบบเข้าถึงเฉพาะไฟล์ที่ระบบสร้างขึ้นเท่านั้น เพื่อความปลอดภัย และรองรับการอัปโหลดไฟล์ขนาดใหญ่แบบ Resumable Upload
+    </div>
+
+    <h2>2.5 Vercel Platform</h2>
+    <div class="indent">
+        Vercel เป็นแพลตฟอร์มสำหรับให้บริการคลาวด์และโฮสติ้งที่ออกแบบมาเพื่อทำงานร่วมกับ Next.js ได้อย่างราบรื่น โครงงานนี้ใช้ Vercel ในการ Deploy ระบบขึ้นสู่สภาพแวดล้อมการผลิต (Production) โดยใช้ประโยชน์จากสถาปัตยกรรม Serverless และ Edge Network
+    </div>
+
+    <h2>2.6 Tailwind CSS v4</h2>
+    <div class="indent">
+        ใช้ Utility-First CSS Framework ในการออกแบบและจัดรูปแบบส่วนต่อประสานกับผู้ใช้ (User Interface) ซึ่งช่วยให้การพัฒนา UI เป็นไปอย่างรวดเร็ว โค้ดมีความสม่ำเสมอ และรองรับการแสดงผลแบบ Responsive ในเวอร์ชัน 4 ได้มีการปรับปรุงประสิทธิภาพการคอมไพล์ที่เร็วยิ่งขึ้น
+    </div>
+
+    <h2>2.7 เครื่องมืออื่นๆ ที่เกี่ยวข้อง</h2>
+    <table class="data-table">
+        <tr>
+            <th style="width: 30%;">เครื่องมือ / ไลบรารี</th>
+            <th>หน้าที่การทำงาน</th>
+            <th style="width: 20%;">เวอร์ชัน</th>
+        </tr>
+        <tr>
+            <td>Highcharts</td>
+            <td>สร้างกราฟและแผนภูมิที่มีความซับซ้อนและสวยงาม</td>
+            <td class="center">12.6.0</td>
+        </tr>
+        <tr>
+            <td>Recharts</td>
+            <td>สร้างแผนภูมิแท่ง แผนภูมิวงกลม สำหรับแดชบอร์ด</td>
+            <td class="center">3.8.1</td>
+        </tr>
+        <tr>
+            <td>Framer Motion</td>
+            <td>จัดการแอนิเมชันและการเคลื่อนไหวของ UI Component</td>
+            <td class="center">12.40.0</td>
+        </tr>
+        <tr>
+            <td>Lucide React</td>
+            <td>ไลบรารีไอคอนที่ทันสมัยและน้ำหนักเบา</td>
+            <td class="center">1.16.0</td>
+        </tr>
+        <tr>
+            <td>Vitest</td>
+            <td>เฟรมเวิร์กสำหรับการทำ Unit Testing ที่มีความเร็วสูง</td>
+            <td class="center">4.1.10</td>
+        </tr>
+        <tr>
+            <td>react-d3-speedometer</td>
+            <td>สร้างกราฟิกหน้าปัดเกจ (Gauge) เพื่อแสดงสถานะ</td>
+            <td class="center">3.1.2</td>
+        </tr>
+    </table>
+</div>
+
+<!-- PAGE 8: CHAPTER 3 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 3</span>
+    <h1>สถานประกอบการ</h1>
+
+    <h2>3.1 การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย (กฟผ.)</h2>
+    <div class="indent">
+        การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย (กฟผ.) เป็นรัฐวิสาหกิจในสังกัดกระทรวงพลังงาน มีภารกิจหลักในการผลิต จัดหา ให้บริการ และจำหน่ายพลังงานไฟฟ้าให้กับประชาชนชาวไทย โดยมีโรงไฟฟ้าและเครือข่ายระบบส่งไฟฟ้าครอบคลุมทั่วประเทศ
+    </div>
+
+    <h2>3.2 โรงไฟฟ้าแม่เมาะ</h2>
+    <div class="indent">
+        โรงไฟฟ้าแม่เมาะ ตั้งอยู่ที่อำเภอแม่เมาะ จังหวัดลำปาง เป็นโรงไฟฟ้าพลังความร้อนที่ใช้ถ่านหินลิกไนต์จากเหมืองแม่เมาะเป็นเชื้อเพลิงหลัก ถือเป็นโรงไฟฟ้าที่ใช้ถ่านหินลิกไนต์แห่งเดียวในประเทศไทย และเป็นแหล่งผลิตกระแสไฟฟ้าที่สำคัญของภาคเหนือ
+    </div>
+    
+    <div class="screenshot" style="height: 150px; line-height: 150px; padding: 0;">
+        [ภาพถ่ายประกอบ: โรงไฟฟ้าแม่เมาะ]
+    </div>
+
+    <h2>3.3 กองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10 (W10)</h2>
+    <div class="indent">
+        กองบำรุงรักษา W10 มีหน้าที่หลักในการรับผิดชอบงานซ่อมบำรุงเครื่องจักรและอุปกรณ์ของโรงไฟฟ้าแม่เมาะ เพื่อให้สามารถเดินเครื่องผลิตไฟฟ้าได้อย่างต่อเนื่องและปลอดภัย โดยแบ่งโครงสร้างการทำงานออกเป็นกลุ่มงานย่อย 4 กลุ่ม ได้แก่:
+    </div>
+    <ul>
+        <li><b>W11 (แผนกบำรุงรักษาเครื่องกล):</b> ดูแลและซ่อมบำรุงอุปกรณ์เครื่องกลต่างๆ เช่น กังหันไอน้ำ เครื่องสูบน้ำ วาล์ว เป็นต้น</li>
+        <li><b>W12 (แผนกบำรุงรักษาไฟฟ้า):</b> ดูแลระบบไฟฟ้า เครื่องกำเนิดไฟฟ้า มอเตอร์ และหม้อแปลงไฟฟ้า</li>
+        <li><b>W13 (แผนกบำรุงรักษาอุปกรณ์ควบคุมและทำงาน):</b> ดูแลรักษาระบบเครื่องมือวัด ระบบควบคุมอัตโนมัติ และระบบป้องกัน</li>
+        <li><b>W14 (แผนกวางแผนและบริหารงานบำรุงรักษา):</b> วางแผนงานซ่อมบำรุง จัดเตรียมอะไหล่ ประเมินผล และจัดการข้อมูลด้านการบำรุงรักษา</li>
+    </ul>
+    
+    <div class="callout-info">
+        <b>หมายเหตุ:</b> โครงงาน W10 Dashboard นี้ ถูกพัฒนาขึ้นเพื่อสนับสนุนการทำงานของแผนก W14 เป็นหลัก ในการบริหารจัดการข้อมูลและติดตามสถานะงานซ่อมบำรุงของทั้งกอง
+    </div>
+</div>
+
+<!-- PAGE 9: CHAPTER 4 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 4</span>
+    <h1>การวิเคราะห์และออกแบบระบบ</h1>
+
+    <h2>4.1 ความต้องการของระบบ (Requirements)</h2>
+    
+    <h3>Functional Requirements</h3>
+    <ul>
+        <li>ระบบสามารถแสดงผลข้อมูลภาพรวมจาก Google Sheets ได้ในรูปแบบ Dashboard</li>
+        <li>ระบบสามารถเรียกดูข้อมูลการจัดซื้อจัดจ้าง (Purchasing) ทั้งหมดและสถานะที่กำลังดำเนินการได้</li>
+        <li>ระบบสามารถดูสถานะของอะไหล่คงคลัง (BEML Inventory)</li>
+        <li>ระบบสามารถสรุปข้อมูลการทำงานล่วงเวลา (OT Summary) รายบุคคลและภาพรวมได้</li>
+        <li>ระบบมีหน้าจอสำหรับจัดการงานซ่อมบำรุง (Shop Order)</li>
+        <li>ระบบสามารถดึงข้อมูล เพิ่ม แก้ไข และลบรายการ Shop Orderใน Google Sheets ได้</li>
+        <li>ผู้ใช้สามารถอัปโหลดไฟล์เอกสาร (เช่น PDF, รูปภาพ) แนบไปกับ Shop Order ได้</li>
+        <li>ระบบสามารถแสดงลิงก์หรือรูปภาพเพื่อเปิดดูไฟล์ที่แนบมาได้</li>
+    </ul>
+
+    <h3>Non-functional Requirements</h3>
+    <ul>
+        <li>ระบบพัฒนาด้วย Next.js และนำขึ้นระบบ (Deploy) บน Vercel</li>
+        <li>ระบบตอบสนองต่อผู้ใช้งานได้อย่างรวดเร็วและรองรับหน้าจอหลายขนาด (Responsive)</li>
+        <li>ระบบมีความปลอดภัยในการเข้าถึงข้อมูลผ่าน API และป้องกันการโจมตีเบื้องต้น</li>
+        <li>ขนาดไฟล์อัปโหลดสูงสุดไม่เกิน 10MB ต่อไฟล์</li>
+        <li>ไม่ต้องมีระบบล็อกอินผู้ใช้เพื่อความสะดวกในการเข้าถึงสำหรับพนักงานภายใน</li>
+    </ul>
+
+    <h2>4.2 สถาปัตยกรรมระบบ (System Architecture)</h2>
+    <div class="indent">
+        สถาปัตยกรรมระบบได้รับการออกแบบให้เป็นแบบ 3-Tier โดยอาศัยเทคโนโลยี Serverless ของ Vercel ดังแสดงในตารางด้านล่าง:
+    </div>
+    <table class="data-table">
+        <tr>
+            <th style="width: 33%;">Tier 1: Client (Browser)</th>
+            <th style="width: 33%;">Tier 2: Server (Next.js)</th>
+            <th style="width: 33%;">Tier 3: Database & Storage</th>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;">
+                - React 19 UI Components<br>
+                - Tailwind CSS Styling<br>
+                - Highcharts / Recharts<br>
+                - ทำงานบนเบราว์เซอร์ของผู้ใช้
+            </td>
+            <td style="vertical-align: top;">
+                - Next.js 16 API Routes<br>
+                - การจัดการ Route และ Layout<br>
+                - ทำหน้าที่เป็น Proxy ป้องกัน Credentials<br>
+                - ทำงานบน Vercel Edge / Serverless Functions
+            </td>
+            <td style="vertical-align: top;">
+                - Google Sheets (ฐานข้อมูล)<br>
+                - Google Drive (เก็บไฟล์แนบ)<br>
+                - เชื่อมต่อผ่าน Google APIs โดยใช้ Service Account
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- PAGE 10: CHAPTER 4 (Cont.) -->
+<div class="page-break">
+    <h2>4.3 แผนภาพกระแสข้อมูล (Data Flow Diagram)</h2>
+    <div class="indent">
+        กระแสข้อมูลหลักของระบบในการแสดงผลแดชบอร์ดและการจัดการข้อมูล มีขั้นตอนดังนี้:
+    </div>
+    <table class="layout-table" style="border: 1px solid #dee2e6; margin-bottom: 15pt;">
+        <tr><td style="border-bottom: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">กระบวนการเรียกดูและจัดการข้อมูล</td></tr>
+        <tr><td style="padding: 10pt;">
+            <b>ขั้นตอนที่ 1:</b> ผู้ใช้งานเปิดหน้าเว็บเบราว์เซอร์และร้องขอหน้าแดชบอร์ด<br>
+            <b>ขั้นตอนที่ 2:</b> React Component ส่ง HTTP Request ไปยัง Next.js API Routes<br>
+            <b>ขั้นตอนที่ 3:</b> Next.js API ทำการตรวจสอบสิทธิ์และสร้างการเชื่อมต่อกับ Google APIs (Sheets/Drive)<br>
+            <b>ขั้นตอนที่ 4:</b> Google Services ประมวลผลและส่งข้อมูลดิบกลับมาที่เซิร์ฟเวอร์<br>
+            <b>ขั้นตอนที่ 5:</b> Next.js API แปลงและกรองข้อมูล (Data Transformation) ให้อยู่ในรูปแบบ JSON<br>
+            <b>ขั้นตอนที่ 6:</b> เบราว์เซอร์รับข้อมูล JSON และแสดงผลเป็นกราฟฟิกและตาราง
+        </td></tr>
+    </table>
+
+    <h2>4.4 โครงสร้างข้อมูล API (Data Structure)</h2>
+    <table class="data-table">
+        <tr>
+            <th>API Endpoint</th>
+            <th>แหล่งข้อมูล (Google Sheets)</th>
+            <th>จุดประสงค์การใช้งาน</th>
+        </tr>
+        <tr><td>/api/w10-purchasing</td><td>Sheet จัดซื้อจัดจ้าง</td><td>ดึงข้อมูลสถานะและสรุปงบประมาณการจัดซื้อ</td></tr>
+        <tr><td>/api/beml</td><td>Sheet คลัง BEML</td><td>ดึงข้อมูลจำนวนและสถานะของอะไหล่คงคลัง</td></tr>
+        <tr><td>/api/ot</td><td>Sheet เบิก OT</td><td>ดึงข้อมูลประวัติและสรุปยอดเงินค่าล่วงเวลา</td></tr>
+        <tr><td>/api/dashboard</td><td>Aggregated Data</td><td>รวบรวมข้อมูลสำหรับหน้า Home Dashboard</td></tr>
+        <tr><td>/api/shop-order</td><td>Sheet Shop Order</td><td>ทำ CRUD Operations สำหรับงานซ่อมบำรุง</td></tr>
+        <tr><td>/api/upload</td><td>Google Drive API</td><td>จัดการการอัปโหลดไฟล์แนบเข้า Google Drive</td></tr>
+    </table>
+
+    <h2>4.5 โครงสร้างเส้นทาง (Route Structure)</h2>
+    <table class="data-table">
+        <tr><th>เส้นทาง (Path)</th><th>ชื่อหน้า (Page Name)</th><th>คำอธิบาย</th></tr>
+        <tr><td>/</td><td>Home Dashboard</td><td>หน้าหลักแสดงภาพรวมทั้งหมด</td></tr>
+        <tr><td>/purchasing</td><td>Active Purchasing</td><td>รายการจัดซื้อที่กำลังดำเนินการ</td></tr>
+        <tr><td>/purchasing-all</td><td>All Purchasing</td><td>ประวัติการจัดซื้อทั้งหมด</td></tr>
+        <tr><td>/beml-inventory</td><td>BEML Inventory</td><td>ระบบจัดการสินค้าคงคลัง BEML</td></tr>
+        <tr><td>/ot-summary</td><td>OT Overview</td><td>ภาพรวมการทำงานล่วงเวลา</td></tr>
+        <tr><td>/ot-employee</td><td>Employee OT</td><td>รายละเอียดการทำ OT รายบุคคล</td></tr>
+        <tr><td>/shop-order</td><td>Shop Order System</td><td>ระบบจัดการงานซ่อมบำรุง</td></tr>
+    </table>
+</div>
+
+<!-- PAGE 11: CHAPTER 4 (Cont.) -->
+<div class="page-break">
+    <h2>4.6 โครงสร้างข้อมูล Shop Order (Schema)</h2>
+    <table class="data-table">
+        <tr>
+            <th style="width: 15%;">คอลัมน์</th>
+            <th style="width: 30%;">ชื่อฟิลด์ (Field Name)</th>
+            <th>ชนิดข้อมูล (Data Type)</th>
+            <th>คำอธิบาย</th>
+        </tr>
+        <tr><td class="center">A</td><td>Order Number</td><td>String</td><td>เลขที่ใบสั่งงาน (Primary Key)</td></tr>
+        <tr><td class="center">B</td><td>Description</td><td>String</td><td>รายละเอียดของงาน</td></tr>
+        <tr><td class="center">C</td><td>Equipment ID</td><td>String</td><td>รหัสอุปกรณ์ที่เกี่ยวข้อง</td></tr>
+        <tr><td class="center">D</td><td>Status</td><td>Enum</td><td>สถานะ (Pending, In Progress, Completed)</td></tr>
+        <tr><td class="center">E</td><td>Priority</td><td>Enum</td><td>ความสำคัญ (High, Medium, Low)</td></tr>
+        <tr><td class="center">F</td><td>Reported Date</td><td>Date</td><td>วันที่แจ้งซ่อม</td></tr>
+        <tr><td class="center">G</td><td>Completed Date</td><td>Date/Null</td><td>วันที่ซ่อมเสร็จ</td></tr>
+        <tr><td class="center">H</td><td>Reporter Name</td><td>String</td><td>ชื่อผู้แจ้ง</td></tr>
+        <tr><td class="center">I</td><td>Assignee</td><td>String</td><td>ผู้รับผิดชอบงาน</td></tr>
+        <tr><td class="center">J</td><td>Attachment Links</td><td>String (JSON)</td><td>ลิงก์ไฟล์แนบจาก Google Drive</td></tr>
+        <tr><td class="center">K</td><td>Notes</td><td>String</td><td>บันทึกเพิ่มเติม</td></tr>
+    </table>
+
+    <h2>4.7 กระบวนการอัปโหลดไฟล์ (Upload Flow)</h2>
+    <table class="layout-table" style="border: 1px solid #dee2e6; margin-bottom: 15pt;">
+        <tr><td style="border-bottom: 1px solid #dee2e6; font-weight: bold; background-color: #f8f9fa;">ขั้นตอนการอัปโหลดเอกสารแนบไปยัง Google Drive</td></tr>
+        <tr><td style="padding: 10pt;">
+            1. ผู้ใช้เลือกไฟล์ผ่านอินเทอร์เฟซในหน้าเว็บ (ขนาดจำกัดไม่เกิน 10MB)<br>
+            2. เบราว์เซอร์แปลงไฟล์เป็นรูปแบบ FormData และส่งไปยัง <code>/api/upload</code><br>
+            3. เซิร์ฟเวอร์ Next.js รับไฟล์ ตรวจสอบประเภทและขนาด และสร้างคำขอไปยัง Google Drive API<br>
+            4. Google Drive บันทึกไฟล์ และส่งข้อมูล File ID และ WebViewLink กลับมา<br>
+            5. เซิร์ฟเวอร์นำลิงก์ไฟล์ที่ได้ ไปบันทึกลงในคอลัมน์ J ของ Shop Order ใน Google Sheets
+        </td></tr>
+    </table>
+
+    <h2>4.8 วงจรชีวิตของไฟล์แนบ (Attachment Lifecycle)</h2>
+    <table class="data-table">
+        <tr>
+            <th>สถานะ</th>
+            <th>เหตุการณ์</th>
+            <th>ผลลัพธ์ในระบบ</th>
+        </tr>
+        <tr>
+            <td>Pending</td>
+            <td>ไฟล์กำลังอัปโหลดและรอการตอบกลับจาก Drive</td>
+            <td>แสดง Loading Indicator และปุ่มอัปโหลดถูกล็อก</td>
+        </tr>
+        <tr>
+            <td>Active</td>
+            <td>บันทึกลง Drive และอัปเดต Sheets สำเร็จ</td>
+            <td>แสดงรายชื่อไฟล์และลิงก์สำหรับคลิกเพื่อเปิดดู</td>
+        </tr>
+        <tr>
+            <td>Scheduled Delete</td>
+            <td>ผู้ใช้คลิกลบไฟล์แนบ</td>
+            <td>ซ่อนออกจาก UI, ลบออกจาก Sheets และส่งคำสั่งลบไปยัง Drive</td>
+        </tr>
+    </table>
+</div>
+
+<!-- PAGE 12: CHAPTER 5 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 5</span>
+    <h1>การพัฒนาระบบ</h1>
+
+    <h2>5.1 หน้าหลัก (Home Dashboard)</h2>
+    <div class="indent">
+        หน้า Dashboard หลัก (Route: <code>/</code>) ถูกพัฒนาขึ้นเพื่อเป็นศูนย์กลางข้อมูล (Command Center) สำหรับผู้บริหารและพนักงาน โดยรวบรวมข้อมูลสำคัญจากระบบย่อยต่างๆ มาแสดงผลในรูปแบบแผนภูมิและตัวเลขสรุป
+    </div>
+    <table class="data-table">
+        <tr><th>ส่วนประกอบ (Component)</th><th>หน้าที่</th></tr>
+        <tr><td>Status Gauge</td><td>แสดงเกจวัดความคืบหน้าของงานซ่อมบำรุงโดยรวม (react-d3-speedometer)</td></tr>
+        <tr><td>Summary Cards</td><td>แสดงตัวเลขสรุปที่สำคัญ เช่น จำนวนจัดซื้อที่รอดำเนินการ, ค่า OT รวม</td></tr>
+        <tr><td>Recent Activity</td><td>แสดงรายการล่าสุดที่มีการอัปเดตจากระบบต่างๆ</td></tr>
+    </table>
+    <div class="screenshot" style="height: 120px; line-height: 120px;">
+        [ภาพถ่ายหน้าจอ: หน้า Home Dashboard]
+    </div>
+
+    <h2>5.2 ระบบจัดซื้อจัดจ้าง (Purchasing)</h2>
+    <div class="indent">
+        ประกอบด้วย 2 หน้าหลักคือ <code>/purchasing</code> สำหรับรายการที่อยู่ระหว่างดำเนินการ และ <code>/purchasing-all</code> สำหรับประวัติทั้งหมด ฟีเจอร์ที่พัฒนาประกอบด้วย:
+    </div>
+    <ul>
+        <li>ตารางแสดงรายการจัดซื้อ พร้อมระบบแบ่งหน้า (Pagination)</li>
+        <li>ระบบคัดกรองข้อมูลตามสถานะ (Filter) และค้นหารายการ (Search)</li>
+        <li>ไฮไลท์สีแถวตามสถานะ (เช่น แดง=ล่าช้า, เขียว=เสร็จสิ้น, เหลือง=รอดำเนินการ)</li>
+        <li>สรุปงบประมาณรวมแบบเรียลไทม์ผ่านการดึงข้อมูลจาก API</li>
+    </ul>
+    <div class="screenshot" style="height: 120px; line-height: 120px;">
+        [ภาพถ่ายหน้าจอ: หน้าจอระบบจัดซื้อจัดจ้าง]
+    </div>
+</div>
+
+<!-- PAGE 13: CHAPTER 5 (Cont.) -->
+<div class="page-break">
+    <h2>5.3 ระบบคลังสินค้า BEML (BEML Inventory)</h2>
+    <div class="indent">
+        ระบบแสดงข้อมูลสินค้าและอะไหล่คงคลังที่จัดเก็บใน Google Sheets ให้อ่านและติดตามได้ง่ายขึ้น (Route: <code>/beml-inventory</code>) 
+    </div>
+    <table class="data-table">
+        <tr><th>มุมมอง (View)</th><th>ลักษณะการแสดงผล</th></tr>
+        <tr><td>Table View</td><td>แสดงตารางข้อมูลเชิงลึกพร้อมรายละเอียด รหัสวัสดุ จำนวน และจุดสั่งซื้อ</td></tr>
+        <tr><td>Chart View</td><td>แสดงแผนภูมิแท่งเปรียบเทียบจำนวนอะไหล่แต่ละประเภทที่เบิกใช้งานสูงสุด</td></tr>
+        <tr><td>Alert View</td><td>แสดงเฉพาะรายการอะไหล่ที่มีจำนวนต่ำกว่าจุดสั่งซื้อ (Reorder Point)</td></tr>
+    </table>
+    <div class="screenshot" style="height: 120px; line-height: 120px;">
+        [ภาพถ่ายหน้าจอ: หน้าจอระบบคลังสินค้า BEML]
+    </div>
+
+    <h2>5.4 ระบบสรุปการทำงานล่วงเวลา (OT Summary)</h2>
+    <div class="indent">
+        ระบบคำนวณและแสดงผลข้อมูลการทำงานล่วงเวลาของพนักงาน โดยแยกเป็น 2 ส่วน คือ ภาพรวมกอง (<code>/ot-summary</code>) และข้อมูลรายบุคคล (<code>/ot-employee</code>)
+    </div>
+    <ul>
+        <li><b>OT Overview:</b> แสดงกราฟแท่งเปรียบเทียบค่าใช้จ่าย OT ในแต่ละเดือน และแผนภูมิวงกลมแยกตามแผนก </li>
+        <li><b>Employee OT:</b> ผู้ใช้สามารถเลือกชื่อพนักงานเพื่อดูรายละเอียดประวัติการทำ OT พร้อมคำนวณค่าตอบแทนรวมและจำนวนชั่วโมงสะสม</li>
+        <li><b>Export Data:</b> รองรับการนำข้อมูลในตารางส่งออกเป็นไฟล์ CSV สำหรับการทำรายงานส่งต้นสังกัด</li>
+    </ul>
+    <div class="screenshot" style="height: 120px; line-height: 120px;">
+        [ภาพถ่ายหน้าจอ: หน้าจอระบบ OT Summary]
+    </div>
+</div>
+
+<!-- PAGE 14: CHAPTER 5 (Cont.) -->
+<div class="page-break">
+    <h2>5.5 ระบบติดตามงานซ่อมบำรุง (Shop Order)</h2>
+    <div class="indent">
+        ระบบ Shop Order (Route: <code>/shop-order</code>) เป็นระบบหลักที่มีความซับซ้อนที่สุดในโครงงาน เนื่องจากต้องรองรับการจัดการข้อมูลแบบ CRUD และการจัดการไฟล์เอกสารแนบ
+    </div>
+    <table class="data-table">
+        <tr>
+            <th style="width: 25%;">องค์ประกอบ UI</th>
+            <th>การทำงานทางเทคนิค</th>
+        </tr>
+        <tr>
+            <td>Data Table</td>
+            <td>ดึงข้อมูลผ่าน SWR เพื่อรองรับการทำ Caching และ Revalidation อัตโนมัติ</td>
+        </tr>
+        <tr>
+            <td>Create/Edit Modal</td>
+            <td>ฟอร์มแบบไดนามิก ควบคุมด้วย React Hook Form และตรวจสอบข้อมูลด้วย Zod</td>
+        </tr>
+        <tr>
+            <td>File Uploader</td>
+            <td>รองรับ Drag & Drop และแสดงแถบความคืบหน้า (Progress Bar) ระหว่างส่งไฟล์</td>
+        </tr>
+        <tr>
+            <td>Action Menu</td>
+            <td>ปุ่มเปลี่ยนสถานะงาน ลบรายการ หรือเรียกดูไฟล์ที่แนบมา (เปิดแท็บใหม่)</td>
+        </tr>
+    </table>
+    <div class="screenshot" style="height: 200px; line-height: 200px;">
+        [ภาพถ่ายหน้าจอ: หน้าจอระบบจัดการ Shop Order และฟอร์มอัปโหลดไฟล์]
+    </div>
+    <div class="callout-info">
+        <b>นวัตกรรมของระบบ:</b> ฟีเจอร์อัปโหลดไฟล์ของระบบนี้ ทำให้พนักงานไม่ต้องแนบเอกสารใบงานแบบกระดาษ แต่สามารถถ่ายภาพแล้วอัปโหลดเข้าระบบ และระบบจะจัดเก็บไฟล์อย่างเป็นระเบียบใน Google Drive โดยอัตโนมัติ
+    </div>
+</div>
+
+<!-- PAGE 15: CHAPTER 5 (Cont.) -->
+<div class="page-break">
+    <h2>5.6 ระบบ API ด้านหลังบ้าน (Backend API)</h2>
+    <div class="indent">
+        API ของระบบถูกพัฒนาโดยใช้ Next.js Route Handlers ซึ่งจัดการการร้องขอต่างๆ และสื่อสารกับ Google Services 
+    </div>
+    <table class="data-table">
+        <tr><th style="width: 25%;">API Endpoint</th><th style="width: 15%;">Method</th><th>หน้าที่การทำงาน</th></tr>
+        <tr><td>/api/shop-order</td><td>GET</td><td>ดึงรายการ Shop Order ทั้งหมด</td></tr>
+        <tr><td>/api/shop-order</td><td>POST</td><td>สร้างรายการ Shop Order ใหม่</td></tr>
+        <tr><td>/api/shop-order/[id]</td><td>PUT</td><td>อัปเดตข้อมูล Shop Order ที่ระบุ</td></tr>
+        <tr><td>/api/shop-order/[id]</td><td>DELETE</td><td>ลบข้อมูล Shop Order ที่ระบุ</td></tr>
+        <tr><td>/api/upload</td><td>POST</td><td>รับไฟล์ ส่งเข้า Google Drive และคืนค่า URL</td></tr>
+        <tr><td>/api/dashboard</td><td>GET</td><td>ประมวลผลข้อมูลสรุปสำหรับหน้า Home</td></tr>
+        <tr><td>/api/cache-purge</td><td>POST</td><td>ล้างข้อมูลในแคช (Cache) เมื่อมีการบังคับรีเฟรช</td></tr>
+    </table>
+
+    <h2>5.7 ความปลอดภัยและการจัดการข้อผิดพลาด (Security & Resilience)</h2>
+    <div class="indent">
+        แม้ระบบจะเป็นระบบใช้ภายใน แต่ได้มีการวางมาตรการรักษาความปลอดภัยและการจัดการข้อผิดพลาดดังนี้:
+    </div>
+    <table class="data-table">
+        <tr>
+            <th>มาตรการ</th>
+            <th>การนำไปใช้งานในระบบ</th>
+        </tr>
+        <tr>
+            <td>CORS Protection</td>
+            <td>จำกัดการเรียก API เฉพาะจากโดเมนที่ได้รับอนุญาต (Vercel Domain) เท่านั้น</td>
+        </tr>
+        <tr>
+            <td>Environment Variables</td>
+            <td>เก็บค่าความลับ เช่น Service Account JSON ไว้ใน Environment ตัวแปร ฝั่งเซิร์ฟเวอร์</td>
+        </tr>
+        <tr>
+            <td>Error Boundary</td>
+            <td>ใช้ React Error Boundary เพื่อป้องกันหน้าเว็บล่ม (Crash) และแสดงหน้าแจ้งเตือนเมื่อเกิดข้อผิดพลาด</td>
+        </tr>
+        <tr>
+            <td>Rate Limiting</td>
+            <td>จำกัดจำนวนครั้งในการส่งคำขอต่อนาที เพื่อป้องกันการโจมตีหรือการใช้ทรัพยากรเกินขีดจำกัด</td>
+        </tr>
+    </table>
+    <br>
+    <b>รูปแบบข้อผิดพลาดที่ระบบจัดการได้ (Failure Modes Handling):</b>
+    <ul>
+        <li><b>Google Sheets Quota Exceeded:</b> ระบบจะแสดงข้อความเตือนให้ผู้ใช้รอและมีกลไก Retry แบบ Exponential Backoff</li>
+        <li><b>Network Disconnection:</b> UI จะแสดงการแจ้งเตือนเมื่อการเชื่อมต่ออินเทอร์เน็ตหลุด และลองโหลดข้อมูลใหม่เมื่อออนไลน์</li>
+        <li><b>File Too Large:</b> ตรวจจับขนาดไฟล์ตั้งแต่ระดับเบราว์เซอร์ หากเกิน 10MB จะปฏิเสธการอัปโหลดทันที</li>
+    </ul>
+</div>
+
+<!-- PAGE 16: CHAPTER 6 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 6</span>
+    <h1>การทดสอบระบบ</h1>
+
+    <h2>6.1 ขอบเขตการทดสอบ (Unit Test Coverage)</h2>
+    <div class="indent">
+        เพื่อให้ระบบมีความน่าเชื่อถือและลดข้อบกพร่อง โครงงานนี้ได้มีการเขียน Unit Test ด้วยเครื่องมือ Vitest โดยครอบคลุมส่วนสำคัญของระบบ จำนวน 25 ไฟล์ทดสอบ และมี Test Case รวมทั้งสิ้น 270 รายการ โดยแบ่งกลุ่มการทดสอบได้ดังนี้:
+    </div>
+    <table class="data-table">
+        <tr>
+            <th style="width: 30%;">กลุ่มการทดสอบ (Test Group)</th>
+            <th>รายละเอียดการทดสอบ</th>
+        </tr>
+        <tr><td>UI Components</td><td>ทดสอบการเรนเดอร์ของปุ่ม, ฟอร์ม, ไดอะล็อก และตารางข้อมูล</td></tr>
+        <tr><td>Form Validation</td><td>ทดสอบกฎการกรอกข้อมูล (Zod schemas) สำหรับ Shop Order</td></tr>
+        <tr><td>Data Transformation</td><td>ทดสอบฟังก์ชันที่แปลงข้อมูลดิบจาก Sheets ให้อยู่ในรูปที่ UI นำไปใช้</td></tr>
+        <tr><td>API Response Format</td><td>ทดสอบรูปแบบ JSON ที่ส่งออกจาก API ว่าถูกต้องตรงตาม Interface</td></tr>
+        <tr><td>State Management</td><td>ทดสอบลอจิกการจัดการสถานะภายในของ React Hooks ต่างๆ</td></tr>
+        <tr><td>Error Handling</td><td>จำลองการเกิดข้อผิดพลาดจากเครือข่ายและตรวจสอบการทำงานของ Error UI</td></tr>
+        <tr><td>Date Utilities</td><td>ทดสอบการแปลงและคำนวณวันที่ให้ถูกต้องตามโซนเวลาของประเทศไทย</td></tr>
+    </table>
+
+    <h2>6.2 ผลการทดสอบ (Test Results)</h2>
+    <div class="indent">
+        ผลการทดสอบก่อนการติดตั้งระบบสู่สภาพแวดล้อมจริง (Production Deployment) สรุปได้ดังตารางด้านล่าง:
+    </div>
+    <table class="data-table">
+        <tr>
+            <th>ประเภทการตรวจสอบ</th>
+            <th>สถานะ (Status)</th>
+            <th>รายละเอียดผลลัพธ์</th>
+        </tr>
+        <tr><td>Unit Tests (Vitest)</td><td class="center" style="color: green; font-weight: bold;">PASS</td><td>270/270 Test Cases ผ่านการทดสอบ (100%)</td></tr>
+        <tr><td>Type Checking (tsc)</td><td class="center" style="color: green; font-weight: bold;">PASS</td><td>ไม่พบข้อผิดพลาดด้าน Type (Strict Mode)</td></tr>
+        <tr><td>Build Process</td><td class="center" style="color: green; font-weight: bold;">PASS</td><td>ระบบสามารถ Build ด้วย Next.js สำเร็จ</td></tr>
+        <tr><td>Vercel Deployment</td><td class="center" style="color: green; font-weight: bold;">PASS</td><td>ติดตั้งระบบบนเซิร์ฟเวอร์ของ Vercel สำเร็จ</td></tr>
+        <tr><td>API Integration</td><td class="center" style="color: green; font-weight: bold;">PASS</td><td>สามารถอ่าน/เขียน ข้อมูลในระบบจริงได้ปกติ</td></tr>
+        <tr><td>Linting (ESLint)</td><td class="center" style="color: orange; font-weight: bold;">WARNING</td><td>พบข้อผิดพลาด 144 รายการ (Technical Debt)</td></tr>
+    </table>
+    
+    <div class="callout-warning">
+        <b>หมายเหตุเชิงเทคนิค (Technical Debt):</b> จากผลการทดสอบ แม้ว่าระบบจะทำงานได้สมบูรณ์และผ่าน Unit Test ทั้งหมด แต่ในส่วนของการตรวจสอบรูปแบบโค้ด (Linting) ยังคงมีข้อผิดพลาดอยู่ 144 รายการ ซึ่งส่วนใหญ่เป็นเรื่องของ <code>@typescript-eslint/no-explicit-any</code> และกฎอื่นๆ ข้อผิดพลาดเหล่านี้ถือเป็นหนี้สินทางเทคนิค (Technical Debt) ที่ไม่ได้ส่งผลกระทบต่อการทำงานของระบบ แต่อาจต้องได้รับการปรับปรุงในการบำรุงรักษาในอนาคตเพื่อให้โค้ดมีคุณภาพตามมาตรฐาน
+    </div>
+</div>
+
+<!-- PAGE 17: CHAPTER 7 -->
+<div class="page-break">
+    <span class="section-label">บทที่ 7</span>
+    <h1>สรุปผลและข้อเสนอแนะ</h1>
+
+    <h2>7.1 สรุปผลการดำเนินงาน</h2>
+    <div class="indent">
+        โครงงาน <b>W10 Dashboard</b> ประสบความสำเร็จตามวัตถุประสงค์ที่ตั้งไว้ ระบบสามารถให้บริการรวมศูนย์ข้อมูลและมีหน้าหลักทั้งหมด 5 กลุ่มหน้าเว็บ ได้แก่ หน้าแรก, จัดซื้อ, คลัง BEML, สรุป OT, และ Shop Order ระบบผ่านการทดสอบ Unit Test ถึง 270 รายการ และถูกนำขึ้นใช้งานจริงบน Vercel ที่โดเมน <code>https://w10-jet.vercel.app/</code> ซึ่งช่วยให้พนักงาน W10 สามารถเข้าถึงข้อมูลซ่อมบำรุงได้อย่างสะดวกรวดเร็ว ลดเวลาการค้นหาเอกสาร และเพิ่มประสิทธิภาพในการทำงานภาพรวม
+    </div>
+
+    <h2>7.2 ปัญหาและอุปสรรค</h2>
+    <table class="data-table">
+        <tr>
+            <th style="width: 15%;">ระดับผลกระทบ</th>
+            <th style="width: 40%;">ปัญหาที่พบ (Findings)</th>
+            <th>การแก้ไขและการรับมือ</th>
+        </tr>
+        <tr>
+            <td class="center" style="color: red; font-weight: bold;">High</td>
+            <td>API ข้อมูล Mutation เปิดเป็นสาธารณะ (Public Endpoint)</td>
+            <td>ยังไม่มีระบบ Authentication ที่เข้มงวด ควรเพิ่มระบบ Login ในอนาคต</td>
+        </tr>
+        <tr>
+            <td class="center" style="color: red; font-weight: bold;">High</td>
+            <td>ฟังก์ชัน <code>debugInfo</code> คืนค่าตัวแปรสิ่งแวดล้อม (Env) ไปยังผู้ใช้</td>
+            <td>ทำการลบหรือซ่อนฟังก์ชันนี้เพื่อป้องกันข้อมูลลับรั่วไหล (Secret Leak)</td>
+        </tr>
+        <tr>
+            <td class="center" style="color: orange; font-weight: bold;">Medium</td>
+            <td>ปัญหา Lint Error สะสม (144 errors)</td>
+            <td>รับทราบเป็น Technical Debt และกำหนดแผนปรับปรุงแก้ไข</td>
+        </tr>
+        <tr>
+            <td class="center" style="color: orange; font-weight: bold;">Medium</td>
+            <td>บางหน้าเว็บยังไม่ได้ถูกแปลงให้อยู่ในโครงสร้าง UI Shell ใหม่</td>
+            <td>จัดทำแผนการ Migration ให้หน้าเว็บทุกหน้ามี Layout ที่เป็นมาตรฐานเดียวกัน</td>
+        </tr>
+        <tr>
+            <td class="center" style="color: #2e86c1; font-weight: bold;">Low</td>
+            <td>ID ของ Google Sheets ถูกเขียนแบบตายตัว (Hard-coded) ในโค้ดบางส่วน</td>
+            <td>แนะนำให้ย้าย ID เหล่านี้ไปไว้ใน Environment Variables ทั้งหมด</td>
+        </tr>
+    </table>
+
+    <h2>7.3 ข้อเสนอแนะเพื่อการพัฒนาต่อยอด</h2>
+    <ol>
+        <li><b>ระบบยืนยันตัวตน (Authentication):</b> ควรเพิ่มระบบ Login เช่น Google Workspace SSO เพื่อความปลอดภัยในการเข้าถึงข้อมูล โดยเฉพาะการเข้าถึงฟังก์ชันลบหรือแก้ไขข้อมูล</li>
+        <li><b>ระบบแจ้งเตือน (Notifications):</b> เพิ่มระบบส่งข้อความแจ้งเตือนผ่าน LINE Notify หรือ Email เมื่อมี Shop Order ใหม่ หรือมีการเปลี่ยนแปลงสถานะที่สำคัญ</li>
+        <li><b>การจัดการ Sheet ID แบบไดนามิก:</b> ควรสร้างระบบตั้งค่า (Settings) บนหน้าเว็บเพื่อให้แอดมินสามารถเปลี่ยน ID ของ Google Sheets ได้โดยไม่ต้องแก้โค้ด</li>
+        <li><b>การเคลียร์ Technical Debt:</b> ควรจัดสรรเวลาสำหรับการแก้ไขปัญหา Lint Error เพื่อให้โค้ดตรงตามมาตรฐาน TypeScript ควบคู่กับการรีแฟคเตอร์โค้ด</li>
+        <li><b>ระบบสำรองข้อมูล (Backup):</b> แม้ Google Sheets จะมีการเก็บประวัติการแก้ไข แต่ควรมีระบบดึงข้อมูลไปสำรองในฐานข้อมูลอื่น หรือส่งออกเป็นไฟล์รายงานประจำเดือน</li>
+        <li><b>การทำ Migration UI Shell:</b> ควรดำเนินการแปลงหน้าเว็บที่เหลือให้ใช้ Component UI Shell รูปแบบใหม่ให้เสร็จสิ้น เพื่อความสม่ำเสมอของ User Experience</li>
+    </ol>
+</div>
+
+<!-- PAGE 18: APPENDIX -->
+<div class="page-break">
+    <h1 class="center" style="border: none; margin-top: 0;">ภาคผนวก</h1>
+
+    <h2>ก. รายการ API อ้างอิง (API Reference)</h2>
+    <table class="data-table">
+        <tr><th>Endpoint Path</th><th>Method</th><th>คำอธิบาย</th></tr>
+        <tr><td>/api/w10-purchasing</td><td>GET</td><td>ข้อมูลจัดซื้อจัดจ้างที่เปิดอยู่</td></tr>
+        <tr><td>/api/w10-purchasing-all</td><td>GET</td><td>ประวัติข้อมูลจัดซื้อจัดจ้างทั้งหมด</td></tr>
+        <tr><td>/api/beml</td><td>GET</td><td>ข้อมูลสินค้าคงคลัง BEML</td></tr>
+        <tr><td>/api/ot</td><td>GET</td><td>ข้อมูลการเบิกจ่ายค่าล่วงเวลา</td></tr>
+        <tr><td>/api/dashboard</td><td>GET</td><td>ข้อมูลเชิงสถิติสำหรับหน้าแรก</td></tr>
+        <tr><td>/api/shop-order</td><td>GET</td><td>รายการงานซ่อมบำรุง</td></tr>
+        <tr><td>/api/shop-order</td><td>POST</td><td>สร้างงานซ่อมบำรุงรายการใหม่</td></tr>
+        <tr><td>/api/shop-order/[id]</td><td>PUT</td><td>แก้ไขรายละเอียดของงานซ่อมบำรุง</td></tr>
+        <tr><td>/api/shop-order/[id]</td><td>DELETE</td><td>ลบรายการงานซ่อมบำรุง</td></tr>
+        <tr><td>/api/upload</td><td>POST</td><td>บริการอัปโหลดไฟล์ไปที่ Google Drive</td></tr>
+        <tr><td>/api/cache-purge</td><td>POST</td><td>บริการล้างข้อมูลที่ถูกเก็บแคชไว้</td></tr>
+    </table>
+
+    <h2>ข. แผนผังโครงสร้างไฟล์สำคัญ (File Map)</h2>
+    <table class="data-table">
+        <tr><th style="width: 40%;">ตำแหน่งไฟล์ (File Path)</th><th>หน้าที่หลัก</th></tr>
+        <tr><td>/app/page.tsx</td><td>หน้าแสดงผลหลัก (Home Dashboard)</td></tr>
+        <tr><td>/app/shop-order/page.tsx</td><td>หน้าจอระบบติดตามงานซ่อมบำรุง</td></tr>
+        <tr><td>/app/api/shop-order/route.ts</td><td>API Controller จัดการ Shop Order</td></tr>
+        <tr><td>/components/ui/Shell.tsx</td><td>Component หลักสำหรับโครงร่างหน้าเว็บ</td></tr>
+        <tr><td>/components/ShopOrderForm.tsx</td><td>ฟอร์มเพิ่ม/แก้ไขงานซ่อมบำรุง</td></tr>
+        <tr><td>/components/FileUploader.tsx</td><td>ระบบลากวางและอัปโหลดไฟล์</td></tr>
+        <tr><td>/lib/google-sheets.ts</td><td>Service สำหรับเชื่อมต่อกับ API ของ Sheets</td></tr>
+        <tr><td>/lib/google-drive.ts</td><td>Service สำหรับเชื่อมต่อกับ API ของ Drive</td></tr>
+        <tr><td>/utils/formatters.ts</td><td>ฟังก์ชันจัดรูปแบบวันที่และตัวเลข</td></tr>
+        <tr><td>/types/shop-order.ts</td><td>TypeScript Interface ประกาศโครงสร้างข้อมูล</td></tr>
+        <tr><td>/tests/components/Shell.test.tsx</td><td>Unit Test สำหรับคอมโพเนนต์ Shell</td></tr>
+        <tr><td>/next.config.js</td><td>ไฟล์ตั้งค่าการตั้งค่าหลักของ Next.js</td></tr>
+    </table>
+</div>
+
+<!-- PAGE 19: APPENDIX (Cont.) -->
+<div class="page-break">
+    <h2>ค. อภิธานศัพท์ (Glossary)</h2>
+    <table class="data-table">
+        <tr><th style="width: 30%;">คำศัพท์</th><th>คำจำกัดความ</th></tr>
+        <tr><td>Dashboard</td><td>หน้ากระดานปัด หรือหน้าจอภาพรวมที่ใช้แสดงข้อมูลเชิงสถิติและสถานะต่างๆ</td></tr>
+        <tr><td>Shop Order</td><td>ใบสั่งงานซ่อมบำรุง หรือเอกสารที่ระบุรายละเอียดของงานที่ต้องดำเนินการซ่อมแซม</td></tr>
+        <tr><td>CRUD</td><td>ตัวย่อของ Create, Read, Update, Delete ซึ่งเป็นฟังก์ชันพื้นฐานของระบบฐานข้อมูล</td></tr>
+        <tr><td>API (Application Programming Interface)</td><td>ช่องทางและข้อกำหนดที่ใช้เชื่อมต่อและสื่อสารระหว่างซอฟต์แวร์</td></tr>
+        <tr><td>Next.js</td><td>React Framework สำหรับการสร้างแอปพลิเคชันเว็บที่รองรับ Server-Side Rendering</td></tr>
+        <tr><td>Serverless</td><td>สถาปัตยกรรมคลาวด์ที่ผู้พัฒนาไม่ต้องจัดการเซิร์ฟเวอร์ด้วยตนเอง</td></tr>
+        <tr><td>OAuth 2.0</td><td>มาตรฐานการยืนยันตัวตนและการอนุญาตสิทธิ์ที่ใช้กันอย่างแพร่หลาย</td></tr>
+        <tr><td>Unit Test</td><td>การทดสอบการทำงานของหน่วยย่อยๆ ในซอฟต์แวร์ เช่น ฟังก์ชัน หรือคอมโพเนนต์</td></tr>
+        <tr><td>Technical Debt</td><td>หนี้สินทางเทคนิค คือการเขียนโค้ดที่ทำงานได้แต่ไม่ได้คุณภาพที่ดีที่สุดในระยะยาว</td></tr>
+        <tr><td>Vercel</td><td>ผู้ให้บริการโฮสติ้งและคลาวด์แพลตฟอร์มที่ออกแบบมาเพื่อทำงานร่วมกับ Next.js</td></tr>
+    </table>
+
+    <h2>ง. ตัวแปรสภาพแวดล้อมระบบ (Environment Variables)</h2>
+    <div class="indent">
+        การทำงานของระบบขึ้นอยู่กับการตั้งค่าตัวแปรในสภาพแวดล้อม (<code>.env.local</code>) จำนวน 9 ตัวแปร ดังนี้:
+    </div>
+    <table class="data-table">
+        <tr><th>ชื่อตัวแปร (Variable Name)</th><th>หน้าที่ความรับผิดชอบ</th></tr>
+        <tr><td>GOOGLE_CLIENT_EMAIL</td><td>อีเมลของ Service Account สำหรับเข้าถึง Google API</td></tr>
+        <tr><td>GOOGLE_PRIVATE_KEY</td><td>กุญแจส่วนตัวของ Service Account สำหรับยืนยันตัวตน</td></tr>
+        <tr><td>GOOGLE_SHEET_ID_PURCHASING</td><td>ID ของไฟล์ Google Sheets สำหรับงานจัดซื้อ</td></tr>
+        <tr><td>GOOGLE_SHEET_ID_BEML</td><td>ID ของไฟล์ Google Sheets สำหรับงานคลัง BEML</td></tr>
+        <tr><td>GOOGLE_SHEET_ID_OT</td><td>ID ของไฟล์ Google Sheets สำหรับงานทำล่วงเวลา</td></tr>
+        <tr><td>GOOGLE_SHEET_ID_SHOP_ORDER</td><td>ID ของไฟล์ Google Sheets สำหรับงานซ่อมบำรุง</td></tr>
+        <tr><td>GOOGLE_DRIVE_FOLDER_ID</td><td>ID ของโฟลเดอร์ Google Drive สำหรับเก็บไฟล์อัปโหลด</td></tr>
+        <tr><td>NEXT_PUBLIC_APP_URL</td><td>URL หลักของแอปพลิเคชัน</td></tr>
+        <tr><td>API_SECRET_TOKEN</td><td>รหัสลับสำหรับใช้เรียกใช้ API ในบางฟังก์ชันที่ต้องจำกัดสิทธิ์</td></tr>
+    </table>
+    
+    <div class="callout-warning">
+        <b>ข้อควรระวังด้านความปลอดภัย:</b> ห้ามเปิดเผยค่าของ <code>GOOGLE_PRIVATE_KEY</code> และ <code>API_SECRET_TOKEN</code> ต่อสาธารณะโดยเด็ดขาด เนื่องจากเป็นรหัสที่ใช้เข้าถึงข้อมูลระบบทั้งหมด การตั้งค่าใน Vercel จะต้องทำในส่วนของ Environment Variables (ฝั่ง Server) และห้ามใส่คำนำหน้า <code>NEXT_PUBLIC_</code> โดยเด็ดขาด
+    </div>
+
+    <br><br><br>
+    <div class="center" style="font-weight: bold; font-size: 14pt; color: #7f8c8d;">
+        — สิ้นสุดรายงานโครงงานสหกิจศึกษา —
+    </div>
+</div>
+
+</body>
+</html>

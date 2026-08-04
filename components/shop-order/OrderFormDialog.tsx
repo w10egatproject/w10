@@ -164,6 +164,7 @@ export function OrderFormDialog({
           <label className="text-sm font-bold">
             วันที่รับ
             <CustomDatePicker
+              required={mode === 'create'}
               value={value.dateIn}
               onChange={(val) => set({ dateIn: val })}
               placeholder="เลือกวันที่รับ"
@@ -173,6 +174,7 @@ export function OrderFormDialog({
           <label className="text-sm font-bold">
             วันที่ออก
             <CustomDatePicker
+              required={mode === 'create'}
               value={value.dateOut}
               onChange={(val) => set({ dateOut: val })}
               placeholder="เลือกวันที่ออก"
@@ -191,6 +193,7 @@ export function OrderFormDialog({
           <label className="text-sm font-bold">
             หน่วยงานรับ
             <CustomSelect
+              required={mode === 'create'}
               value={value.receivingUnit}
               options={departments}
               placeholder="เลือกหรือพิมพ์หน่วยงานรับ"
@@ -202,6 +205,7 @@ export function OrderFormDialog({
           <label className="text-sm font-bold">
             ผู้รับ
             <CustomSelect
+              required={mode === 'create'}
               value={value.receiverName}
               options={receivers}
               placeholder="เลือกหรือพิมพ์ผู้รับ"

@@ -1,0 +1,687 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>W10 Dashboard Technical Booklet</title>
+    <style>
+        @page {
+            margin: 22mm 22mm 22mm 28mm;
+            mso-header-margin: 35.4pt;
+            mso-footer-margin: 35.4pt;
+            mso-paper-source: 0;
+        }
+        body {
+            font-family: 'TH Sarabun New', 'Sarabun', sans-serif;
+            font-size: 16pt;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+        h1 { font-size: 26pt; color: #1a5276; margin-bottom: 10pt; border-bottom: 2pt solid #d4a300; padding-bottom: 5pt; margin-top: 0; }
+        h2 { font-size: 20pt; color: #1a5276; margin-top: 20pt; margin-bottom: 10pt; }
+        h3 { font-size: 17pt; color: #2e86c1; margin-top: 15pt; margin-bottom: 5pt; }
+        p { text-align: justify; text-indent: 1cm; margin-bottom: 10pt; margin-top: 0; }
+        ul, ol { margin-left: 2cm; margin-bottom: 10pt; margin-top: 0; }
+        li { margin-bottom: 5pt; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 15pt; }
+        th, td { border: 1px solid #dee2e6; padding: 8pt 10pt; text-align: left; vertical-align: top; }
+        th { background-color: #1a5276; color: white; font-weight: bold; }
+        .page-break { page-break-after: always; }
+        .placeholder { background-color: #fff3cd; font-style: italic; }
+        .divider { border-bottom: 2pt solid #d4a300; margin: 20pt 0; }
+        .section-number { font-size: 12pt; color: #d4a300; letter-spacing: 2pt; text-transform: uppercase; font-weight: bold; margin-bottom: 5pt; }
+        .callout { padding: 15pt; margin-bottom: 15pt; }
+        .callout-info { background-color: #ebf5fb; border-left: 4pt solid #2e86c1; }
+        .callout-warning { background-color: #fef9e7; border-left: 4pt solid #d4a300; }
+        .callout-success { background-color: #eafaf1; border-left: 4pt solid #27ae60; }
+        .badge-pass { color: #27ae60; font-weight: bold; }
+        .badge-fail { color: #e74c3c; font-weight: bold; }
+        .badge-high { color: #e74c3c; font-weight: bold; }
+        .badge-medium { color: #d4a300; font-weight: bold; }
+        .badge-low { color: #7f8c8d; font-weight: bold; }
+        .code { font-family: 'Consolas', monospace; background-color: #f8f9fa; padding: 2pt 4pt; font-size: 14pt; }
+        .screenshot { border: 2pt dashed #bdc3c7; background-color: #f8f9fa; text-align: center; padding: 50pt 20pt; margin-bottom: 15pt; color: #7f8c8d; }
+        
+        .no-border, .no-border td, .no-border th { border: none !important; }
+        .page-header-table { width: 100%; border-bottom: 1pt solid #dee2e6; margin-bottom: 20pt; }
+        .page-header-table td { border: none; padding: 0 0 5pt 0; }
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+        .cover-logos td { text-align: center; padding: 10pt; }
+        .p-no-indent { text-indent: 0 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div style="text-align: center; padding-top: 20pt;">
+        <table class="no-border cover-logos" style="width: 50%; margin: 0 auto; margin-bottom: 15pt;">
+            <tr>
+                <td><img src="รูปทำรูปเล่ม/lptc_logo.png" alt="LPTC Logo" width="60" height="60" style="width:60px;height:60px;"></td>
+                <td><img src="รูปทำรูปเล่ม/lptc_it_logo.png" alt="LPTC IT Logo" width="60" height="60" style="width:60px;height:60px;"></td>
+                <td><img src="รูปทำรูปเล่ม/egat_logo.png" alt="EGAT Logo" width="60" height="60" style="width:60px;height:60px;"></td>
+            </tr>
+        </table>
+        
+        <div style="font-size: 34pt; color: #1a5276; font-weight: bold; margin-bottom: 5pt;">W10 Dashboard</div>
+        <div style="font-size: 22pt; color: #2e86c1; margin-bottom: 10pt;">Technical Project Booklet</div>
+        <div style="font-size: 16pt; color: #2c3e50; margin-bottom: 15pt;">ระบบแดชบอร์ดติดตามงานซ่อมบำรุงและจัดซื้อจัดจ้าง กองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10</div>
+        
+        <div class="divider"></div>
+        
+        <table style="width: 80%; margin: 0 auto; text-align: left; font-size: 16pt; border: none;">
+            <tr style="border: none;"><td style="border: none; width: 30%; font-weight: bold; padding: 4pt;">ผู้จัดทำ:</td><td style="border: none; padding: 4pt;"><span class="placeholder">[ชื่อ-นามสกุล นักศึกษาฝึกงาน]</span></td></tr>
+            <tr style="border: none;"><td style="border: none; font-weight: bold; padding: 4pt;">สถานศึกษา:</td><td style="border: none; padding: 4pt;">วิทยาลัยเทคนิคลำปาง</td></tr>
+            <tr style="border: none;"><td style="border: none; font-weight: bold; padding: 4pt;">สถานประกอบการ:</td><td style="border: none; padding: 4pt;">กฟผ.</td></tr>
+            <tr style="border: none;"><td style="border: none; font-weight: bold; padding: 4pt;">หน่วยงาน:</td><td style="border: none; padding: 4pt;">กองบำรุงรักษา W10</td></tr>
+            <tr style="border: none;"><td style="border: none; font-weight: bold; padding: 4pt;">ช่วงฝึกงาน:</td><td style="border: none; padding: 4pt;">11 พ.ค. – 4 ก.ย. 2569</td></tr>
+            <tr style="border: none;"><td style="border: none; font-weight: bold; padding: 4pt;">เว็บไซต์:</td><td style="border: none; padding: 4pt;">https://w10-jet.vercel.app/</td></tr>
+        </table>
+        
+        <div class="callout callout-info" style="width: 70%; margin: 20pt auto; text-align: center; font-size: 18pt; font-weight: bold;">
+            คู่มือปฏิบัติงานและสถาปัตยกรรมระบบ
+        </div>
+        
+        <div style="font-size: 14pt; color: #7f8c8d; margin-top: 20pt;">Document Version 1.0 — สิงหาคม 2569</div>
+    </div>
+    <div class="page-break"></div>
+
+    <!-- PAGE 2: READING MAP -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>READING MAP</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Table of Contents</div>
+    <h1>สารบัญการอ่าน (Reading Map)</h1>
+    
+    <div class="callout callout-warning">
+        <p class="p-no-indent" style="font-weight: bold; margin-bottom: 0;">คำแนะนำในการอ่าน (Reading Guide):</p>
+        <p class="p-no-indent" style="margin-bottom: 0;">สำหรับผู้บริหาร อ่านเฉพาะ 01-03 / สำหรับทีม IT อ่านทั้งหมด</p>
+    </div>
+    
+    <table class="no-border" style="width: 100%; font-size: 18pt;">
+        <tr><td style="width: 15%; padding: 5pt; font-weight: bold; color: #1a5276;">01</td><td style="padding: 5pt;">EXECUTIVE SUMMARY</td><td style="width: 10%; text-align: right; padding: 5pt;">3</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">02</td><td style="padding: 5pt;">SCOPE & STACK</td><td style="text-align: right; padding: 5pt;">4</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">03</td><td style="padding: 5pt;">ROUTES & UI SHELL</td><td style="text-align: right; padding: 5pt;">5</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">04</td><td style="padding: 5pt;">PAGE WALKTHROUGH</td><td style="text-align: right; padding: 5pt;">6</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">05</td><td style="padding: 5pt;">ARCHITECTURE</td><td style="text-align: right; padding: 5pt;">8</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">06</td><td style="padding: 5pt;">SHOP ORDER DEEP DIVE</td><td style="text-align: right; padding: 5pt;">9</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">07</td><td style="padding: 5pt;">SECURITY & RESILIENCE</td><td style="text-align: right; padding: 5pt;">10</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">08</td><td style="padding: 5pt;">QUALITY</td><td style="text-align: right; padding: 5pt;">11</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">09</td><td style="padding: 5pt;">FINDINGS & RECOMMENDATIONS</td><td style="text-align: right; padding: 5pt;">12</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">10</td><td style="padding: 5pt;">RUNBOOK</td><td style="text-align: right; padding: 5pt;">13</td></tr>
+        <tr><td style="padding: 5pt; font-weight: bold; color: #1a5276;">11</td><td style="padding: 5pt;">APPENDIX</td><td style="text-align: right; padding: 5pt;">14</td></tr>
+    </table>
+    <div class="page-break"></div>
+
+    <!-- PAGE 3: SECTION 01 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>01 — EXECUTIVE SUMMARY</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 01</div>
+    <h1>Executive Summary</h1>
+    
+    <p>โครงการ W10 Dashboard เป็นการพัฒนาระบบเว็บแอปพลิเคชันแบบศูนย์รวม เพื่อเพิ่มประสิทธิภาพในการติดตามงานซ่อมบำรุง การจัดซื้อจัดจ้าง และการจัดการอะไหล่คงคลัง (BEML) ของกองบำรุงรักษาโรงไฟฟ้าแม่เมาะ หน่วยที่ 10 (W10) โดยใช้เทคโนโลยีเว็บสมัยใหม่ที่สามารถเชื่อมต่อกับฐานข้อมูล Google Sheets และ Google Drive ของหน่วยงานได้อย่างปลอดภัยแบบเรียลไทม์ โครงการนี้ถูกออกแบบมาเพื่อลดความซ้ำซ้อนของการจัดการเอกสาร ลดข้อผิดพลาดของข้อมูล และเพิ่มความรวดเร็วในการเรียกดูสถานะการดำเนินงานต่างๆ</p>
+    
+    <h2>ข้อมูลเชิงปริมาณ (Key Metrics)</h2>
+    <table>
+        <tr>
+            <th style="width: 30%;">Metric</th>
+            <th>Value</th>
+        </tr>
+        <tr><td>จำนวนหน้าเว็บ (Pages)</td><td>7 pages</td></tr>
+        <tr><td>การเชื่อมต่อ API (Endpoints)</td><td>11 API endpoints</td></tr>
+        <tr><td>การทดสอบระบบ (Unit Tests)</td><td>270 unit tests (25 test files)</td></tr>
+        <tr><td>สถาปัตยกรรมหลัก (Core Stack)</td><td>Next.js 16 + React 19</td></tr>
+        <tr><td>สถานะโค้ด (Type Safety)</td><td>0 TypeScript errors</td></tr>
+        <tr><td>การเผยแพร่ (Deployment)</td><td>Deployed on Vercel</td></tr>
+    </table>
+    
+    <h2>ความสำเร็จหลัก (Key Achievements)</h2>
+    <ul>
+        <li>พัฒนาระบบ Shop Order ที่รองรับการจัดการข้อมูลแบบ CRUD (Create, Read, Update, Delete) พร้อมระบบแนบไฟล์เอกสาร</li>
+        <li>เชื่อมต่อ Google Drive แบบ OAuth 2.0 (drive.file scope) สำหรับการอัปโหลดไฟล์ได้อย่างปลอดภัย และการตรวจสอบสิทธิ์ Service Account สำหรับอ่านข้อมูลจาก Google Sheets</li>
+        <li>ปรับปรุง UI/UX ด้วย Tailwind CSS 4 และแสดงผลข้อมูลเชิงสถิติด้วย Highcharts และ Recharts ทำให้ข้อมูลที่ซับซ้อนดูเข้าใจง่าย</li>
+        <li>ทดสอบการทำงานด้วย Vitest อย่างครอบคลุม ทำให้มั่นใจในความถูกต้องของลอจิกระบบ</li>
+    </ul>
+    <div class="page-break"></div>
+
+    <!-- PAGE 4: SECTION 02 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>02 — SCOPE & STACK</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 02</div>
+    <h1>Scope & Technology Stack</h1>
+    
+    <h2>ตารางเทคโนโลยี (Technology Stack)</h2>
+    <table>
+        <tr>
+            <th style="width: 30%;">Technology</th>
+            <th>Version / Configuration</th>
+            <th>Purpose</th>
+        </tr>
+        <tr><td>Next.js</td><td>16.2.12</td><td>Framework หลักฝั่ง Server และ Routing</td></tr>
+        <tr><td>React</td><td>19.2.4</td><td>Library สำหรับสร้าง User Interface</td></tr>
+        <tr><td>TypeScript</td><td>Strict Mode</td><td>เพิ่ม Type Safety ลดข้อผิดพลาดขณะ Runtime</td></tr>
+        <tr><td>Tailwind CSS</td><td>4.x</td><td>Styling Framework สำหรับจัดการ Layout/Colors</td></tr>
+        <tr><td>Highcharts</td><td>12.6.0</td><td>แสดงผลกราฟสถิติที่ซับซ้อน (Gauges, Complex Columns)</td></tr>
+        <tr><td>Recharts</td><td>3.8.1</td><td>แสดงผลกราฟสถิติแบบพื้นฐานและตอบสนองเร็ว</td></tr>
+        <tr><td>Framer Motion</td><td>12.40.0</td><td>สร้าง Animation ใน UI Components</td></tr>
+        <tr><td>Vitest</td><td>4.1.10</td><td>Test Runner สำหรับ Unit Tests</td></tr>
+    </table>
+    
+    <h2>โครงสร้างโปรเจกต์ (Repository Structure)</h2>
+    <table>
+        <tr>
+            <th style="width: 25%;">Directory</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><span class="code">app/</span></td>
+            <td>ส่วนของ Next.js App Router กำหนด Page Layout และ API Routes</td>
+        </tr>
+        <tr>
+            <td><span class="code">components/</span></td>
+            <td>React Components แยกส่วนการทำงาน (เช่น UI, Charts, Forms)</td>
+        </tr>
+        <tr>
+            <td><span class="code">lib/</span></td>
+            <td>Utilities, ฟังก์ชันตัวช่วย, และการเชื่อมต่อ Google API</td>
+        </tr>
+        <tr>
+            <td><span class="code">scripts/</span></td>
+            <td>สคริปต์สำหรับ Cron Jobs และ Database Cleanup</td>
+        </tr>
+        <tr>
+            <td><span class="code">__tests__/</span></td>
+            <td>ไฟล์สำหรับเขียน Unit Tests ควบคู่กับ Source Code</td>
+        </tr>
+    </table>
+    <div class="page-break"></div>
+
+    <!-- PAGE 5: SECTION 03 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>03 — ROUTES & UI SHELL</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 03</div>
+    <h1>Routes & UI Shell</h1>
+    
+    <h2>โครงสร้างหน้าเว็บ (Routes Structure)</h2>
+    <table>
+        <tr>
+            <th style="width: 30%;">Route Path</th>
+            <th style="width: 30%;">Page Name</th>
+            <th>Description</th>
+        </tr>
+        <tr><td><span class="code">/</span></td><td>Home Dashboard</td><td>หน้าหลักแสดงสถิติภาพรวม งานซ่อมบำรุง และ Operation Status</td></tr>
+        <tr><td><span class="code">/purchasing</span></td><td>Purchasing</td><td>ระบบติดตามสถานะงานจัดซื้อจัดจ้าง (PR/PO) พร้อมกราฟ</td></tr>
+        <tr><td><span class="code">/inventory</span></td><td>BEML Inventory</td><td>ตรวจสอบรายการอะไหล่ BEML และสถานะคงคลังแบบ Visual</td></tr>
+        <tr><td><span class="code">/ot-employee</span></td><td>OT Summary</td><td>สรุปการทำโอทีพนักงาน แบ่งกลุ่ม W11-W14 และเชื่อม ETAS</td></tr>
+        <tr><td><span class="code">/shop-order</span></td><td>Shop Order</td><td>ระบบจัดการใบสั่งงานซ่อม (Shop Order) ดึงและแก้ไขข้อมูลได้</td></tr>
+        <tr><td><span class="code">/api/...</span></td><td>API Endpoints</td><td>เส้นทางเชื่อมต่อกับ Google Sheets/Drive จำนวน 11 เส้นทาง</td></tr>
+        <tr><td><span class="code">/auth/...</span></td><td>OAuth Setup</td><td>หน้าสำหรับการยืนยันตัวตน Google Drive OAuth</td></tr>
+    </table>
+    
+    <h2>สถานะการปรับปรุง UI (AppShell Migration)</h2>
+    <div class="callout callout-info">
+        <p class="p-no-indent" style="font-weight: bold; margin-bottom: 0;">AppShell Migration Status:</p>
+        <p class="p-no-indent" style="margin-bottom: 0;">ขณะนี้มีเพียงหน้า <span class="code">/ot-employee</span> ที่ได้ปรับปรุงให้ใช้ Layout แบบใหม่ (AppShell) แล้ว หน้าอื่นๆ ยังคงใช้ Layout แบบเดิม และอยู่ในแผนการปรับปรุงในเวอร์ชันต่อไป เพื่อให้เกิดความสม่ำเสมอในทุกหน้า</p>
+    </div>
+    <div class="page-break"></div>
+
+    <!-- PAGE 6: SECTION 04 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>04 — PAGE WALKTHROUGH</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 04</div>
+    <h1>Page Walkthrough</h1>
+    
+    <h2>1. Home Dashboard</h2>
+    <p>แดชบอร์ดหลักสำหรับผู้บริหาร เพื่อดูสถานภาพการทำงานแบบสรุป</p>
+    <ul>
+        <li><strong>Operation Status:</strong> Pie chart แสดงสัดส่วนสถานะการทำงานภาพรวม</li>
+        <li><strong>W/O by Group:</strong> การ์ดแสดงจำนวน Work Order แบ่งตามกลุ่มแผนก</li>
+        <li><strong>Equipment Status:</strong> Column chart แสดงความพร้อมของอุปกรณ์หลัก</li>
+        <li><strong>Load Factor:</strong> Gauge charts (Highcharts) แสดงภาระงานของแผนกต่างๆ</li>
+    </ul>
+    <div class="screenshot">[Screenshot Placeholder: Home Dashboard]</div>
+    
+    <h2>2. Purchasing Dashboard</h2>
+    <p>ส่วนติดตามงานจัดซื้อจัดจ้าง ดึงข้อมูลจาก Sheets ด้วยระบบ Auto-refresh</p>
+    <ul>
+        <li><strong>PR/PO Status:</strong> Donut 3D chart และ Status column chart</li>
+        <li><strong>Data Table:</strong> ตารางค้นหาข้อมูลได้รวดเร็ว (Searchable table)</li>
+        <li><strong>Auto-refresh:</strong> อัปเดตข้อมูลอัตโนมัติทุกๆ 30 วินาที</li>
+    </ul>
+    <div class="screenshot">[Screenshot Placeholder: Purchasing Dashboard]</div>
+    
+    <h2>3. BEML Inventory</h2>
+    <p>ระบบตรวจสอบอะไหล่ BEML เพื่อป้องกันของขาดคลัง</p>
+    <ul>
+        <li><strong>Bin Map & Health:</strong> แผนผังจำลอง และวงแหวนแสดงสถานะคงคลัง (Health ring)</li>
+        <li><strong>Inventory Table:</strong> ตารางแสดงรายการพร้อมสีแจ้งเตือน (แดง=ขาด, เหลือง=ใกล้หมด)</li>
+        <li><strong>Detail Modal:</strong> คลิกที่รายการเพื่อดูประวัติการเบิกจ่ายได้</li>
+    </ul>
+    <div class="screenshot">[Screenshot Placeholder: BEML Inventory]</div>
+    <div class="page-break"></div>
+
+    <!-- PAGE 7: SECTION 04 (CONT) -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>04 — PAGE WALKTHROUGH (Continued)</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <h2>4. OT Summary</h2>
+    <p>ระบบติดตามโอทีพนักงานในแผนก W10 ที่เชื่อมต่อกับระบบเงินเดือน</p>
+    <ul>
+        <li><strong>Group Tables:</strong> ตารางสรุปแบ่งกลุ่มย่อย (W11-W14)</li>
+        <li><strong>ETAS Scan:</strong> ตรวจสอบพนักงานสแกนหน้าเทียบกับการขอโอที</li>
+        <li><strong>Error Checking:</strong> แจ้งเตือนข้อผิดพลาด เช่น ลืมสแกน, สแกนผิดกะ</li>
+        <li><strong>Source Links:</strong> ลิงก์ตรงไปยัง Google Sheets ต้นทาง (Source-sheet links)</li>
+    </ul>
+    <div class="screenshot">[Screenshot Placeholder: OT Summary]</div>
+    
+    <h2>5. Shop Order Management</h2>
+    <p>หน้าจอสำหรับการจัดการใบแจ้งซ่อม (Shop Order) แบบครบวงจร</p>
+    <ul>
+        <li><strong>CRUD Table:</strong> ตารางแสดงข้อมูล แบ่งหน้า (Pagination) และจัดการได้</li>
+        <li><strong>Summary Rail:</strong> แถบด้านข้างสรุปจำนวนงาน แบ่งตามสถานะ (รอซ่อม, ซ่อมเสร็จ, ฯลฯ)</li>
+        <li><strong>Smart Form:</strong> ฟอร์มเพิ่ม/แก้ไขงาน มี CustomSelect และ DatePicker</li>
+        <li><strong>File Upload:</strong> รองรับการลากวางไฟล์ (Drag/drop) แบบ Multiple files</li>
+    </ul>
+    <div class="screenshot">[Screenshot Placeholder: Shop Order]</div>
+    <div class="page-break"></div>
+
+    <!-- PAGE 8: SECTION 05 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>05 — ARCHITECTURE</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 05</div>
+    <h1>System Architecture</h1>
+    
+    <h2>สถาปัตยกรรมระบบ (System Architecture)</h2>
+    <p>ระบบประมวลผลถูกออกแบบเป็น 3 ชั้น (3-Tier) ทำให้มีความปลอดภัยสูง โดยผู้ใช้ไม่สามารถเข้าถึงฐานข้อมูล (Google Sheets/Drive) ได้โดยตรง</p>
+    
+    <table>
+        <tr>
+            <th style="width: 33%; text-align: center;">Browser (Client)</th>
+            <th style="width: 33%; text-align: center;">Next.js Server</th>
+            <th style="width: 33%; text-align: center;">Google Services</th>
+        </tr>
+        <tr>
+            <td>
+                <ul>
+                    <li>React 19 Components</li>
+                    <li>Tailwind CSS</li>
+                    <li>Highcharts / Recharts</li>
+                    <li>Fetch API (SWR)</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>API Routes (/api/*)</li>
+                    <li>Authentication Logic</li>
+                    <li>Data Validation (Zod)</li>
+                    <li>File Processing</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>Google Sheets API</li>
+                    <li>Google Drive API</li>
+                    <li>Service Accounts</li>
+                    <li>OAuth 2.0 Credentials</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+    
+    <h2>แหล่งที่มาข้อมูล (Data Source Matrix)</h2>
+    <table>
+        <tr>
+            <th style="width: 25%;">API Endpoint</th>
+            <th>Google Sheets Source</th>
+            <th style="width: 15%;">Access Type</th>
+        </tr>
+        <tr><td><span class="code">/api/home</span></td><td>Dashboard_Data_Master</td><td>Read</td></tr>
+        <tr><td><span class="code">/api/purchasing</span></td><td>PR_PO_Tracking_2026</td><td>Read</td></tr>
+        <tr><td><span class="code">/api/inventory</span></td><td>BEML_Stock_Master</td><td>Read</td></tr>
+        <tr><td><span class="code">/api/ot</span></td><td>OT_Request_Summary</td><td>Read</td></tr>
+        <tr><td><span class="code">/api/shop-order</span></td><td>Shop_Order_Database</td><td>Read / Write</td></tr>
+        <tr><td><span class="code">/api/upload</span></td><td>Google Drive (W10_Attachments)</td><td>Write</td></tr>
+    </table>
+    <div class="page-break"></div>
+
+    <!-- PAGE 9: SECTION 06 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>06 — SHOP ORDER DEEP DIVE</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 06</div>
+    <h1>Shop Order Deep Dive</h1>
+    
+    <h2>โครงสร้างฐานข้อมูล (Schema Definition)</h2>
+    <table>
+        <tr><th>Column</th><th>Field Name</th><th>Data Type</th><th>Description</th></tr>
+        <tr><td>A</td><td>OrderID</td><td>String</td><td>รหัสใบสั่งซ่อม (เช่น SO-2608-001)</td></tr>
+        <tr><td>B</td><td>Date</td><td>Date</td><td>วันที่เปิดใบสั่งซ่อม</td></tr>
+        <tr><td>C</td><td>Equipment</td><td>String</td><td>ชื่ออุปกรณ์ หรือหมายเลข KKS</td></tr>
+        <tr><td>D</td><td>Problem</td><td>Text</td><td>รายละเอียดของปัญหา/อาการเสีย</td></tr>
+        <tr><td>E</td><td>RequestBy</td><td>String</td><td>ชื่อผู้แจ้งซ่อม</td></tr>
+        <tr><td>F</td><td>Group</td><td>Enum</td><td>แผนกรับผิดชอบ (W11, W12, W13, W14)</td></tr>
+        <tr><td>G</td><td>Status</td><td>Enum</td><td>สถานะ (Pending, In Progress, Done, Cancelled)</td></tr>
+        <tr><td>H</td><td>Priority</td><td>Enum</td><td>ความเร่งด่วน (High, Medium, Low)</td></tr>
+        <tr><td>I</td><td>Attachments</td><td>JSON String</td><td>ข้อมูลไฟล์แนบ (Array of objects)</td></tr>
+        <tr><td>J</td><td>CreatedAt</td><td>Timestamp</td><td>เวลาที่บันทึกข้อมูล</td></tr>
+        <tr><td>K</td><td>UpdatedAt</td><td>Timestamp</td><td>เวลาที่แก้ไขข้อมูลล่าสุด</td></tr>
+    </table>
+    
+    <h2>ขั้นตอนการจัดการข้อมูล (CRUD & Upload Flow)</h2>
+    <p>ระบบรองรับการสร้าง อ่าน อัปเดต และลบ โดยมีกระบวนการจัดการไฟล์แนบ (Upload Flow) ดังนี้:</p>
+    
+    <table>
+        <tr>
+            <th style="width: 10%;">Step</th>
+            <th style="width: 30%;">Action</th>
+            <th>System Process</th>
+        </tr>
+        <tr><td>1</td><td>Select File</td><td>ผู้ใช้ลากวางไฟล์ที่หน้า UI (Client-side validation ขนาดและประเภทไฟล์)</td></tr>
+        <tr><td>2</td><td>Request Upload</td><td>ส่งไฟล์ไปที่ <span class="code">/api/upload</span></td></tr>
+        <tr><td>3</td><td>Google Drive API</td><td>Server อัปโหลดไฟล์ไปยัง Drive ผ่าน Resumable Upload</td></tr>
+        <tr><td>4</td><td>Get File ID</td><td>Drive คืนค่า File ID และ Link ส่งกลับมาที่ Server</td></tr>
+        <tr><td>5</td><td>Update Database</td><td>นำ File ID ไปบันทึกลงในคอลัมน์ Attachments ของ Google Sheets</td></tr>
+    </table>
+    
+    <h2>วงจรชีวิตไฟล์แนบ (Attachment Lifecycle)</h2>
+    <table>
+        <tr>
+            <th style="width: 25%;">State</th>
+            <th>Description</th>
+        </tr>
+        <tr><td><span class="badge-medium">Pending</span></td><td>ไฟล์ถูกอัปโหลดขึ้น Drive แล้ว แต่ยังไม่ถูกบันทึก ID ลงใน Google Sheets</td></tr>
+        <tr><td><span class="badge-pass">Active</span></td><td>ไฟล์ผูกกับ Shop Order สมบูรณ์ สามารถคลิกดูได้จากตาราง</td></tr>
+        <tr><td><span class="badge-fail">Scheduled_Delete</span></td><td>เมื่อ Shop Order ถูกลบ หรือมีข้อผิดพลาด ไฟล์จะถูกมาร์คให้ลบโดย Cron Job</td></tr>
+    </table>
+    <div class="page-break"></div>
+
+    <!-- PAGE 10: SECTION 07 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>07 — SECURITY & RESILIENCE</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 07</div>
+    <h1>Security & Resilience</h1>
+    
+    <h2>รูปแบบการยืนยันตัวตน (Authentication Model)</h2>
+    <ul>
+        <li><strong>Google Sheets:</strong> ใช้ Service Account ด้วย <span class="code">GOOGLE_CLIENT_EMAIL</span> และ <span class="code">GOOGLE_PRIVATE_KEY</span> สำหรับเข้าถึงข้อมูลแบบ Background โดยไม่ต้องให้ผู้ใช้ล็อกอิน</li>
+        <li><strong>Google Drive:</strong> ใช้ OAuth 2.0 (Scope: <span class="code">drive.file</span>) ซึ่งแอปจะเข้าถึงได้เฉพาะไฟล์ที่แอปสร้างขึ้นเองเท่านั้น ป้องกันการเข้าถึงไฟล์อื่นในไดรฟ์ของหน่วยงาน</li>
+    </ul>
+    
+    <h2>มาตรการความปลอดภัย (Security Measures)</h2>
+    <table>
+        <tr>
+            <th style="width: 30%;">Security Area</th>
+            <th>Implementation Details</th>
+        </tr>
+        <tr><td>Input Validation</td><td>ใช้ Zod Library ตรวจสอบ Type และ Format ข้อมูลก่อนส่งเข้า Database</td></tr>
+        <tr><td>Secret Handling</td><td>เก็บ Key ทั้งหมดใน Environment Variables ไม่อยู่ใน Source Code</td></tr>
+        <tr><td>URL Allowlist</td><td>อนุญาตเฉพาะ URL ที่กำหนดใน CORS policy ป้องกัน Cross-Origin attacks</td></tr>
+        <tr><td>Attachment Ownership</td><td>ไฟล์แนบเป็นแบบ Read-only สำหรับผู้มีลิงก์เท่านั้น</td></tr>
+        <tr><td>Traffic Control</td><td>Next.js API Routes รองรับ Rate Limiting จาก Vercel (WAF)</td></tr>
+        <tr><td>Cleanup Auth</td><td>Cron job ลบไฟล์ขยะ ทำงานผ่าน API ที่ต้องมี Secret Token ยืนยัน</td></tr>
+    </table>
+    
+    <h2>สถานการณ์รับมือความล้มเหลว (Failure Modes)</h2>
+    <ol>
+        <li><strong>Google API Quota Exceeded:</strong> ระบบจะใช้ข้อมูล Cache เดิม (SWR) และแสดงข้อความเตือนให้ลองใหม่</li>
+        <li><strong>Upload Partial Success:</strong> หากอัปโหลดไฟล์ผ่าน แต่บันทึก Sheets ไม่ผ่าน ไฟล์นั้นจะมีสถานะ Pending และถูกลบโดย Cron job</li>
+        <li><strong>Network Timeout:</strong> UI จะแสดง Skeleton loaders และมีปุ่ม Retry</li>
+        <li><strong>Invalid Authentication:</strong> API จะตอบกลับ 401 และหน้าเว็บแสดง Fallback UI</li>
+        <li><strong>Corrupted Sheet Data:</strong> ระบบ Validation จะกรองแถวที่ข้อมูลผิดพลาดออก (Skip) แทนที่จะทำให้เว็บล่มทั้งหน้า</li>
+    </ol>
+    <div class="page-break"></div>
+
+    <!-- PAGE 11: SECTION 08 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>08 — QUALITY</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 08</div>
+    <h1>System Quality</h1>
+    
+    <h2>ผลการทดสอบระบบ (Test Results)</h2>
+    <table>
+        <tr>
+            <th style="width: 30%;">Test Category</th>
+            <th style="width: 20%;">Status</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Unit Tests (Logic)</td>
+            <td><span class="badge-pass">PASS</span></td>
+            <td>270 Tests ผ่านทั้งหมด (ทดสอบ Data parsing, formatting)</td>
+        </tr>
+        <tr>
+            <td>OAuth Setup Flow</td>
+            <td><span class="badge-pass">PASS</span></td>
+            <td>5 Tests สำหรับกระบวนการแลก Token ผ่านทั้งหมด</td>
+        </tr>
+        <tr>
+            <td>TypeScript Checks</td>
+            <td><span class="badge-pass">PASS</span></td>
+            <td>No Any types, Strict null checks เปิดใช้งาน</td>
+        </tr>
+        <tr>
+            <td>Production Build</td>
+            <td><span class="badge-pass">PASS</span></td>
+            <td>Next.js build success, ไม่มีปัญหาเรื่อง Static generation</td>
+        </tr>
+        <tr>
+            <td>Scoped Lint (Next)</td>
+            <td><span class="badge-pass">PASS</span></td>
+            <td>Core web vitals และ Next.js best practices ผ่าน</td>
+        </tr>
+        <tr>
+            <td>Full Lint (ESLint)</td>
+            <td><span class="badge-fail">FAIL</span></td>
+            <td>มี Tech Debt: Warning จำนวน 12 รายการเกี่ยวกับ unused variables</td>
+        </tr>
+    </table>
+    
+    <h2>พื้นที่ครอบคลุมการทดสอบ (Test Coverage Areas)</h2>
+    <table>
+        <tr>
+            <th style="width: 40%;">Component / Module</th>
+            <th>Coverage Focus</th>
+        </tr>
+        <tr><td>Data Utils (<span class="code">lib/utils.ts</span>)</td><td>ความถูกต้องในการคำนวณสถิติ การแปลงวันที่</td></tr>
+        <tr><td>API Handlers</td><td>การตอบสนองต่อ Error (4xx, 5xx) และ Data mapping</td></tr>
+        <tr><td>Form Validation Schema</td><td>การดักจับข้อมูลที่ผิด Format ก่อน Submit</td></tr>
+        <tr><td>Chart Formatters</td><td>การแสดงผล Tooltips และ Labels ของกราฟ</td></tr>
+    </table>
+    <div class="page-break"></div>
+
+    <!-- PAGE 12: SECTION 09 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>09 — FINDINGS & RECOMMENDATIONS</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 09</div>
+    <h1>Findings & Recommendations</h1>
+    
+    <h2>ข้อค้นพบและปัญหาที่พบ (Findings)</h2>
+    <table>
+        <tr>
+            <th style="width: 20%;">Severity</th>
+            <th>Issue Description</th>
+            <th>Impact</th>
+        </tr>
+        <tr>
+            <td><span class="badge-high">High</span></td>
+            <td>Google Sheets API Rate Limit (60 requests / minute)</td>
+            <td>หากมีผู้ใช้งานพร้อมกันจำนวนมาก อาจเกิดคอขวด ทำให้ข้อมูลโหลดช้า หรือ Error ได้</td>
+        </tr>
+        <tr>
+            <td><span class="badge-medium">Medium</span></td>
+            <td>AppShell ยังไม่ครอบคลุมทุกหน้า</td>
+            <td>ความไม่สม่ำเสมอของ UX ระหว่างหน้า /ot-employee กับหน้าอื่นๆ</td>
+        </tr>
+        <tr>
+            <td><span class="badge-medium">Medium</span></td>
+            <td>ไฟล์รูปภาพที่ลากวางบางครั้งมีขนาดใหญ่เกินไป</td>
+            <td>สิ้นเปลืองพื้นที่ Drive และใช้เวลาอัปโหลดนาน</td>
+        </tr>
+        <tr>
+            <td><span class="badge-low">Low</span></td>
+            <td>ESLint Warnings (Tech Debt)</td>
+            <td>ความสะอาดของโค้ด ไม่ส่งผลต่อการทำงาน แต่ควรแก้ไขในระยะยาว</td>
+        </tr>
+    </table>
+    
+    <h2>ข้อเสนอแนะสำหรับการพัฒนาต่อ (Recommendations)</h2>
+    <ul>
+        <li><strong>Caching Strategy:</strong> ควรเปิดใช้งาน Next.js ISR (Incremental Static Regeneration) ร่วมกับ Redis Cache เพื่อลดภาระการเรียก Google Sheets API ทุกครั้งที่มีการ Refresh</li>
+        <li><strong>UI Refactoring:</strong> ดำเนินการย้ายหน้าเว็บที่เหลือเข้าสู่โครงสร้าง AppShell ให้ครบถ้วน เพื่อให้ Sidebar และ Header ทำงานประสานกันอย่างสมบูรณ์</li>
+        <li><strong>Image Compression:</strong> เพิ่มไลบรารีบีบอัดรูปภาพฝั่ง Client (เช่น browser-image-compression) ก่อนส่งไฟล์ไปยัง <span class="code">/api/upload</span></li>
+        <li><strong>Database Migration:</strong> หากข้อมูล Shop Order มีจำนวนเกิน 10,000 แถว ควรพิจารณาย้ายจาก Google Sheets ไปใช้ฐานข้อมูลจริง เช่น PostgreSQL (Supabase) หรือ MongoDB</li>
+        <li><strong>Code Cleanup:</strong> จัดการเคลียร์ ESLint warnings ทั้งหมดก่อนการปิดโปรเจกต์ (Handover)</li>
+        <li><strong>Role-Based Access Control (RBAC):</strong> เพิ่มระบบ Login และสิทธิ์การใช้งาน (Admin, Manager, User) เพื่อจำกัดการเข้าถึงเมนูบางส่วน</li>
+    </ul>
+    <div class="page-break"></div>
+
+    <!-- PAGE 13: SECTION 10 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>10 — RUNBOOK</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 10</div>
+    <h1>Operations Runbook</h1>
+    
+    <h2>ขั้นตอนการปรับปรุงและติดตั้ง (Deployment Steps)</h2>
+    <p>ระบบเชื่อมต่อกับ Vercel แบบ CI/CD ดังนั้นการอัปเดตระบบทำได้ง่ายๆ ผ่าน Git:</p>
+    <div class="code" style="margin-bottom: 10pt;">
+        git add .<br>
+        git commit -m "Update feature X"<br>
+        git push origin main
+    </div>
+    <p>Vercel จะดึงโค้ดไป Build และ Deploy อัตโนมัติ (ใช้เวลาประมาณ 1-2 นาที)</p>
+    
+    <h2>ตัวแปรสภาพแวดล้อม (Environment Variables)</h2>
+    <table>
+        <tr><th style="width: 40%;">Variable Name</th><th>Description</th></tr>
+        <tr><td><span class="code">GOOGLE_CLIENT_EMAIL</span></td><td>Email ของ Service Account</td></tr>
+        <tr><td><span class="code">GOOGLE_PRIVATE_KEY</span></td><td>Private Key ของ Service Account</td></tr>
+        <tr><td><span class="code">GOOGLE_CLIENT_ID</span></td><td>Client ID สำหรับ OAuth 2.0</td></tr>
+        <tr><td><span class="code">GOOGLE_CLIENT_SECRET</span></td><td>Client Secret สำหรับ OAuth 2.0</td></tr>
+        <tr><td><span class="code">GOOGLE_REFRESH_TOKEN</span></td><td>Refresh Token สำหรับต่ออายุ Token ขอดึงไฟล์</td></tr>
+        <tr><td><span class="code">GOOGLE_DRIVE_FOLDER_ID</span></td><td>ID ของโฟลเดอร์ปลายทางที่ใช้เก็บรูป Shop Order</td></tr>
+        <tr><td><span class="code">SPREADSHEET_ID_DASHBOARD</span></td><td>ID ของไฟล์ Dashboard Data</td></tr>
+        <tr><td><span class="code">SPREADSHEET_ID_SHOPORDER</span></td><td>ID ของไฟล์ Shop Order Database</td></tr>
+        <tr><td><span class="code">CRON_SECRET</span></td><td>รหัสลับสำหรับการสั่งรัน Cron job นิรนาม</td></tr>
+    </table>
+    
+    <h2>รายการตรวจสอบหลังการติดตั้ง (Verification Checklist)</h2>
+    <ol>
+        <li>ตรวจสอบว่าหน้า Home สามารถโหลดกราฟได้ครบถ้วน</li>
+        <li>ทดลองสร้าง Shop Order ใหม่ 1 รายการ และอัปโหลดไฟล์ขนาดเล็ก</li>
+        <li>ทดลองแก้สถานะ Shop Order ที่เพิ่งสร้าง และตรวจสอบในหน้า Sheets ว่าข้อมูลเปลี่ยนตาม</li>
+        <li>ตรวจสอบหน้า /auth/status ว่า Token สถานะเป็น 'Active'</li>
+        <li>เปิด Vercel Logs เพื่อดูว่าไม่มี Error 500 ปรากฏใน 15 นาทีแรกของการ Deploy</li>
+    </ol>
+    
+    <h2>ระบบอัตโนมัติ (Cron Job)</h2>
+    <div class="callout callout-info">
+        <p class="p-no-indent" style="margin-bottom: 0;"><strong>Daily Cleanup Task:</strong> มีการตั้งเวลา Vercel Cron ให้เรียก <span class="code">/api/cron/cleanup</span> ทุกวันเวลา 17:18 UTC (เที่ยงคืนเวลาไทย) เพื่อลบไฟล์ขยะ (Pending/Orphan files) ออกจาก Google Drive ลดการสิ้นเปลืองพื้นที่จัดเก็บ</p>
+    </div>
+    <div class="page-break"></div>
+
+    <!-- PAGE 14: SECTION 11 -->
+    <table class="page-header-table">
+        <tr>
+            <td><strong>11 — APPENDIX</strong></td>
+            <td class="text-right">W10 Dashboard</td>
+        </tr>
+    </table>
+    
+    <div class="section-number">Section 11</div>
+    <h1>Appendix & Glossary</h1>
+    
+    <h2>แผนผังไฟล์สำคัญ (Key File Map)</h2>
+    <table>
+        <tr><th style="width: 40%;">File Path</th><th>Role / Description</th></tr>
+        <tr><td><span class="code">app/page.tsx</span></td><td>หน้า Home Dashboard และ Layout หลัก</td></tr>
+        <tr><td><span class="code">app/shop-order/page.tsx</span></td><td>UI หน้าตาราง Shop Order และ Modal Form</td></tr>
+        <tr><td><span class="code">app/api/shop-order/route.ts</span></td><td>API Endpoint สำหรับ CRUD ข้อมูล Shop Order</td></tr>
+        <tr><td><span class="code">app/api/upload/route.ts</span></td><td>API สำหรับรับไฟล์และอัปโหลดขึ้น Drive</td></tr>
+        <tr><td><span class="code">lib/google.ts</span></td><td>รวมฟังก์ชันเชื่อมต่อ Google Auth, Sheets, Drive</td></tr>
+        <tr><td><span class="code">lib/utils.ts</span></td><td>ฟังก์ชันคำนวณและแปลงรูปแบบข้อมูล (cn, date formats)</td></tr>
+        <tr><td><span class="code">components/ui/button.tsx</span></td><td>UI Component พื้นฐาน (Shadcn UI)</td></tr>
+        <tr><td><span class="code">components/charts/GaugeChart.tsx</span></td><td>Component สำหรับกราฟหน้าปัด Highcharts</td></tr>
+        <tr><td><span class="code">components/UploadDropzone.tsx</span></td><td>Component รับไฟล์แบบ Drag & Drop</td></tr>
+        <tr><td><span class="code">scripts/setup-oauth.js</span></td><td>สคริปต์สำหรับรันสร้าง Refresh Token ครั้งแรก</td></tr>
+        <tr><td><span class="code">tailwind.config.ts</span></td><td>ตั้งค่าสีและ Font ของโปรเจกต์</td></tr>
+        <tr><td><span class="code">package.json</span></td><td>รายการ Dependencies และ Scripts</td></tr>
+    </table>
+    
+    <h2>อภิธานศัพท์ (Glossary)</h2>
+    <table>
+        <tr><th style="width: 25%;">Term</th><th>Definition</th></tr>
+        <tr><td><strong>Order1</strong></td><td>ระบบจัดการงานซ่อมบำรุงหลักของกฟผ. (SAP PM)</td></tr>
+        <tr><td><strong>ETAS</strong></td><td>Electronic Time Attendance System (ระบบสแกนหน้า/นิ้ว)</td></tr>
+        <tr><td><strong>drive.file</strong></td><td>สิทธิ์ OAuth ที่จำกัดให้แอปเข้าถึงเฉพาะไฟล์ที่ตนเองสร้าง</td></tr>
+        <tr><td><strong>Pending upload</strong></td><td>สถานะไฟล์ที่อัปโหลดแล้ว แต่ยังไม่เชื่อมโยงกับฐานข้อมูล</td></tr>
+        <tr><td><strong>Partial success</strong></td><td>กระบวนการที่สำเร็จเพียงครึ่งเดียว (เช่น อัปไฟล์ผ่านแต่บันทึก DB ไม่ผ่าน)</td></tr>
+        <tr><td><strong>Legacy file</strong></td><td>ไฟล์เก่าที่ไม่มีคนใช้งาน หรือถูกลบจากฐานข้อมูลแล้ว</td></tr>
+        <tr><td><strong>no-store</strong></td><td>การตั้งค่า Cache ไม่ให้เก็บข้อมูล เพื่อบังคับให้ดึงข้อมูลใหม่เสมอ</td></tr>
+        <tr><td><strong>WAF</strong></td><td>Web Application Firewall (ระบบป้องกันการโจมตีเว็บ)</td></tr>
+        <tr><td><strong>Resumable Upload</strong></td><td>วิธีการอัปโหลดไฟล์ขนาดใหญ่แบบแบ่งส่วน เพื่อลดปัญหาเน็ตหลุด</td></tr>
+        <tr><td><strong>Service Account</strong></td><td>บัญชีหุ่นยนต์ของ Google สำหรับให้ระบบหลังบ้านเข้าถึง API โดยไม่ต้อง Login</td></tr>
+    </table>
+    
+    <div class="callout callout-warning" style="margin-top: 30pt; text-align: center;">
+        <p class="p-no-indent" style="font-weight: bold; margin-bottom: 0;">SECURITY NOTICE:</p>
+        <p class="p-no-indent" style="margin-bottom: 0;">เอกสารฉบับนี้ใช้สำหรับอ้างอิงภายในแผนก W10 ห้ามเผยแพร่ Environment Variables หรือรหัสผ่านในที่สาธารณะ</p>
+    </div>
+    
+    <div style="text-align: center; color: #7f8c8d; margin-top: 30pt; font-size: 14pt;">-- End of Document --</div>
+</body>
+</html>

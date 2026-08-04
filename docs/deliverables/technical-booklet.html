@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W10 Dashboard — Technical Project Booklet (ฉบับส่งหัวหน้างาน)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1a5276;
+  --secondary: #2e86c1;
+  --accent: #d4a300;
+  --accent-light: #ffd56d;
+  --text: #2c3e50;
+  --text-light: #5d6d7e;
+  --bg: #ffffff;
+  --bg-light: #f8f9fa;
+  --border: #dee2e6;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --font: 'Sarabun', 'TH Sarabun New', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--font); font-size:15px; line-height:1.75; color:var(--text); background:#e8e8e8; }
+
+.page {
+  width:210mm; min-height:297mm; margin:15px auto;
+  padding:22mm 22mm 22mm 28mm;
+  background:var(--bg); box-shadow:0 3px 15px rgba(0,0,0,.08);
+  page-break-after:always; position:relative;
+}
+.page:last-child { page-break-after:auto; }
+
+.page-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-bottom:8px; border-bottom:2px solid var(--accent-light);
+  margin-bottom:20px; font-size:12px; font-weight:700;
+  color:var(--text-light);
+}
+.page-footer {
+  position:absolute; bottom:15mm; left:28mm; right:22mm;
+  text-align:center; font-size:11px; color:var(--text-light);
+  border-top:1px solid var(--border); padding-top:6px;
+}
+
+/* Cover */
+.cover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:35mm 20mm; }
+.cover-logos { display:flex; align-items:center; gap:30px; margin-bottom:25px; }
+.cover-logos img { width:70px; height:70px; object-fit:contain; }
+.cover-logo-placeholder { width:70px; height:70px; border:2px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--text-light); text-align:center; background:var(--bg-light); }
+.cover h1 { font-size:40px; font-weight:800; color:var(--primary); margin-bottom:6px; }
+.cover .subtitle { font-size:14px; font-weight:600; color:var(--secondary); letter-spacing:2px; margin-bottom:8px; }
+.cover .desc { font-size:17px; color:var(--secondary); margin-bottom:30px; }
+.cover-divider { width:100px; height:3px; background:linear-gradient(90deg,var(--accent),var(--secondary)); border-radius:2px; margin:0 auto 30px; }
+.cover-table { width:100%; max-width:420px; text-align:left; }
+.cover-table td { padding:5px 10px; font-size:14px; }
+.cover-table td:first-child { font-weight:700; color:var(--primary); white-space:nowrap; width:110px; }
+.cover-note { margin-top:40px; font-size:13px; font-style:italic; color:var(--text-light); }
+
+/* Typography */
+h1 { font-size:26px; font-weight:800; color:var(--primary); margin-bottom:15px; padding-bottom:8px; border-bottom:3px solid var(--accent); }
+h2 { font-size:20px; font-weight:700; color:var(--primary); margin:20px 0 10px; }
+h3 { font-size:17px; font-weight:700; color:var(--secondary); margin:16px 0 8px; }
+p { margin-bottom:10px; text-align:justify; }
+ul,ol { margin:8px 0 12px 35px; }
+li { margin-bottom:4px; }
+
+.section-num { font-size:12px; font-weight:700; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+table th { background:var(--primary); color:#fff; font-weight:700; padding:8px 10px; text-align:left; }
+table td { padding:7px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+table tr:nth-child(even) td { background:var(--bg-light); }
+table.light th { background:var(--bg-light); color:var(--primary); border-bottom:2px solid var(--primary); }
+
+code { font-family:Consolas,monospace; font-size:12px; background:var(--bg-light); padding:1px 5px; border-radius:3px; border:1px solid var(--border); }
+pre { background:#2c3e50; color:#ecf0f1; padding:12px 16px; border-radius:6px; font-family:Consolas,monospace; font-size:12px; margin:12px 0; line-height:1.5; overflow-x:auto; }
+pre code { background:none; border:none; padding:0; color:inherit; }
+
+.callout { padding:12px 16px; border-radius:6px; margin:12px 0; font-size:13px; }
+.callout.info { background:#e8f4fd; border-left:4px solid var(--secondary); }
+.callout.warn { background:#fff3cd; border-left:4px solid var(--accent); }
+.callout.ok { background:#d4edda; border-left:4px solid var(--success); }
+.callout b { display:block; margin-bottom:3px; }
+
+.placeholder { background:#fff3cd; border:1px dashed #ffc107; padding:2px 6px; border-radius:3px; font-style:italic; color:#856404; }
+
+/* Diagrams */
+.diagram { margin:16px 0; padding:16px; background:var(--bg-light); border-radius:10px; border:1px solid var(--border); }
+.three-col { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:12px; align-items:start; }
+.col-title { font-weight:700; font-size:13px; text-align:center; margin-bottom:8px; padding-bottom:4px; }
+.col-items { display:flex; flex-direction:column; gap:5px; }
+.col-item { padding:6px 8px; background:#fff; border:1px solid var(--border); border-radius:5px; font-size:11px; text-align:center; }
+.col-arrow { display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--text-light); padding-top:30px; }
+
+.flow { display:flex; flex-direction:column; gap:6px; align-items:center; }
+.flow-step { display:flex; align-items:center; gap:8px; width:100%; max-width:460px; }
+.flow-num { width:24px; height:24px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.flow-box { flex:1; padding:8px 12px; background:#fff; border:1px solid var(--border); border-radius:6px; font-size:12px; }
+.flow-box strong { color:var(--primary); }
+.flow-down { color:var(--text-light); font-size:18px; }
+
+.screenshot { width:100%; min-height:160px; background:linear-gradient(135deg,#f8f9fa,#e9ecef); border:2px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--text-light); font-size:13px; margin:12px 0; padding:24px; }
+.screenshot .icon { font-size:30px; margin-bottom:6px; }
+
+/* Print */
+@media print {
+  body { background:#fff; }
+  .page { width:auto; min-height:auto; margin:0; padding:0; box-shadow:none; page-break-after:always; }
+  @page { size:A4; margin:22mm 22mm 22mm 28mm; @bottom-center { content:counter(page); font-family:'Sarabun',sans-serif; font-size:11px; color:#5d6d7e; } }
+  table th,.callout,.diagram,.col-item { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="cover-logos">
+    <div class="cover-logo-placeholder">📚 โลโก้<br>วิทยาลัย</div>
+    <img src="../../picture/egat.png" alt="EGAT Logo">
+    <img src="../../picture/รูปภาพ14-Photoroom.png" alt="W10 Icon">
+  </div>
+  <div class="subtitle">PROJECT BOOKLET / TECHNICAL & OPERATIONS REVIEW</div>
+  <h1>W10 Dashboard</h1>
+  <div class="desc">รูปเล่มวิเคราะห์ระบบและคู่มือปฏิบัติการ</div>
+  <div class="cover-divider"></div>
+  <table class="cover-table">
+    <tr><td>ขอบเขต</td><td>โค้ด แอปพลิเคชัน API data layer tests scripts และเอกสารโครงการ</td></tr>
+    <tr><td>สถานะอ้างอิง</td><td>repository snapshot สิงหาคม 2569</td></tr>
+    <tr><td>ผู้จัดทำ</td><td><span class="placeholder">[ชื่อ-นามสกุล]</span></td></tr>
+    <tr><td>สถานศึกษา</td><td>วิทยาลัยเทคนิคลำปาง — สาขาเทคโนโลยีสารสนเทศ (ปวช.)</td></tr>
+    <tr><td>สถานประกอบการ</td><td>กฟผ. โรงไฟฟ้าแม่เมาะ — กองบำรุงรักษา W10</td></tr>
+    <tr><td>ผู้อ่านหลัก</td><td>ผู้บริหารหน่วยงาน ผู้ดูแลระบบ นักพัฒนา และผู้ปฏิบัติงาน W10</td></tr>
+  </table>
+  <div class="cover-note">เอกสารนี้สรุปจากระบบจริงโดยไม่เปิดเผยค่า secret, token หรือ private key</div>
+</div>
+
+<!-- READING MAP -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <h1 style="text-align:center; border:none;">READING MAP</h1>
+  <h2>สารบัญและวิธีอ่าน</h2>
+  <p>รูปเล่มนี้แบ่งเป็น 11 ส่วน เริ่มจากภาพรวมของระบบ ไปสู่การอ่านเฉดละ route, สถาปัตยกรรมข้อมูล, Shop Order แบบเจาะลึก, ผลตรวจคุณภาพ และข้อเสนอแนะสำหรับการดูแลระบบใน Production.</p>
+  <table>
+    <tr><th style="width:50px">ส่วน</th><th>หัวข้อ</th><th>คำตอบที่ผู้อ่านจะได้</th></tr>
+    <tr><td>1</td><td>บทสรุปผู้บริหาร</td><td>ระบบทำอะไร เหมาะกับใคร และผลตรวจปัจจุบัน</td></tr>
+    <tr><td>2</td><td>ขอบเขตและเทคโนโลยี</td><td>โครงสร้าง repository, stack และขอบเขตการอ่าน</td></tr>
+    <tr><td>3</td><td>เส้นทางใช้งานและ UI shell</td><td>7 routes, navigation และสถานะการ migrate</td></tr>
+    <tr><td>4</td><td>การทำงานของแต่ละหน้า + Screenshot</td><td>Home, Purchasing, BEML, OT และ Shop Order</td></tr>
+    <tr><td>5</td><td>สถาปัตยกรรมและแหล่งข้อมูล</td><td>Browser, Next.js API, Google Sheets/Drive</td></tr>
+    <tr><td>6</td><td>Shop Order เชิงลึก</td><td>CRUD, schema A-K, upload และ lifecycle</td></tr>
+    <tr><td>7</td><td>ความปลอดภัยและความทนทาน</td><td>validation, OAuth, WAF, logging และ failure modes</td></tr>
+    <tr><td>8</td><td>การทดสอบและผลตรวจ</td><td>tests, TypeScript, build, lint และ browser handoff</td></tr>
+    <tr><td>9</td><td>ข้อค้นพบและงานค้าง</td><td>ความเสี่ยงและ technical debt ที่พบจากการอ่าน</td></tr>
+    <tr><td>10</td><td>คู่มือ deploy และ runbook</td><td>ตั้งค่าเครื่อง, Vercel, OAuth และ cleanup</td></tr>
+    <tr><td>11</td><td>ภาคผนวก</td><td>API reference, file map, glossary และแหล่งข้อมูล</td></tr>
+  </table>
+  <div class="callout info"><b>คำแนะนำ</b>ถ้าต้องการทำความเข้าใจเร็ว ให้เริ่มที่ส่วน 1, 3, 5 และ 6; ถ้ารับผิดชอบ Production ให้ต่อด้วยส่วน 7, 8, 9 และ 10.</div>
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 2</div>
+</div>
+
+<!-- 01 EXECUTIVE SUMMARY -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">01 / EXECUTIVE SUMMARY</div>
+  <h1>บทสรุปผู้บริหาร</h1>
+
+  <p>W10 Dashboard คือแดชบอร์ดปฏิบัติการภายในสำหรับทีมซ่อมบำรุงและงานธุรการของ W10 ใช้ Google Sheets เป็นแหล่งข้อมูลหลัก แล้วนำเสนอเป็นหน้าจอที่อ่านเร็วสำหรับติดตาม Work Order, สถานะจัดซื้อจัดจ้าง, คลังอะไหล่ BEML และ OT โดยแยกมุมมองพนักงานกับลูกจ้างอย่างชัดเจน.</p>
+
+  <p>จุดเด่นของระบบคือการรวมข้อมูลจากหลายชีดไว้ใน route ที่ใช้งานซ้ำทุกวัน และการออกแบบ Shop Order รุ่น Next.js ให้มีการตรวจไฟล์แบบหลายชั้น, resumable upload, OAuth Drive แบบ scope ค่ำ, partial success เมื่อไฟล์แนบล้มเหลว และ cleanup ที่ย้ายไฟล์เข้า Trash อย่างหน่วงเวลา.</p>
+
+  <h2>ตัวเลขสำคัญจาก snapshot นี้</h2>
+  <table>
+    <tr><th>ค่า</th><th>ความหมาย</th><th>รายละเอียด</th></tr>
+    <tr><td><strong>7</strong></td><td>หน้าใช้งานหลัก</td><td>/, /purchasing, /purchasing-all, /beml-inventory, /ot-summary, /ot-employee, /shop-order</td></tr>
+    <tr><td><strong>12</strong></td><td>API route handler</td><td>รวม route หลักของ dashboard, OT, purchasing, inventory และ Shop Order</td></tr>
+    <tr><td><strong>25</strong></td><td>test files</td><td>ผลรันจริงของ Vitest</td></tr>
+    <tr><td><strong>270</strong></td><td>tests passed</td><td>unit, component, API และ repository-style tests</td></tr>
+    <tr><td><strong>10 MB</strong></td><td>ขนาดไฟล์แนบสูงสุด</td><td>JPEG, PNG, WebP และ PDF สำหรับ Shop Order</td></tr>
+    <tr><td><strong>30 วัน</strong></td><td>ระยะหน่วงก่อนย้ายไฟล์เข้า Trash</td><td>เฉพาะไฟล์ที่ OAuth app สร้างเป็นเจ้าของ</td></tr>
+  </table>
+
+  <h2>ผลตรวจที่ยืนยันได้</h2>
+  <table>
+    <tr><th>สถานะ</th><th>คำสั่งหรือกิจกรรม</th><th>ผล</th></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npm run test:unit</td><td>25 files / 270 tests</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npm run test:oauth-setup</td><td>5 tests</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npx tsc --noEmit</td><td>ไม่มี output error</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npm run build</td><td>Next.js 16.2.12, production build สำเร็จ</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>scoped ESLint</td><td>shell/navigation/route pilot ผ่าน</td></tr>
+    <tr><td style="color:var(--danger);font-weight:700;">FAIL</td><td>npm run lint</td><td>144 errors / 10 warnings ทั้ง repository</td></tr>
+    <tr><td style="color:var(--warning);font-weight:700;">PENDING</td><td>browser manual acceptance</td><td>มี HTTP smoke/build baseline แต่ viewport/focus/console checks ยังรอ</td></tr>
+  </table>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 3</div>
+</div>
+
+<!-- 02 SCOPE & STACK -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">02 / SCOPE & STACK</div>
+  <h1>ขอบเขตการอ่านและเทคโนโลยี</h1>
+
+  <p>การวิเคราะห์ครอบคลุม source code ใน app, components, lib และ scripts; เอกสาร README, PRODUCT, CONTEXT และ verification handoff; ตลอดจน configuration ที่เกี่ยวข้อง. ไม่อ่านเนื้อหาใน node_modules เพราะเป็น dependency/build output และไม่เปิดเผยค่าใน .env.local.</p>
+
+  <table>
+    <tr><th>ชั้นระบบ</th><th>เทคโนโลยีและบทบาท</th></tr>
+    <tr><td><strong>Runtime</strong></td><td>Next.js 16.2.12 App Router, React 19.2.4, TypeScript strict</td></tr>
+    <tr><td><strong>Styling</strong></td><td>Tailwind CSS 4, app/globals.css, Prompt ผ่าน next/font/google</td></tr>
+    <tr><td><strong>Interaction</strong></td><td>Framer Motion, Lucide React, custom responsive dialogs</td></tr>
+    <tr><td><strong>Charts</strong></td><td>Highcharts + highcharts-more, Recharts, react-d3-speedometer</td></tr>
+    <tr><td><strong>Data</strong></td><td>googleapis, Google Sheets Service Account, Google Drive OAuth drive.file</td></tr>
+    <tr><td><strong>Testing</strong></td><td>Vitest 4.1.10, Testing Library, jsdom, Node test runner</td></tr>
+    <tr><td><strong>Deploy</strong></td><td>Vercel, vercel.json cron สำหรับ /api/shop-order/cleanup</td></tr>
+  </table>
+
+  <h2>โครงสร้าง repository แบบอ่านเร็ว</h2>
+  <table>
+    <tr><th>โฟลเดอร์</th><th>หน้าที่</th></tr>
+    <tr><td><strong>app/</strong></td><td>routes, page entry, API route handlers, global layout/style</td></tr>
+    <tr><td><strong>components/</strong></td><td>navigation, AppShell, page header, charts และ Shop Order UI</td></tr>
+    <tr><td><strong>lib/</strong></td><td>Google Sheets adapter และ domain/repository ของ Shop Order</td></tr>
+    <tr><td><strong>scripts/</strong></td><td>OAuth setup utility และ Node test</td></tr>
+    <tr><td><strong>docs/</strong></td><td>design specs, implementation plans, verification handoff</td></tr>
+    <tr><td><strong>public/picture/</strong></td><td>โลโก้/ภาพประกอบของ W10 และทีมงาน</td></tr>
+  </table>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 4</div>
+</div>
+
+<!-- 03 ROUTES & SHELL -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">03 / ROUTES & SHELL</div>
+  <h1>เส้นทางใช้งานและ UI Shell</h1>
+
+  <p>ระบบมี canonical navigation ที่รวมไว้ใน components/navigation/navigationDestinations.ts และใช้ทั้ง dropdown แบบเดิมกับ AppShell ใหม่. NavigationMenu รองรับ hover, click/touch, outside pointer, Escape, focus return, current-route state และ reduced motion.</p>
+
+  <table>
+    <tr><th>Route</th><th>ชื่อหน้า</th><th>หน้าที่</th><th>Chrome ปัจจุบัน</th></tr>
+    <tr><td><code>/</code></td><td>W10 Dashboard</td><td>ยอด W/O, status, group, equipment, load factor</td><td>legacy</td></tr>
+    <tr><td><code>/purchasing</code></td><td>การจัดซื้อจัดจ้าง</td><td>สรุปหมวด, status, gauges, purchase table</td><td>legacy</td></tr>
+    <tr><td><code>/purchasing-all</code></td><td>สถานะการซื้อทั้งหมด</td><td>ภาพรวมทั้งหมด ใช้ fixed filters</td><td>legacy</td></tr>
+    <tr><td><code>/beml-inventory</code></td><td>คลังอะไหล่ BEML</td><td>stock map, health ring, inventory table/modal</td><td>legacy</td></tr>
+    <tr><td><code>/ot-summary</code></td><td>สรุป OT ลูกจ้าง</td><td>OT tables, ETAS scan, error tables</td><td>legacy</td></tr>
+    <tr><td><code>/ot-employee</code></td><td>สรุป OT พนักงาน</td><td>OT tables, ETAS scan, error tables</td><td>console pilot</td></tr>
+    <tr><td><code>/shop-order</code></td><td>Shop Order</td><td>CRUD, filter, summary, attachment workflow</td><td>legacy</td></tr>
+  </table>
+
+  <h2>ภาพรวมการ migrate shell</h2>
+  <p>ShellMigrationGate ใน app/layout.tsx อ่าน pathname แล้วห่อเฉพาะ route ที่อยู่ใน consoleRoutes. ณ snapshot นี้ consoleRoutes มีเพียง /ot-employee; route อื่นยัง render children แบบเดิม. นี่เป็นการ rollout แบบ phased ตามแผน ไม่ใช่การย้ายครบทั้งระบบ.</p>
+
+  <table>
+    <tr><th>ส่วน</th><th>พฤติกรรมปัจจุบัน</th></tr>
+    <tr><td><strong>Shared shell</strong></td><td>Sidebar desktop 240px, MobileTopBar, MobileNavigationDrawer</td></tr>
+    <tr><td><strong>PageHeader</strong></td><td>title, description, sync status, filters/actions slot, refresh state</td></tr>
+    <tr><td><strong>RouteChromeAdapter</strong></td><td>เลือก legacy หรือ console แบบ explicit</td></tr>
+    <tr><td><strong>Pilot coverage</strong></td><td>/ot-employee ผ่าน AppShell; /ot-summary ยัง legacy</td></tr>
+  </table>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 5</div>
+</div>
+
+<!-- 04 PAGE WALKTHROUGH with SCREENSHOTS -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">04 / PAGE WALKTHROUGH</div>
+  <h1>การทำงานของแต่ละหน้า</h1>
+
+  <h2>4.1 หน้าหลัก /: Work Order Operations</h2>
+  <p>หน้า Home เรียก /api/dashboard และรีเฟรชอัตโนมัติทุก 30 วินาที พร้อมตัวเลือกปี/เดือนที่อัปเดตค่า filter ในชีตเมื่อผู้ใช้เลือกใหม่. หน้าแสดง status W/O (SAP, Pending, Finish), กลุ่ม W11-W14, ยอดรวม, equipment breakdown และ Load Factor/Man.</p>
+
+  <table>
+    <tr><th>ชุดข้อมูล</th><th>การนำเสนอ</th></tr>
+    <tr><td>Operation status</td><td>Highcharts 3D Donut + total + progress cards สำหรับ Pending, Finish, SAP</td></tr>
+    <tr><td>W/O by group</td><td>การ์ด W11-W14 พร้อม entrance/left/finish/other finish/out</td></tr>
+    <tr><td>Work by group</td><td>Highcharts 3D column + ตาราง equipment (BEML, Conveyor, สูบน้ำ, Mobile, Power plant, General)</td></tr>
+    <tr><td>Load Factor / Man</td><td>4 react-d3-speedometer gauge ต่อกลุ่ม: พนักงาน/ลูกจ้าง ปกติ และ +OT</td></tr>
+  </table>
+
+  <div class="screenshot">
+    <div class="icon">📊</div>
+    <strong>Screenshot หน้า Home Dashboard</strong><br>
+    <small>แทนที่ด้วยภาพหน้าจอจริงจาก https://w10-jet.vercel.app/</small>
+  </div>
+
+  <h2>4.2 Purchasing และ Purchasing All</h2>
+  <p>ทั้งสองหน้าใช้ PurchasingPageContent ร่วมกัน. /purchasing ใช้ gold theme แสดงกราฟ 3D donut หมวดการซื้อ, 3D column สถานะ (รอซื้อจ้าง, กบย-ช, หซ/หจ, เสนอราคา, ติดตามPO, ส่งของ ฯลฯ) และตารางค้นหาได้. /purchasing-all ใช้ teal theme พร้อม fixed filters.</p>
+
+  <div class="screenshot">
+    <div class="icon">📈</div>
+    <strong>Screenshot หน้า Purchasing</strong><br>
+    <small>แทนที่ด้วยภาพหน้าจอจริง</small>
+  </div>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 6</div>
+</div>
+
+<!-- 04 CONTINUED: BEML, OT, SHOP ORDER -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+
+  <h2>4.3 BEML Inventory</h2>
+  <p>หน้า /beml-inventory เรียก /api/beml-inventory ซึ่งอ่าน tab PrintCheck และ map หัวคอลัมน์ตามชื่อภาษาไทย/อังกฤษ. มี Interactive Bin Map Grid แสดงสีตามระดับ stock (เขียว=ปกติ, เหลือง=ต่ำ, แดง=หมด), SVG Health Ring, search/sort, system dropdown และ detail modal.</p>
+
+  <div class="screenshot">
+    <div class="icon">📦</div>
+    <strong>Screenshot หน้า BEML Inventory</strong><br>
+    <small>แทนที่ด้วยภาพหน้าจอจริง</small>
+  </div>
+
+  <h2>4.4 OT Summary และ OT Employee</h2>
+  <p>ทั้งสองหน้าใช้ OtSummaryContent จาก app/ot-summary/page.tsx. query workerType ทำให้ API โหลดข้อมูลเฉพาะ employee หรือ contractor. ข้อมูล contractor มี holidayHours, 1x, 1.5x, total money และ 3x; employee มี total และ total2. แยกตาราง W11-W14 พร้อม ETAS scan และ Check OT Error tables.</p>
+
+  <div class="screenshot">
+    <div class="icon">⏰</div>
+    <strong>Screenshot หน้า OT Summary</strong><br>
+    <small>แทนที่ด้วยภาพหน้าจอจริง</small>
+  </div>
+
+  <h2>4.5 Shop Order</h2>
+  <p>Shop Order เป็นหน้าที่มี interaction สูงสุด: ตาราง + pagination อยู่ซ้าย, summary rail (ทั้งหมด/รอ/เสร็จ + doughnut chart + top 6 receiving units) อยู่ขวาบน desktop. ผู้ใช้ค้นหา/กรอง (ปี พ.ศ., เดือน, สถานะ), เปิดรายละเอียด, เพิ่ม/แก้ไข/ลบ, drag/drop ไฟล์ พร้อม upload progress.</p>
+
+  <div class="screenshot">
+    <div class="icon">📋</div>
+    <strong>Screenshot หน้า Shop Order</strong><br>
+    <small>แทนที่ด้วยภาพหน้าจอจริง</small>
+  </div>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 7</div>
+</div>
+
+<!-- 05 ARCHITECTURE & DATA -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">05 / ARCHITECTURE & DATA</div>
+  <h1>สถาปัตยกรรมและแหล่งข้อมูล</h1>
+
+  <p>ระบบใช้โครงสร้าง route-centric: page client state ทำหน้าที่แสดงผลและ filter; API Route Handler ทำหน้าที่อ่าน/เขียน/normalize; lib/googleSheet.ts และ lib/shop-order/repository.ts ทำหน้าที่เป็น server-side integration boundary.</p>
+
+  <h2>แผนภาพการไหลของข้อมูล</h2>
+  <div class="diagram">
+    <div class="three-col">
+      <div>
+        <div class="col-title" style="color:var(--secondary); border-bottom:2px solid var(--secondary);">🌐 Browser UI</div>
+        <div class="col-items">
+          <div class="col-item">7 pages</div>
+          <div class="col-item">filters, charts, tables</div>
+          <div class="col-item">dialogs, upload progress</div>
+        </div>
+      </div>
+      <div class="col-arrow">⟷</div>
+      <div>
+        <div class="col-title" style="color:#856404; border-bottom:2px solid var(--accent);">⚡ Next.js server</div>
+        <div class="col-items">
+          <div class="col-item">Route Handlers</div>
+          <div class="col-item">data mapping</div>
+          <div class="col-item">domain + repository</div>
+        </div>
+      </div>
+      <div class="col-arrow">⟷</div>
+      <div>
+        <div class="col-title" style="color:#155724; border-bottom:2px solid var(--success);">☁️ Google services</div>
+        <div class="col-items">
+          <div class="col-item">Sheets Service Account</div>
+          <div class="col-item">Drive OAuth drive.file</div>
+          <div class="col-item">Vercel Cron cleanup</div>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center; font-size:11px; color:var(--text-light); margin-top:12px;">รูปที่ 1 สถาปัตยกรรมระบบ W10 Dashboard</p>
+  </div>
+
+  <h2>API และ data source matrix</h2>
+  <table>
+    <tr><th>Endpoint</th><th>แหล่งข้อมูล</th><th>ผลลัพธ์หลัก</th></tr>
+    <tr><td>GET /api/dashboard</td><td>Dashboard W10 All + Info</td><td>status, groupStats, equipment, gauges</td></tr>
+    <tr><td>GET /api/purchasing</td><td>Dashboard W10 All + Info</td><td>gauges, charts, purchaseList</td></tr>
+    <tr><td>GET /api/purchasing-all</td><td>Dashboard W11 PRPO infoAll</td><td>charts, purchaseList แบบ all</td></tr>
+    <tr><td>GET /api/beml-inventory</td><td>PrintCheck ของ BEML sheet</td><td>inventory rows + systems; demo fallback</td></tr>
+    <tr><td>GET /api/ot-summary</td><td>OT employee/contractor + ETAS + Check OT</td><td>employees, contractors, ETAS, errors, totals</td></tr>
+    <tr><td>GET /api/shop-order</td><td>Order1 + DepartmentList + ReceiverList</td><td>orders, departments, receivers</td></tr>
+    <tr><td>POST /api/shop-order/upload-session</td><td>Google Drive OAuth</td><td>fileId, uploadUrl, expiresAt</td></tr>
+    <tr><td>GET /api/shop-order/cleanup</td><td>Google Drive OAuth + Vercel Cron</td><td>aggregate cleanup counters</td></tr>
+  </table>
+
+  <h2>Google Sheets adapter</h2>
+  <ul>
+    <li>getSheetsClient ใช้ JWT Service Account และ scope spreadsheets เท่านั้น.</li>
+    <li>lib/googleSheet.ts มี helper แยกสำหรับ dashboard, purchasing, OT, ETAS และ BEML inventory.</li>
+    <li>ข้อมูลจำนวนมากถูก parse จากตำแหน่ง index ของ range ที่กำหนดคลายตัว จึงต้องควบคุม schema ของชีดและห้ามย้ายคอลัมน์โดยไม่แก้ mapping.</li>
+  </ul>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 8</div>
+</div>
+
+<!-- 06 SHOP ORDER DEEP DIVE -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">06 / SHOP ORDER DEEP DIVE</div>
+  <h1>Shop Order เชิงลึก</h1>
+
+  <p>Shop Order เป็นโมดูลที่มีการแบ่ง boundary ชัดที่สุดในโครงการ: domain utilities, file rules, OAuth classification, upload client, repository, route handlers และ UI components แยกกัน ทำให้ทดสอบได้ตั้งแต่ pure function จนถึง integration-style repository.</p>
+
+  <h2>6.1 โครงร่างชีด Order1 A-K</h2>
+  <table>
+    <tr><th style="width:40px">คอลัมน์</th><th>ฟิลด์</th><th>กฎเกณฑ์</th></tr>
+    <tr><td>A</td><td>no</td><td>stable sequence; append แล้วอ่าน row จริงก่อนกำหนดเลข</td></tr>
+    <tr><td>B</td><td>from</td><td>server-enforced เป็น หสบ-ช.</td></tr>
+    <tr><td>C</td><td>to</td><td>ต้องพบใน DepartmentList</td></tr>
+    <tr><td>D</td><td>number</td><td>ตัวเลข ASCII 6 หลัก</td></tr>
+    <tr><td>E</td><td>dateIn</td><td>วันที่รับ; เขียนเป็น serial + format dd/MM/yyyy</td></tr>
+    <tr><td>F</td><td>subject</td><td>เรื่อง; ต้องไม่ว่าง</td></tr>
+    <tr><td>G</td><td>receivingUnit</td><td>หน่วยงานรับ; ใช้คำนวณ popular units</td></tr>
+    <tr><td>H</td><td>receiverName</td><td>ผู้รับ; มี ReceiverList เป็น suggestion</td></tr>
+    <tr><td>I</td><td>dateOut</td><td>วันที่ออก; มีค่า = เสร็จสิ้น, ว่าง = รอดำเนินการ</td></tr>
+    <tr><td>J</td><td>note</td><td>หมายเหตุ</td></tr>
+    <tr><td>K</td><td>fileUrl</td><td>canonical Drive webViewLink หรือว่าง</td></tr>
+  </table>
+
+  <h2>6.2 CRUD flow</h2>
+  <div class="diagram">
+    <div class="flow">
+      <div class="flow-step"><div class="flow-num">1</div><div class="flow-box"><strong>ผู้ใช้</strong> กรอกข้อมูลและเลือกไฟล์ → Client ตรวจรูปแบบไฟล์/ขนาด → แสดง preview</div></div>
+      <div class="flow-down">↓</div>
+      <div class="flow-step"><div class="flow-num">2</div><div class="flow-box"><strong>POST upload-session</strong> ส่ง orderNumber, name, mimeType, size → Server สร้าง Drive file ID + resumable session</div></div>
+      <div class="flow-down">↓</div>
+      <div class="flow-step"><div class="flow-num">3</div><div class="flow-box"><strong>Browser PUT</strong> ไฟล์ไป Google Drive ตรง → Client รายงาน progress → retry เฉพาะ network/timeout/429/5xx สูงสุด 3 ครั้ง</div></div>
+      <div class="flow-down">↓</div>
+      <div class="flow-step"><div class="flow-num">4</div><div class="flow-box"><strong>POST/PATCH /api/shop-order</strong> ส่ง order + uploadedFileId → Server ตรวจ file + ตั้ง permission + เขียน URL ลง Sheet</div></div>
+      <div class="flow-down">↓</div>
+      <div class="flow-step"><div class="flow-num">5</div><div class="flow-box">ถ้าอัปโหลดล้มเหลว → order ยังบันทึกสำเร็จ → แสดงปุ่ม "เพิ่มไฟล์อีกครั้ง" (partial success)</div></div>
+      <div class="flow-down">↓</div>
+      <div class="flow-step"><div class="flow-num">6</div><div class="flow-box"><strong>DELETE</strong> จะ clear A-K ของ row เดิม ไม่ลบ row → ไฟล์ OAuth ถูก schedule-delete 30 วัน</div></div>
+    </div>
+  </div>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 9</div>
+</div>
+
+<!-- 07 SECURITY -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">07 / SECURITY & RESILIENCE</div>
+  <h1>ความปลอดภัยและความทนทาน</h1>
+
+  <p>แนวทางของ Shop Order แยกความลับระหว่าง Sheets กับ Drive: Service Account มี scope spreadsheets; Drive ใช้ OAuth ของบัญชีเฉพาะและ scope drive.file. ตั้ง client ไม่ได้รับ client secret, refresh token หรือ private key.</p>
+
+  <table>
+    <tr><th>พื้นที่ควบคุม</th><th>มาตรการที่พบใน code</th></tr>
+    <tr><td>Input validation</td><td>JSON content type, same-origin Origin check, 6-digit order, allowed department, strict date, MIME/extension/size/signature</td></tr>
+    <tr><td>Secret handling</td><td>env-only; setup utility ไม่เขียน .env และไม่พิมพ์ access token; error response ไม่ส่ง Google body</td></tr>
+    <tr><td>URL allowlist</td><td>upload session exact https://www.googleapis.com; thumbnail เฉพาะ *.googleusercontent.com; canonical Drive link เท่านั้น</td></tr>
+    <tr><td>Attachment ownership</td><td>ตรวจ file id, parent folder, appProperties, order number, metadata, trashed=false และ leading bytes</td></tr>
+    <tr><td>Logging</td><td>Shop Order internal error log มี operation/category/correlationId; response ใช้ข้อความทั่วไป</td></tr>
+    <tr><td>Cleanup auth</td><td>Bearer secret ตรวจด้วย timingSafeEqual และคืน aggregate counters เท่านั้น</td></tr>
+    <tr><td>Traffic control</td><td>ระบบเป็น public-by-link จึงต้องใช้ WAF rate limit mutation 30 requests/IP/10 นาที</td></tr>
+  </table>
+
+  <h3>Public-access boundary</h3>
+  <div class="callout warn"><b>ความเสี่ยงเชิงผลิตภัณฑ์</b>ไม่มีหน้า login และผู้ที่เข้าถึง Production URL สามารถเรียก mutation API ได้. Same-origin check ช่วยลด browser CSRF บางกรณี แต่ไม่ใช้ authorization. URL governance และ WAF จึงเป็น defense-in-depth ที่จำเป็น.</div>
+
+  <h3>Failure modes ที่รองรับ</h3>
+  <ul>
+    <li>Google Drive reauth/quota/folder/access/unavailable ถูก map เป็น safe error code ภาษาไทย.</li>
+    <li>อัปโหลดไฟล์ล้มเหลวแต่บันทึก order สำเร็จได้ และ UI เปิดทางให้เพิ่มไฟล์อีกครั้ง.</li>
+    <li>Sheet append/update/clear ล้มเหลวหลัง finalize จะพยายาม restore pending metadata และลบ permission ใหม่ แบบ best effort.</li>
+    <li>Cleanup เป็น idempotent: ไม่พบไฟล์หรือไฟล์ถูกอย่าย Trash แล้วไม่นับเป็น failure ที่ทำให้ทั้งงานหยุด.</li>
+    <li>Thumbnail ใช้ authenticated proxy และ fallback เมื่อไม่พบรูปย่อ/ชนิดข้อมูลไม่ปลอดภัย/ขนาดเกิน.</li>
+  </ul>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 10</div>
+</div>
+
+<!-- 08 QUALITY -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">08 / QUALITY</div>
+  <h1>การทดสอบและผลตรวจ</h1>
+
+  <h2>Test coverage matrix</h2>
+  <table>
+    <tr><th>กลุ่ม test</th><th>สิ่งที่ตรวจ</th></tr>
+    <tr><td>Domain</td><td>วันที่, status, search/filter, sort, pagination, summary, 10,000-row stress shape</td></tr>
+    <tr><td>File rules</td><td>MIME/extension/size/signature, sanitize filename, truncated bytes</td></tr>
+    <tr><td>Drive OAuth</td><td>env, scope drive.file, error classification</td></tr>
+    <tr><td>Repository</td><td>A-K, append row, stable sequence, lifecycle, cleanup, thumbnail, compensation</td></tr>
+    <tr><td>API handlers</td><td>JSON, origin, validation, safe envelope, cron auth, proxy</td></tr>
+    <tr><td>UI interaction</td><td>navigation, shell drawer, PageHeader, dialogs, filters, upload failure</td></tr>
+    <tr><td>Setup script</td><td>loopback callback, state, offline consent, refresh token, folder creation</td></tr>
+  </table>
+
+  <h2>ผลตรวจคำสั่ง</h2>
+  <table>
+    <tr><th>สถานะ</th><th>คำสั่ง</th><th>ผลตรวจ</th></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npm run test:unit</td><td>Vitest 4.1.10: 25 test files, 270 tests</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npm run test:oauth-setup</td><td>Node test runner: 5 tests</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npx tsc --noEmit</td><td>TypeScript strict check</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npm run build</td><td>Next.js 16.2.12, Turbopack, 10 static pages + dynamic APIs</td></tr>
+    <tr><td style="color:var(--success);font-weight:700;">PASS</td><td>npx eslint (scoped)</td><td>shell/navigation/pilot ที่ตรวจแยก</td></tr>
+    <tr><td style="color:var(--danger);font-weight:700;">FAIL</td><td>npm run lint</td><td>154 problems: 144 errors, 10 warnings</td></tr>
+  </table>
+
+  <div class="callout info"><b>หมายเหตุ lint</b>Full lint fail จากหลายกลุ่ม: explicit any, setState-in-effect, unescaped quotes, unused vars, require(). ปัญหาเหล่านี้ถูกบันทึกเป็น technical debt; ไม่ได้แก้ในรอบจัดทำรูปเล่ม.</div>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 11</div>
+</div>
+
+<!-- 09 FINDINGS -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">09 / FINDINGS</div>
+  <h1>ข้อค้นพบและงานค้าง</h1>
+
+  <table>
+    <tr><th style="width:50px">ระดับ</th><th>ข้อค้นพบ</th><th>ผลกระทบ/คำแนะนำ</th></tr>
+    <tr><td style="color:var(--danger);font-weight:700;">สูง</td><td>Public mutation API ไม่มี login</td><td>ผู้ที่เข้าถึง URL เรียก CRUD ได้; ต้องควบคุม URL/WAF หรือวาง auth ก่อนขยายการใช้งาน</td></tr>
+    <tr><td style="color:var(--danger);font-weight:700;">สูง</td><td>Dashboard API คืน debugInfo 10 แถวแรก</td><td>อาจเผยข้อมูลชีดที่ไม่ควรตอบ; ควรเอาออกจาก response</td></tr>
+    <tr><td style="color:var(--warning);font-weight:700;">กลาง</td><td>Full lint ไม่ผ่าน 144 errors/10 warnings</td><td>เพิ่มความเสี่ยง regression และทำให้ CI gate ที่ใช้ lint ไม่ผ่าน</td></tr>
+    <tr><td style="color:var(--warning);font-weight:700;">กลาง</td><td>UI shell migrate เพียง /ot-employee</td><td>เป้าหมาย 7 routes อัปเดต shell ยังไม่ครบ</td></tr>
+    <tr><td style="color:var(--warning);font-weight:700;">กลาง</td><td>Filter กลางใน Google Sheet</td><td>dashboard/purchasing เขียนปี/เดือนลงเซลล์กลาง; concurrent users อาจเห็นข้อมูลผสมกัน</td></tr>
+    <tr><td style="color:var(--warning);font-weight:700;">กลาง</td><td>env contract ยังไม่เป็นชุดเดียว</td><td>.env.example ไม่มี BEML/OT vars ที่ code ใช้; .env.local snapshot ไม่มี OAuth/cron vars ที่ Shop Order B1 ต้องใช้</td></tr>
+    <tr><td style="color:var(--text-light);font-weight:700;">ต่ำ</td><td>Hard-coded sheet IDs/ranges</td><td>การเปลี่ยน tab/column ต้องแก้ code และเพิ่ม test</td></tr>
+  </table>
+
+  <h2>ข้อเสนอแนะตามลำดับ</h2>
+  <ol>
+    <li>แก้หรือเอา debugInfo ออกจาก public response ของ legacy API ให้ใช้ safe error envelope แบบเดียวกับ Shop Order.</li>
+    <li>กำหนด access model ให้ชัด: ถ้ายัง public ให้บังคับ WAF/URL governance; ถ้ามีข้อมูลลับให้เพิ่ม authentication/authorization.</li>
+    <li>จัดทำ env contract กลาง แยกกลุ่ม Dashboard, OT, BEML และ Shop Order พร้อมตรวจซื้อ GOOGLE_SHEET_ID กับ SHOP_ORDER_SHEET_ID.</li>
+    <li>ทำ lint baseline cleanup เป็นงานแยก: ย้าย scratch ออกจาก lint, ลด any, แก้ setState-in-effect และ unescaped quotes.</li>
+    <li>ทำ browser verification matrix ให้ครบทุก route/viewport และทดสอบ live Sheet/Drive ด้วย test order ที่ลบ/กู้ได้.</li>
+    <li>เดินหน้า UI shell migration ตามแผน โดยรักษา route data behavior เดิมและเพิ่ม regression test ทุก route.</li>
+  </ol>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 12</div>
+</div>
+
+<!-- 10 RUNBOOK -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">10 / RUNBOOK</div>
+  <h1>คู่มือ deploy และ runbook</h1>
+
+  <h2>10.1 เริ่มต้นในเครื่อง</h2>
+  <pre><code>npm install
+Copy-Item .env.example .env.local
+npm run dev
+# เปิด http://localhost:3000/shop-order</code></pre>
+
+  <p>ให้ใช้ Node.js/npm ตาม package-lock และตั้ง environment ให้ครบตาม capability ที่จะใช้งาน. อย่า commit .env.local, private key, OAuth client secret หรือ refresh token.</p>
+
+  <h2>10.2 Environment matrix</h2>
+  <table>
+    <tr><th>ตัวแปร</th><th>ความสามารถ</th><th>หน้าที่</th></tr>
+    <tr><td>GOOGLE_CLIENT_EMAIL</td><td>Sheets</td><td>Service Account email</td></tr>
+    <tr><td>GOOGLE_PRIVATE_KEY</td><td>Sheets</td><td>private key แบบมี \n ได้</td></tr>
+    <tr><td>GOOGLE_SHEET_ID</td><td>Dashboard/legacy</td><td>main dashboard sheet ที่ lib/googleSheet.ts ใช้</td></tr>
+    <tr><td>SHOP_ORDER_SHEET_ID</td><td>Shop Order</td><td>spreadsheet ของ Order1</td></tr>
+    <tr><td>SHOP_ORDER_SHEET_NAME</td><td>Shop Order</td><td>ปกติคือ Order1</td></tr>
+    <tr><td>GOOGLE_OT_EMPLOYEE_SHEET_ID</td><td>OT employee</td><td>source spreadsheet</td></tr>
+    <tr><td>GOOGLE_OT_CONTRACTOR_SHEET_ID</td><td>OT contractor</td><td>source spreadsheet</td></tr>
+    <tr><td>GOOGLE_BEML_INVENTORY_SHEET_ID</td><td>BEML</td><td>ถ้าไม่ตั้งค่าจะเข้า demo mode</td></tr>
+    <tr><td>GOOGLE_DRIVE_OAUTH_CLIENT_ID</td><td>Shop Order Drive</td><td>OAuth client</td></tr>
+    <tr><td>GOOGLE_DRIVE_OAUTH_CLIENT_SECRET</td><td>Shop Order Drive</td><td>server secret</td></tr>
+    <tr><td>GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN</td><td>Shop Order Drive</td><td>refresh token ของจริง</td></tr>
+    <tr><td>SHOP_ORDER_DRIVE_FOLDER_ID</td><td>Shop Order Drive</td><td>Picture-OAuth folder</td></tr>
+    <tr><td>SHOP_ORDER_CRON_SECRET / CRON_SECRET</td><td>Cleanup</td><td>ต้องตรงกันสำหรับ Vercel Cron</td></tr>
+  </table>
+
+  <h2>10.3 Deploy verification</h2>
+  <pre><code>npm run test:unit
+npm run test:oauth-setup
+npx tsc --noEmit
+npm run build
+npm run lint    # ต้องแก้ baseline ก่อนใช้เป็น hard gate</code></pre>
+
+  <table>
+    <tr><th>พื้นที่ตรวจ</th><th>Acceptance check</th></tr>
+    <tr><td>Application</td><td>เปิดทุก route และตรวจ loading/error/empty state</td></tr>
+    <tr><td>Dashboard</td><td>เปลี่ยนปี/เดือนและตรวจไม่ให้ filter ของผู้ใช้อื่นถูกทับ</td></tr>
+    <tr><td>Shop Order</td><td>สร้างเลข 6 หลักพร้อม PNG/JPEG ขนาดเล็ก, ตรวจ Order1 และ Drive</td></tr>
+    <tr><td>Replacement</td><td>แก้รายการด้วย PDF แล้วตรวจไฟล์เดิมเป็น scheduled_delete</td></tr>
+    <tr><td>Failure</td><td>จำลอง upload fail; order ต้องถูกบันทึกและมีปุ่มเพิ่มไฟล์อีกครั้ง</td></tr>
+    <tr><td>Cleanup</td><td>เรียก cleanup ด้วย Bearer ที่ถูกต้อง; secret ผิดต้องได้ 401</td></tr>
+    <tr><td>Security</td><td>ตรวจ WAF 30 requests/IP/10 นาที และห้าม session URL อยู่ใน logs</td></tr>
+  </table>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 13</div>
+</div>
+
+<!-- 11 APPENDIX -->
+<div class="page">
+  <div class="page-header"><span>W10 Dashboard | Technical Project Booklet</span></div>
+  <div class="section-num">11 / APPENDIX</div>
+  <h1>ภาคผนวก</h1>
+
+  <h2>11.1 File map ที่ควรรู้</h2>
+  <table>
+    <tr><th>ไฟล์/กลุ่มไฟล์</th><th>บทบาท</th></tr>
+    <tr><td>app/layout.tsx</td><td>Root metadata, Prompt font, ShellMigrationGate</td></tr>
+    <tr><td>app/page.tsx</td><td>Home dashboard client page</td></tr>
+    <tr><td>app/purchasing/page.tsx</td><td>PurchasingPageContent + purchasing UI</td></tr>
+    <tr><td>app/ot-summary/page.tsx</td><td>Shared OT content for contractor/employee</td></tr>
+    <tr><td>components/layout/*</td><td>AppShell, sidebar, drawer, PageHeader, route chrome</td></tr>
+    <tr><td>components/navigation/*</td><td>Canonical destinations + NavigationMenu</td></tr>
+    <tr><td>components/shop-order/*</td><td>Shop Order dashboard, table, form, dialogs</td></tr>
+    <tr><td>lib/googleSheet.ts</td><td>Sheets client and source-specific readers</td></tr>
+    <tr><td>lib/shop-order/repository.ts</td><td>CRUD, Drive session, finalize, cleanup, thumbnail</td></tr>
+    <tr><td>lib/shop-order/domain.ts</td><td>date conversion, filters, sort, summary, pagination</td></tr>
+    <tr><td>lib/shop-order/file-rules.ts</td><td>approved file types and signatures</td></tr>
+    <tr><td>lib/shop-order/attachment-lifecycle.ts</td><td>pending/active/scheduled-delete state</td></tr>
+    <tr><td>scripts/setup-shop-order-drive-oauth.mjs</td><td>local loopback OAuth setup utility</td></tr>
+    <tr><td>vercel.json</td><td>daily cleanup cron at 17 18 * * * UTC</td></tr>
+  </table>
+
+  <h2>11.2 Glossary</h2>
+  <table>
+    <tr><th>คำศัพท์</th><th>ความหมายในโครงงาน</th></tr>
+    <tr><td>Order1</td><td>ชีตหลักของ Shop Order; โครงสร้างข้อมูล A-K</td></tr>
+    <tr><td>ETAS Scan Data</td><td>ข้อมูลสแกนเวลา ใช้ประกอบตาราง OT ของ worker type เดียวกัน</td></tr>
+    <tr><td>drive.file</td><td>Google Drive scope ที่แอปจัดการเฉพาะไฟล์/โฟลเดอร์ที่สร้างหรือได้รับสิทธิ์ผ่านแอป</td></tr>
+    <tr><td>Pending upload</td><td>ไฟล์ที่สร้าง session แล้วแต่ยังไม่ถูกผูกกับ order</td></tr>
+    <tr><td>Partial success</td><td>บันทึก order สำเร็จ แต่ attachment ไม่สำเร็จ; UI ต้องให้ลองเพิ่มไฟล์ภายหลัง</td></tr>
+    <tr><td>Legacy file</td><td>ไฟล์/โฟลเดอร์เดิมจาก Apps Script ที่ OAuth B1 ไม่แก้และไม่ล้าง</td></tr>
+    <tr><td>no-store</td><td>response/cache policy ที่ใช้ป้องกันข้อมูล dashboard/thumbnail ค้าง</td></tr>
+    <tr><td>WAF</td><td>Web Application Firewall; ในระบบนี้ใช้จำกัด mutation traffic เป็น defense-in-depth</td></tr>
+    <tr><td>Resumable Upload</td><td>Google Drive upload protocol ที่ resume ได้เมื่อเกิดข้อผิดพลาด</td></tr>
+    <tr><td>Service Account</td><td>บัญชี Google Cloud สำหรับ server-to-server auth โดยไม่ต้อง user login</td></tr>
+  </table>
+
+  <div class="callout warn"><b>ขอบเขตความรับผิดชอบ</b>รูปเล่มนี้เป็นเอกสารวิเคราะห์และ runbook จาก code snapshot; ไม่ได้เปลี่ยน API, schema, environment, WAF หรือ source behavior ของโปรเจกต์.</div>
+
+  <div style="text-align:center; margin-top:40px; font-size:13px; color:var(--text-light);">— จบเอกสาร —</div>
+
+  <div class="page-footer">W10 Dashboard | Internal documentation | หน้า 14</div>
+</div>
+
+</body>
+</html>

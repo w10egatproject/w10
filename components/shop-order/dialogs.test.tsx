@@ -84,6 +84,8 @@ describe('Shop Order dialogs', () => {
     await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
     await user.type(screen.getByLabelText('เลขที่'), '123456');
     await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.selectOptions(screen.getByLabelText('หน่วยงานรับ'), 'กอง ก');
+    await user.selectOptions(screen.getByLabelText('ผู้รับ'), 'สมชาย');
     await user.click(screen.getByRole('button', { name: 'บันทึก' }));
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
       order: expect.objectContaining({ to: 'กอง ก', number: '123456', subject: 'งานใหม่' }),
@@ -147,8 +149,33 @@ describe('Shop Order dialogs', () => {
       screen.getByRole('img', { name: 'ตัวอย่างไฟล์แนบรายการ 7' }),
     );
 
+    fireEvent.error(screen.getByRole('img'));
+
     expect(screen.getByText('ไม่พบรูปตัวอย่าง')).toBeDefined();
     expect(screen.queryByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' })).toBeNull();
+  });
+  it('uses a public Drive download as a fallback after the thumbnail proxy fails', () => {
+    render(
+      <OrderDetailDialog
+        order={{
+          ...order,
+          fileUrl: 'https://drive.google.com/file/d/current-file-id/view',
+        }}
+        pending={false}
+        onClose={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    const proxyPreview = screen.getByRole('img');
+    fireEvent.error(proxyPreview);
+    const directPreview = screen.getByRole('img');
+    expect(directPreview.getAttribute('src')).toBe(
+      'https://drive.google.com/uc?export=download&id=current-file-id',
+    );
+    fireEvent.error(directPreview);
+    expect(screen.queryByRole('img')).toBeNull();
   });
   it('accepts only the approved attachment extensions and labels a PDF preview', async () => {
     const user = userEvent.setup();

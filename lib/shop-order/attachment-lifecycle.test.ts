@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAttachmentStorageName,
   deletionDate,
+  driveFileDownloadUrlFromCanonicalUrl,
   driveFileIdFromCanonicalUrl,
   isExpiredPending,
   parseAttachmentLifecycle,
@@ -167,6 +168,24 @@ describe('Shop Order attachment lifecycle', () => {
     ],
   ])('extracts the file id only from a canonical Drive URL', (url, fileId) => {
     expect(driveFileIdFromCanonicalUrl(url)).toBe(fileId);
+  });
+
+  it('builds a safe public Drive download URL from a canonical file URL', () => {
+    expect(
+      driveFileDownloadUrlFromCanonicalUrl(
+        'https://drive.google.com/file/d/1AbC_def-234/view?usp=sharing',
+      ),
+    ).toBe(
+      'https://drive.google.com/uc?export=download&id=1AbC_def-234',
+    );
+  });
+
+  it('does not build a public download URL from a non-canonical URL', () => {
+    expect(
+      driveFileDownloadUrlFromCanonicalUrl(
+        'https://drive.google.com/open?id=1AbC_def-234',
+      ),
+    ).toBeNull();
   });
 
   it.each([

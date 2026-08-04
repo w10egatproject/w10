@@ -151,3 +151,12 @@ export function driveFileIdFromCanonicalUrl(url: string): string | null {
     return null;
   }
 }
+
+export function driveFileDownloadUrlFromCanonicalUrl(
+  url: string,
+): string | null {
+  const fileId = driveFileIdFromCanonicalUrl(url);
+  return fileId
+    ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
+    : null;
+}

@@ -139,6 +139,8 @@ describe('ShopOrderDashboard', () => {
     await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
     await user.type(screen.getByLabelText('เลขที่'), '123456');
     await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.selectOptions(screen.getByLabelText('หน่วยงานรับ'), 'กอง ก');
+    await user.selectOptions(screen.getByLabelText('ผู้รับ'), 'สมชาย');
     await user.upload(
       screen.getByLabelText(/ไฟล์แนบ/),
       new File(['png'], 'photo.png', { type: 'image/png' }),
@@ -174,6 +176,8 @@ describe('ShopOrderDashboard', () => {
     await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
     await user.type(screen.getByLabelText('เลขที่'), '123456');
     await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.selectOptions(screen.getByLabelText('หน่วยงานรับ'), 'กอง ก');
+    await user.selectOptions(screen.getByLabelText('ผู้รับ'), 'สมชาย');
     await user.upload(screen.getByLabelText(/ไฟล์แนบ/), new File(['png'], 'photo.png', { type: 'image/png' }));
     await user.click(screen.getByRole('button', { name: 'บันทึก' }));
 
@@ -199,6 +203,8 @@ describe('ShopOrderDashboard', () => {
     await user.selectOptions(screen.getByLabelText('ถึง'), 'กอง ก');
     await user.type(screen.getByLabelText('เลขที่'), '123456');
     await user.type(screen.getByLabelText('เรื่อง'), 'งานใหม่');
+    await user.selectOptions(screen.getByLabelText('หน่วยงานรับ'), 'กอง ก');
+    await user.selectOptions(screen.getByLabelText('ผู้รับ'), 'สมชาย');
     await user.upload(screen.getByLabelText(/ไฟล์แนบ/), new File(['bad'], 'photo.png', { type: 'image/png' }));
     await user.click(screen.getByRole('button', { name: 'บันทึก' }));
 
