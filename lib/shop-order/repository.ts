@@ -21,6 +21,7 @@ import type {
   ShopOrder,
   ShopOrderBootstrap,
   ShopOrderInput,
+  AttachmentOutcome,
   ShopOrderMutationResult,
   UploadMetadata,
   UploadSession,
@@ -107,16 +108,19 @@ export interface ShopOrderRepository {
   create(
     order: ShopOrderInput,
     uploadedFileId?: string,
+    repairUploadedFileId?: string,
   ): Promise<ShopOrderMutationResult>;
   update(
     no: number,
     order: ShopOrderInput,
     uploadedFileId?: string,
+    repairUploadedFileId?: string,
   ): Promise<ShopOrderMutationResult>;
   remove(no: number): Promise<void>;
   createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
   getAttachmentThumbnail(
     no: number,
+    slot?: 'primary' | 'repair',
   ): Promise<{ bytes: Uint8Array; contentType: string } | null>;
   cleanupAttachments(): Promise<AttachmentCleanupSummary>;
 }
@@ -187,7 +191,7 @@ function parseSequence(value: unknown): number | null {
 }
 
 function parseUpdatedRow(updatedRange: string | null | undefined): number {
-  const match = /!A(\d+):K\d+$/.exec(updatedRange ?? '');
+  const match = /!A(\d+):L\d+$/.exec(updatedRange ?? '');
   const rowNumber = match ? Number(match[1]) : Number.NaN;
   if (!Number.isSafeInteger(rowNumber) || rowNumber < 2) {
     throw new Error('Google Sheets did not return the appended row');
@@ -362,6 +366,7 @@ function normalizeOrderInput(order: ShopOrderInput): ShopOrderInput {
 function serializeOrder(
   order: ShopOrderInput,
   fileUrl: string,
+  repairFileUrl: string,
 ): Array<string | number> {
   return [
     SOURCE_DEPARTMENT,
@@ -374,6 +379,7 @@ function serializeOrder(
     isoToSheetSerial(order.dateOut) ?? '',
     order.note,
     fileUrl,
+    repairFileUrl,
   ];
 }
 
@@ -381,12 +387,14 @@ function toShopOrder(
   no: number,
   order: ShopOrderInput,
   fileUrl: string,
+  repairFileUrl: string,
 ): ShopOrder {
   return {
     no,
     from: SOURCE_DEPARTMENT,
     ...order,
     fileUrl,
+    repairFileUrl,
   };
 }
 
@@ -450,7 +458,7 @@ export function createShopOrderRepository(
     const rowNumber = await locateRow(no);
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: config.spreadsheetId,
-      range: `${orderSheet}!A${rowNumber}:K${rowNumber}`,
+      range: `${orderSheet}!A${rowNumber}:L${rowNumber}`,
       valueRenderOption: 'UNFORMATTED_VALUE',
       dateTimeRenderOption: 'SERIAL_NUMBER',
     });
@@ -472,7 +480,7 @@ export function createShopOrderRepository(
     const rowNumber = index + 2;
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: config.spreadsheetId,
-      range: `${orderSheet}!A${rowNumber}:K${rowNumber}`,
+      range: `${orderSheet}!A${rowNumber}:L${rowNumber}`,
       valueRenderOption: 'UNFORMATTED_VALUE',
       dateTimeRenderOption: 'SERIAL_NUMBER',
     });
@@ -732,6 +740,28 @@ export function createShopOrderRepository(
     );
   }
 
+  async function finalizeOptionalAttachment(
+    fileId: string | undefined,
+    requestedOrderNumber: string,
+  ): Promise<{ upload?: ActivatedUpload; outcome: AttachmentOutcome }> {
+    if (!fileId) return { outcome: { status: 'none' } };
+
+    try {
+      const upload = await finalizeUpload(fileId, requestedOrderNumber);
+      return {
+        upload,
+        outcome: {
+          status: 'attached',
+          fileId: upload.fileId,
+          fileUrl: upload.webViewLink,
+        },
+      };
+    } catch (error) {
+      if (!(error instanceof AttachmentFinalizationError)) throw error;
+      return { outcome: attachmentWarning() };
+    }
+  }
+
   async function restorePendingUpload(
     upload: CompensatableUpload,
   ): Promise<void> {
@@ -865,11 +895,15 @@ export function createShopOrderRepository(
 
   async function getAttachmentThumbnail(
     no: number,
+    slot: 'primary' | 'repair' = 'primary',
   ): Promise<{ bytes: Uint8Array; contentType: string } | null> {
     const current = await readLocatedOrderForThumbnail(no);
     if (!current) return null;
 
-    const fileId = driveFileIdFromCanonicalUrl(current.order.fileUrl);
+    const fileUrl = slot === 'repair'
+      ? current.order.repairFileUrl
+      : current.order.fileUrl;
+    const fileId = driveFileIdFromCanonicalUrl(fileUrl);
     if (!fileId) return null;
 
     let metadataResponse: Awaited<
@@ -946,7 +980,7 @@ export function createShopOrderRepository(
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: config.spreadsheetId,
       ranges: [
-        `${orderSheet}!A2:K`,
+        `${orderSheet}!A2:L`,
         `${quoteSheetName('DepartmentList')}!A2:A`,
         `${quoteSheetName('ReceiverList')}!A2:A`,
       ],
@@ -972,38 +1006,46 @@ export function createShopOrderRepository(
   async function create(
     input: ShopOrderInput,
     uploadedFileId?: string,
+    repairUploadedFileId?: string,
   ): Promise<ShopOrderMutationResult> {
     const order = normalizeOrderInput(input);
     await assertDepartmentAllowed(order.to);
     let activatedUpload: ActivatedUpload | undefined;
-    let attachment: ShopOrderMutationResult['attachment'] = {
-      status: 'none',
-    };
-    if (uploadedFileId) {
-      try {
-        activatedUpload = await finalizeUpload(
-          uploadedFileId,
-          order.number,
-        );
-        attachment = {
-          status: 'attached',
-          fileId: activatedUpload.fileId,
-          fileUrl: activatedUpload.webViewLink,
-        };
-      } catch (error) {
-        if (!(error instanceof AttachmentFinalizationError)) throw error;
-        attachment = attachmentWarning();
-      }
+    let activatedRepairUpload: ActivatedUpload | undefined;
+    let attachment: AttachmentOutcome = { status: 'none' };
+    let repairAttachment: AttachmentOutcome = { status: 'none' };
+
+    try {
+      const primary = await finalizeOptionalAttachment(
+        uploadedFileId,
+        order.number,
+      );
+      activatedUpload = primary.upload;
+      attachment = primary.outcome;
+      const repair = await finalizeOptionalAttachment(
+        repairUploadedFileId,
+        order.number,
+      );
+      activatedRepairUpload = repair.upload;
+      repairAttachment = repair.outcome;
+    } catch (error) {
+      if (activatedUpload) await restorePendingUpload(activatedUpload);
+      if (activatedRepairUpload) await restorePendingUpload(activatedRepairUpload);
+      throw error;
     }
+
     const fileUrl = activatedUpload?.webViewLink ?? '';
+    const repairFileUrl = activatedRepairUpload?.webViewLink ?? '';
     try {
       const appended = await sheets.spreadsheets.values.append({
         spreadsheetId: config.spreadsheetId,
-        range: `${orderSheet}!A:K`,
+        range: `${orderSheet}!A:L`,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         includeValuesInResponse: false,
-        requestBody: { values: [['', ...serializeOrder(order, fileUrl)]] },
+        requestBody: {
+          values: [['', ...serializeOrder(order, fileUrl, repairFileUrl)]],
+        },
       });
       const rowNumber = parseUpdatedRow(
         appended.data?.updates?.updatedRange,
@@ -1017,13 +1059,13 @@ export function createShopOrderRepository(
       });
       await formatDateCells(rowNumber);
       return {
-        order: toShopOrder(no, order, fileUrl),
+        order: toShopOrder(no, order, fileUrl, repairFileUrl),
         attachment,
+        repairAttachment,
       };
     } catch (error) {
-      if (activatedUpload) {
-        await restorePendingUpload(activatedUpload);
-      }
+      if (activatedUpload) await restorePendingUpload(activatedUpload);
+      if (activatedRepairUpload) await restorePendingUpload(activatedRepairUpload);
       throw error;
     }
   }
@@ -1032,32 +1074,38 @@ export function createShopOrderRepository(
     no: number,
     input: ShopOrderInput,
     uploadedFileId?: string,
+    repairUploadedFileId?: string,
   ): Promise<ShopOrderMutationResult> {
     const order = normalizeOrderInput(input);
     await assertDepartmentAllowed(order.to);
     const current = await readLocatedOrder(no);
     let activatedUpload: ActivatedUpload | undefined;
-    let attachment: ShopOrderMutationResult['attachment'] = {
-      status: 'none',
-    };
-    if (uploadedFileId) {
-      try {
-        activatedUpload = await finalizeUpload(
-          uploadedFileId,
-          order.number,
-        );
-        attachment = {
-          status: 'attached',
-          fileId: activatedUpload.fileId,
-          fileUrl: activatedUpload.webViewLink,
-        };
-      } catch (error) {
-        if (!(error instanceof AttachmentFinalizationError)) throw error;
-        attachment = attachmentWarning();
-      }
+    let activatedRepairUpload: ActivatedUpload | undefined;
+    let attachment: AttachmentOutcome = { status: 'none' };
+    let repairAttachment: AttachmentOutcome = { status: 'none' };
+
+    try {
+      const primary = await finalizeOptionalAttachment(
+        uploadedFileId,
+        order.number,
+      );
+      activatedUpload = primary.upload;
+      attachment = primary.outcome;
+      const repair = await finalizeOptionalAttachment(
+        repairUploadedFileId,
+        order.number,
+      );
+      activatedRepairUpload = repair.upload;
+      repairAttachment = repair.outcome;
+    } catch (error) {
+      if (activatedUpload) await restorePendingUpload(activatedUpload);
+      if (activatedRepairUpload) await restorePendingUpload(activatedRepairUpload);
+      throw error;
     }
-    const fileUrl =
-      activatedUpload?.webViewLink ?? current.order.fileUrl;
+
+    const fileUrl = activatedUpload?.webViewLink ?? current.order.fileUrl;
+    const repairFileUrl =
+      activatedRepairUpload?.webViewLink ?? current.order.repairFileUrl;
     try {
       const rowNumber = await locateRow(no);
       if (rowNumber !== current.rowNumber) {
@@ -1065,9 +1113,11 @@ export function createShopOrderRepository(
       }
       await sheets.spreadsheets.values.update({
         spreadsheetId: config.spreadsheetId,
-        range: `${orderSheet}!B${rowNumber}:K${rowNumber}`,
+        range: `${orderSheet}!B${rowNumber}:L${rowNumber}`,
         valueInputOption: 'RAW',
-        requestBody: { values: [serializeOrder(order, fileUrl)] },
+        requestBody: {
+          values: [serializeOrder(order, fileUrl, repairFileUrl)],
+        },
       });
       await formatDateCells(rowNumber);
       if (activatedUpload) {
@@ -1077,18 +1127,24 @@ export function createShopOrderRepository(
           'replaced',
         );
       }
+      if (activatedRepairUpload) {
+        await scheduleOwnedAttachmentDeletion(
+          current.order.repairFileUrl,
+          current.order.number,
+          'replaced',
+        );
+      }
       return {
-        order: toShopOrder(no, order, fileUrl),
+        order: toShopOrder(no, order, fileUrl, repairFileUrl),
         attachment,
+        repairAttachment,
       };
     } catch (error) {
-      if (activatedUpload) {
-        await restorePendingUpload(activatedUpload);
-      }
+      if (activatedUpload) await restorePendingUpload(activatedUpload);
+      if (activatedRepairUpload) await restorePendingUpload(activatedRepairUpload);
       throw error;
     }
   }
-
   async function remove(no: number): Promise<void> {
     const current = await readLocatedOrder(no);
     const rowNumber = await locateRow(no);
@@ -1097,11 +1153,16 @@ export function createShopOrderRepository(
     }
     await sheets.spreadsheets.values.clear({
       spreadsheetId: config.spreadsheetId,
-      range: `${orderSheet}!A${rowNumber}:K${rowNumber}`,
+      range: `${orderSheet}!A${rowNumber}:L${rowNumber}`,
       requestBody: {},
     });
     await scheduleOwnedAttachmentDeletion(
       current.order.fileUrl,
+      current.order.number,
+      'order_deleted',
+    );
+    await scheduleOwnedAttachmentDeletion(
+      current.order.repairFileUrl,
       current.order.number,
       'order_deleted',
     );

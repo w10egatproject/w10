@@ -8,7 +8,7 @@ import type { ShopOrder } from '@/lib/shop-order/types';
 const order: ShopOrder = {
   no: 7, from: 'หสบ-ช.', to: 'กอง ก', number: '123456',
   dateIn: '2026-07-01', subject: 'ทดสอบ', receivingUnit: 'W11',
-  receiverName: 'สมชาย', dateOut: null, note: 'หมายเหตุ', fileUrl: '',
+  receiverName: 'สมชาย', dateOut: null, note: 'หมายเหตุ', fileUrl: '', repairFileUrl: '',
 };
 
 afterEach(cleanup);
@@ -191,5 +191,21 @@ describe('Shop Order dialogs', () => {
     );
     expect(screen.getByText('PDF')).toBeDefined();
     expect(screen.getByText('report.pdf')).toBeDefined();
+  });
+  it('shows a second optional repair attachment input', () => {
+    render(
+      <OrderFormDialog
+        mode="create"
+        departments={[]}
+        receivers={[]}
+        pending={false}
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const repairAttachment = screen.getByLabelText('repair attachment');
+    expect(repairAttachment).toHaveProperty('type', 'file');
+    expect(repairAttachment).toHaveProperty('required', false);
   });
 });

@@ -54,7 +54,7 @@ function makeDependencies() {
           if (range.endsWith('!A2:A')) {
             return Promise.resolve({ data: { values: [[1]] } });
           }
-          if (/!A2:K2$/.test(range)) {
+          if (/!A2:L2$/.test(range)) {
             return Promise.resolve({
               data: {
                 values: [[1, 'หสบ-ช.', 'หบพ-ช.', '123456', 46204, 'เรื่อง', 'W11', '', '', '', '']],
@@ -64,7 +64,7 @@ function makeDependencies() {
           return Promise.resolve({ data: { values: [] } });
         }),
         append: vi.fn().mockResolvedValue({
-          data: { updates: { updatedRange: "'Order1'!A3:K3" } },
+          data: { updates: { updatedRange: "'Order1'!A3:L3" } },
         }),
         update: vi.fn().mockResolvedValue({ data: {} }),
         clear: vi.fn().mockResolvedValue({ data: {} }),
@@ -156,7 +156,7 @@ function setCurrentAttachment(
       if (range.endsWith('!A2:A')) {
         return Promise.resolve({ data: { values: [[1]] } });
       }
-      if (/!A2:K2$/.test(range)) {
+      if (/!A2:L2$/.test(range)) {
         return Promise.resolve({
           data: {
             values: [[
@@ -395,7 +395,7 @@ describe('ShopOrderRepository', () => {
     });
     expect(sheets.spreadsheets.values.batchGet).toHaveBeenCalledWith({
       spreadsheetId: 'spreadsheet-id',
-      ranges: ["'Order1'!A2:K", "'DepartmentList'!A2:A", "'ReceiverList'!A2:A"],
+      ranges: ["'Order1'!A2:L", "'DepartmentList'!A2:A", "'ReceiverList'!A2:A"],
       valueRenderOption: 'UNFORMATTED_VALUE',
       dateTimeRenderOption: 'SERIAL_NUMBER',
     });
@@ -594,6 +594,7 @@ describe('ShopOrderRepository', () => {
             '',
             '',
             '',
+            '',
           ]],
         },
       }),
@@ -652,8 +653,8 @@ describe('ShopOrderRepository', () => {
   it('restores pending state when Drive returns an unsafe finalized link', async () => {
     const { dependencies, authenticatedFetch, drive } =
       makeDependencies();
-    authenticatedFetch.mockReset().mockResolvedValue(
-      new Response(PNG_BYTES, { status: 206 }),
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
     );
     drive.files.update.mockResolvedValueOnce({
       data: {
@@ -697,8 +698,8 @@ describe('ShopOrderRepository', () => {
   it('activates a verified pending file before appending RAW values and returns the attachment outcome', async () => {
     const { dependencies, authenticatedFetch, drive, sheets } = makeDependencies();
     dependencies.now = () => new Date('2026-07-27T08:10:00.000Z');
-    authenticatedFetch.mockReset().mockResolvedValue(
-      new Response(PNG_BYTES, { status: 206 }),
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
     );
     const repository = createShopOrderRepository(dependencies);
 
@@ -726,7 +727,7 @@ describe('ShopOrderRepository', () => {
     expect(sheets.spreadsheets.values.append).toHaveBeenCalledWith(
       expect.objectContaining({
         spreadsheetId: 'spreadsheet-id',
-        range: "'Order1'!A:K",
+        range: "'Order1'!A:L",
         valueInputOption: 'RAW',
         requestBody: {
           values: [[
@@ -741,6 +742,7 @@ describe('ShopOrderRepository', () => {
             '',
             '',
             'https://drive.google.com/file/d/generated-id/view',
+            '',
           ]],
         },
       }),
@@ -784,9 +786,99 @@ describe('ShopOrderRepository', () => {
         fileUrl:
           'https://drive.google.com/file/d/generated-id/view',
       },
+      repairAttachment: { status: 'none' },
     });
   });
 
+  it('finalizes both uploads and writes Pic and Picแจ้งซ่อม links', async () => {
+    const { dependencies, authenticatedFetch, drive, sheets } =
+      makeDependencies();
+    const repository = createShopOrderRepository(dependencies);
+    const primaryUrl =
+      'https://drive.google.com/file/d/generated-id/view';
+    const repairUrl =
+      'https://drive.google.com/file/d/repair-generated-id/view';
+
+    drive.files.get.mockImplementation(
+      ({ fileId }: { fileId: string }) =>
+        Promise.resolve({
+          data: {
+            id: fileId,
+            name: storedUploadName,
+            mimeType: uploadMetadata.mimeType,
+            size: String(uploadMetadata.size),
+            parents: ['folder-id'],
+            appProperties: {
+              status: 'pending',
+              pendingSince,
+              orderNumber: validOrder.number,
+              expectedName: storedUploadName,
+              expectedMime: uploadMetadata.mimeType,
+              expectedSize: String(uploadMetadata.size),
+            },
+            webViewLink:
+              'https://drive.google.com/file/d/' + fileId + '/view',
+            trashed: false,
+          },
+        }),
+    );
+    drive.files.update.mockImplementation(
+      ({ fileId }: { fileId: string }) =>
+        Promise.resolve({
+          data: {
+            webViewLink:
+              'https://drive.google.com/file/d/' + fileId + '/view',
+          },
+        }),
+    );
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
+    );
+
+    const created = await repository.create(
+      validOrder,
+      'generated-id',
+      'repair-generated-id',
+    );
+
+    expect(sheets.spreadsheets.values.append).toHaveBeenCalledWith(
+      expect.objectContaining({
+        range: "'Order1'!A:L",
+        requestBody: {
+          values: [[
+            expect.anything(),
+            expect.anything(),
+            expect.anything(),
+            '123456',
+            expect.any(Number),
+            expect.any(String),
+            'W11',
+            expect.any(String),
+            '',
+            '',
+            primaryUrl,
+            repairUrl,
+          ]],
+        },
+      }),
+    );
+    expect(created).toMatchObject({
+      order: {
+        fileUrl: primaryUrl,
+        repairFileUrl: repairUrl,
+      },
+      attachment: {
+        status: 'attached',
+        fileId: 'generated-id',
+        fileUrl: primaryUrl,
+      },
+      repairAttachment: {
+        status: 'attached',
+        fileId: 'repair-generated-id',
+        fileUrl: repairUrl,
+      },
+    });
+  });
   it('returns no attachment outcome when a new order has no upload', async () => {
     const { dependencies, drive } = makeDependencies();
     const repository = createShopOrderRepository(dependencies);
@@ -812,12 +904,12 @@ describe('ShopOrderRepository', () => {
     expect(aColumnReads).toHaveLength(2);
     expect(sheets.spreadsheets.values.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        range: "'Order1'!B2:K2",
+        range: "'Order1'!B2:L2",
         valueInputOption: 'RAW',
         requestBody: {
           values: [[
             'หสบ-ช.', 'หบพ-ช.', '123456', expect.any(Number), 'แก้ไข',
-            'W11', 'สมชาย', '', '', '',
+            'W11', 'สมชาย', '', '', '', '',
           ]],
         },
       }),
@@ -845,7 +937,7 @@ describe('ShopOrderRepository', () => {
         if (range.endsWith('!A2:A')) {
           return Promise.resolve({ data: { values: [[1]] } });
         }
-        if (/!A2:K2$/.test(range)) {
+        if (/!A2:L2$/.test(range)) {
           return Promise.resolve({
             data: {
               values: [[
@@ -899,6 +991,7 @@ describe('ShopOrderRepository', () => {
             '',
             '',
             currentFileUrl,
+            '',
           ]],
         },
       }),
@@ -916,7 +1009,7 @@ describe('ShopOrderRepository', () => {
     expect(aColumnReads).toHaveLength(2);
     expect(sheets.spreadsheets.values.clear).toHaveBeenCalledWith({
       spreadsheetId: 'spreadsheet-id',
-      range: "'Order1'!A2:K2",
+      range: "'Order1'!A2:L2",
       requestBody: {},
     });
     expect(drive.files.update).not.toHaveBeenCalled();
@@ -930,8 +1023,8 @@ describe('ShopOrderRepository', () => {
       sheets,
       'https://drive.google.com/file/d/old-oauth-file-id/view',
     );
-    authenticatedFetch.mockReset().mockResolvedValue(
-      new Response(PNG_BYTES, { status: 206 }),
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
     );
     drive.files.get
       .mockResolvedValueOnce({
@@ -1186,8 +1279,8 @@ describe('ShopOrderRepository', () => {
       sheets,
       'https://drive.google.com/file/d/old-oauth-file-id/view',
     );
-    authenticatedFetch.mockReset().mockResolvedValue(
-      new Response(PNG_BYTES, { status: 206 }),
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
     );
     drive.files.get
       .mockResolvedValueOnce({
@@ -1254,8 +1347,8 @@ describe('ShopOrderRepository', () => {
       sheets,
       'https://drive.google.com/file/d/old-oauth-file-id/view',
     );
-    authenticatedFetch.mockReset().mockResolvedValue(
-      new Response(PNG_BYTES, { status: 206 }),
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
     );
     sheets.spreadsheets.values.update.mockRejectedValueOnce(
       new Error('sheet failed'),
@@ -1274,8 +1367,8 @@ describe('ShopOrderRepository', () => {
 
   it('restores pending metadata and removes its new permission when Sheet append fails', async () => {
     const { dependencies, authenticatedFetch, sheets, drive } = makeDependencies();
-    authenticatedFetch.mockReset().mockResolvedValue(
-      new Response(PNG_BYTES, { status: 206 }),
+    authenticatedFetch.mockReset().mockImplementation(
+      async () => new Response(PNG_BYTES, { status: 206 }),
     );
     sheets.spreadsheets.values.append.mockRejectedValue(new Error('sheet failed'));
     const repository = createShopOrderRepository(dependencies);

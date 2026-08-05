@@ -36,9 +36,22 @@ describe('Shop Order attachment thumbnail route', () => {
     expect(response.headers.get('Content-Security-Policy')).toBe(
       "default-src 'none'",
     );
-    expect(repository.getAttachmentThumbnail).toHaveBeenCalledWith(7);
+    expect(repository.getAttachmentThumbnail).toHaveBeenCalledWith(7, 'primary');
   });
 
+  it('passes the repair attachment slot to the repository', async () => {
+    const response = await GET(
+      new Request(
+        'https://dashboard.example/api/shop-order/attachment-thumbnail?no=7&slot=repair',
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(repository.getAttachmentThumbnail).toHaveBeenCalledWith(
+      7,
+      'repair',
+    );
+  });
   it.each([
     '',
     '?no=',

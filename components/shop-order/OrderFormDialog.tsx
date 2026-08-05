@@ -22,9 +22,139 @@ interface Props {
   pending: boolean;
   progress?: number;
   onClose: () => void;
-  onSubmit: (value: { order: ShopOrderInput; file?: File }) => void;
+  onSubmit: (value: { order: ShopOrderInput; file?: File; repairFile?: File }) => void;
 }
 
+interface AttachmentFieldProps {
+  label: string;
+  inputLabel: string;
+  file?: File;
+  pending: boolean;
+  onFileChange: (file?: File) => void;
+}
+
+function AttachmentField({
+  label,
+  inputLabel,
+  file,
+  pending,
+  onFileChange,
+}: AttachmentFieldProps) {
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const selectFile = (nextFile?: File) => {
+    const nextPreviewUrl = nextFile?.type.startsWith('image/')
+      ? URL.createObjectURL(nextFile)
+      : '';
+    setPreviewUrl(nextPreviewUrl);
+    onFileChange(nextFile);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  return (
+    <div className="text-sm font-bold sm:col-span-2">
+      <span>{label} (ไม่เกิน 10 MB)</span>
+      {!file ? (
+        <div
+          onDragOver={(event) => {
+            event.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={(event) => {
+            event.preventDefault();
+            setIsDragging(false);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            setIsDragging(false);
+            selectFile(event.dataTransfer.files?.[0]);
+          }}
+          onClick={() => fileInputRef.current?.click()}
+          className={isDragging
+            ? 'group mt-1 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-indigo-500 bg-indigo-50/80 p-6 text-center shadow-md ring-4 ring-indigo-500/10 transition-all'
+            : 'group mt-1 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/80 p-6 text-center transition-all hover:border-indigo-400 hover:bg-indigo-50/30'}
+        >
+          <label className="sr-only">
+            {label}
+            <input
+              ref={fileInputRef}
+              aria-label={inputLabel}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf"
+              capture="environment"
+              onChange={(event) => selectFile(event.target.files?.[0])}
+              className="sr-only"
+            />
+          </label>
+          <div className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-indigo-100/80 text-indigo-600 transition-transform group-hover:scale-110">
+            <UploadCloud className="h-6 w-6" />
+          </div>
+          <p className="text-sm font-bold text-slate-800">
+            คลิก หรือลากไฟล์มาวางที่นี่เพื่อเพิ่มไฟล์แนบ
+          </p>
+          <p className="mt-1 text-xs font-normal text-slate-500">
+            รองรับรูปภาพ (JPG, PNG, WEBP) หรือไฟล์ PDF (ขนาดไม่เกิน 10 MB)
+          </p>
+        </div>
+      ) : (
+        <div className="mt-1 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <input
+            ref={fileInputRef}
+            aria-label={inputLabel}
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp,.pdf"
+            capture="environment"
+            onChange={(event) => selectFile(event.target.files?.[0])}
+            className="sr-only"
+          />
+          <div className="flex min-w-0 items-center gap-3">
+            {previewUrl ? (
+              <Image
+                src={previewUrl}
+                alt={'ตัวอย่างไฟล์ ' + file.name}
+                width={80}
+                height={80}
+                unoptimized
+                className="h-20 w-20 rounded-lg border border-slate-200 object-cover"
+              />
+            ) : (
+              <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg bg-slate-200 text-xs font-bold text-slate-600">
+                {file.type === 'application/pdf' ? 'PDF' : 'ไฟล์'}
+              </div>
+            )}
+            <div className="min-w-0 font-normal">
+              <p className="truncate text-sm font-bold text-slate-800">{file.name}</p>
+              <p className="text-xs text-slate-500">
+                {(file.size / 1024).toLocaleString('th-TH', {
+                  maximumFractionDigits: 1,
+                })}{' '}
+                KB
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => selectFile(undefined)}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
+            aria-label={label === 'ไฟล์แนบ' ? 'ลบไฟล์' : 'ลบ' + label}
+          >
+            <Trash2 className="h-4 w-4 text-rose-600" />
+            <span>ลบไฟล์</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 export function OrderFormDialog({
   mode,
   order,
@@ -60,40 +190,7 @@ export function OrderFormDialog({
         },
   );
   const [file, setFile] = useState<File>();
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
-  const previewUrlRef = useRef('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
-    };
-  }, []);
-
-  const selectFile = (nextFile?: File) => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = '';
-    }
-    setFile(nextFile);
-    if (nextFile?.type.startsWith('image/')) {
-      const url = URL.createObjectURL(nextFile);
-      previewUrlRef.current = url;
-      setPreviewUrl(url);
-    } else {
-      setPreviewUrl('');
-    }
-  };
-
-  const removeFile = () => {
-    selectFile(undefined);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  const [repairFile, setRepairFile] = useState<File>();
 
   const set = (patch: Partial<ShopOrderInput>) =>
     setValue((current) => ({ ...current, ...patch }));
@@ -131,7 +228,7 @@ export function OrderFormDialog({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit({ order: value, file });
+            onSubmit({ order: value, file, repairFile });
           }}
           className="grid gap-4 sm:grid-cols-2"
         >
@@ -223,102 +320,20 @@ export function OrderFormDialog({
               className="mt-1 w-full rounded-xl border border-slate-300 p-3 font-normal"
             />
           </label>
-          <div className="text-sm font-bold sm:col-span-2">
-            <span>ไฟล์แนบ (ไม่เกิน 10 MB)</span>
-            {!file ? (
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={(e) => {
-                  e.preventDefault();
-                  setIsDragging(false);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDragging(false);
-                  const droppedFile = e.dataTransfer.files?.[0];
-                  if (droppedFile) selectFile(droppedFile);
-                }}
-                onClick={() => fileInputRef.current?.click()}
-                className={`group mt-1 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
-                  isDragging
-                    ? 'border-indigo-500 bg-indigo-50/80 shadow-md ring-4 ring-indigo-500/10'
-                    : 'border-slate-300 bg-slate-50/80 hover:border-indigo-400 hover:bg-indigo-50/30'
-                }`}
-              >
-                <label className="sr-only">
-                  ไฟล์แนบ (ไม่เกิน 10 MB)
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp,.pdf"
-                    capture="environment"
-                    onChange={(e) => selectFile(e.target.files?.[0])}
-                    className="sr-only"
-                  />
-                </label>
-                <div className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-indigo-100/80 text-indigo-600 transition-transform group-hover:scale-110">
-                  <UploadCloud className="h-6 w-6" />
-                </div>
-                <p className="text-sm font-bold text-slate-800">
-                  คลิก หรือลากไฟล์มาวางที่นี่เพื่อเพิ่มไฟล์แนบ
-                </p>
-                <p className="mt-1 text-xs font-normal text-slate-500">
-                  รองรับรูปภาพ (JPG, PNG, WEBP) หรือไฟล์ PDF (ขนาดไม่เกิน 10 MB)
-                </p>
-              </div>
-            ) : (
-              <div className="mt-1 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.pdf"
-                  capture="environment"
-                  onChange={(e) => selectFile(e.target.files?.[0])}
-                  className="sr-only"
-                />
-                <div className="flex items-center gap-3 min-w-0">
-                  {previewUrl ? (
-                    <Image
-                      src={previewUrl}
-                      alt={`ตัวอย่างไฟล์ ${file.name}`}
-                      width={80}
-                      height={80}
-                      unoptimized
-                      className="h-20 w-20 rounded-lg border border-slate-200 object-cover"
-                    />
-                  ) : (
-                    <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg bg-slate-200 text-xs font-bold text-slate-600">
-                      {file.type === 'application/pdf' ? 'PDF' : 'ไฟล์'}
-                    </div>
-                  )}
-                  <div className="min-w-0 font-normal">
-                    <p className="truncate text-sm font-bold text-slate-800">
-                      {file.name}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {(file.size / 1024).toLocaleString('th-TH', {
-                        maximumFractionDigits: 1,
-                      })}{' '}
-                      KB
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={removeFile}
-                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50"
-                  aria-label="ลบไฟล์"
-                >
-                  <Trash2 className="h-4 w-4 text-rose-600" />
-                  <span>ลบไฟล์</span>
-                </button>
-              </div>
-            )}
-          </div>
+          <AttachmentField
+            label="ไฟล์แนบ"
+            inputLabel="ไฟล์แนบ"
+            file={file}
+            pending={pending}
+            onFileChange={setFile}
+          />
+          <AttachmentField
+            label="Pic แจ้งซ่อม"
+            inputLabel="repair attachment"
+            file={repairFile}
+            pending={pending}
+            onFileChange={setRepairFile}
+          />
           {pending && progress !== undefined && (
             <div aria-live="polite" className="sm:col-span-2">
               <div className="h-2 overflow-hidden rounded-full bg-slate-200">

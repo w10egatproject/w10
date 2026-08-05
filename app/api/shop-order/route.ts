@@ -95,14 +95,15 @@ export async function POST(request: Request): Promise<Response> {
   if (!parsed.ok) return parsed.response;
   const order = parsed.value.order;
   const uploadedFile = readUploadedFileId(parsed.value.uploadedFileId);
-  if (!isOrderInput(order) || !uploadedFile.ok) return validationError();
+  const repairUploadedFile = readUploadedFileId(parsed.value.repairUploadedFileId);
+  if (!isOrderInput(order) || !uploadedFile.ok || !repairUploadedFile.ok) return validationError();
 
   try {
     const departmentError = await validateDepartment(order.to);
     if (departmentError) return departmentError;
     const repository = await getShopOrderRepository();
     return jsonSuccess(
-      await repository.create(order, uploadedFile.value),
+      await repository.create(order, uploadedFile.value, repairUploadedFile.value),
       201,
     );
   } catch {
@@ -118,10 +119,12 @@ export async function PATCH(request: Request): Promise<Response> {
   if (!parsed.ok) return parsed.response;
   const order = parsed.value.order;
   const uploadedFile = readUploadedFileId(parsed.value.uploadedFileId);
+  const repairUploadedFile = readUploadedFileId(parsed.value.repairUploadedFileId);
   if (
     !isSequence(parsed.value.no) ||
     !isOrderInput(order) ||
-    !uploadedFile.ok
+    !uploadedFile.ok ||
+    !repairUploadedFile.ok
   ) {
     return validationError();
   }
@@ -135,6 +138,7 @@ export async function PATCH(request: Request): Promise<Response> {
         parsed.value.no,
         order,
         uploadedFile.value,
+        repairUploadedFile.value,
       ),
     );
   } catch {

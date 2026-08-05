@@ -182,6 +182,7 @@ export function parseSheetRow(row: readonly unknown[]): ShopOrder {
     dateOut: sheetDateToIso(row[8]),
     note: textCell(row[9]),
     fileUrl: textCell(row[10]),
+    repairFileUrl: textCell(row[11]),
   };
 }
 
@@ -204,6 +205,7 @@ function matchesQuery(order: ShopOrder, query: string): boolean {
     order.receiverName,
     order.note,
     order.fileUrl,
+    order.repairFileUrl,
   ];
 
   return searchableValues.some((value) =>

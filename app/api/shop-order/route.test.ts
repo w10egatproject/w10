@@ -36,11 +36,13 @@ const savedOrder: ShopOrder = {
   no: 7,
   from: 'หสบ-ช.',
   fileUrl: '',
+  repairFileUrl: '',
   ...validOrderInput,
 };
 const savedMutation: ShopOrderMutationResult = {
   order: savedOrder,
   attachment: { status: 'none' },
+  repairAttachment: { status: 'none' },
 };
 
 const bootstrap: ShopOrderBootstrap = {
@@ -101,6 +103,7 @@ describe('Shop Order route handlers', () => {
     expect(repository.create).toHaveBeenCalledWith(
       validOrderInput,
       'generated-file-id',
+      undefined,
     );
   });
 
@@ -128,6 +131,7 @@ describe('Shop Order route handlers', () => {
       7,
       validOrderInput,
       'replacement-id',
+      undefined,
     );
     expect(deleteResponse.status).toBe(200);
     expect(await deleteResponse.json()).toEqual({

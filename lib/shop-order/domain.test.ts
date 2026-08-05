@@ -24,11 +24,12 @@ const makeOrder = (patch: Partial<ShopOrder> = {}): ShopOrder => ({
   dateOut: null,
   note: '',
   fileUrl: '',
+  repairFileUrl: '',
   ...patch,
 });
 
 describe('Shop Order domain', () => {
-  it('maps A-K, trims text, and derives status only from column I', () => {
+  it('maps A-L, trims text, and derives status only from column I', () => {
     const order = parseSheetRow([
       '7',
       ' หสบ-ช. ',
@@ -41,7 +42,7 @@ describe('Shop Order domain', () => {
       '03/07/2569',
       ' หมายเหตุ ',
       ' https://drive.google.com/file/d/x/view ',
-      'ignored',
+      ' https://drive.google.com/file/d/repair/view ',
     ]);
 
     expect(order).toEqual({
@@ -56,6 +57,7 @@ describe('Shop Order domain', () => {
       dateOut: '2026-07-03',
       note: 'หมายเหตุ',
       fileUrl: 'https://drive.google.com/file/d/x/view',
+      repairFileUrl: 'https://drive.google.com/file/d/repair/view',
     });
     expect(getOrderStatus(makeOrder({ note: 'เสร็จแล้ว' }))).toBe('wait');
     expect(getOrderStatus(makeOrder({ dateOut: '2026-07-03' }))).toBe('done');
