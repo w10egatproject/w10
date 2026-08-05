@@ -44,12 +44,12 @@ function extensionFromName(name: string): string {
 export function buildAttachmentStorageName(
   request: UploadSessionRequest,
   now: Date,
-  shortId: string,
+  shortId?: string,
 ): string {
   if (!ORDER_NUMBER_PATTERN.test(request.orderNumber)) {
     throw new Error('เลข Shop Order ต้องเป็นตัวเลข 6 หลัก');
   }
-  if (!SHORT_ID_PATTERN.test(shortId)) {
+  if (shortId !== undefined && !SHORT_ID_PATTERN.test(shortId)) {
     throw new Error('Short ID ไม่ถูกต้อง');
   }
 
@@ -62,13 +62,9 @@ export function buildAttachmentStorageName(
     throw new Error('ชนิดไฟล์ไม่ถูกต้อง');
   }
 
-  const timestamp = now
-    .toISOString()
-    .replace(/[-:]/g, '')
-    .replace('T', '-')
-    .slice(0, 15);
+  const date = now.toISOString().slice(0, 10).replaceAll('-', '');
 
-  return `SO-${request.orderNumber}-${timestamp}-${shortId}.${extension}`;
+  return `shoporder-${date}-${request.orderNumber}.${extension}`;
 }
 
 export function parseAttachmentLifecycle(
@@ -152,11 +148,11 @@ export function driveFileIdFromCanonicalUrl(url: string): string | null {
   }
 }
 
-export function driveFileDownloadUrlFromCanonicalUrl(
+export function driveFilePreviewUrlFromCanonicalUrl(
   url: string,
 ): string | null {
   const fileId = driveFileIdFromCanonicalUrl(url);
   return fileId
-    ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`
+    ? `https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`
     : null;
 }

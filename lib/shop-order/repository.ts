@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 
 import {
   buildAttachmentStorageName,
@@ -99,7 +98,6 @@ export interface ShopOrderRepositoryDependencies {
     folderId: string;
   };
   now?: () => Date;
-  randomId?: () => string;
 }
 
 export interface ShopOrderRepository {
@@ -408,7 +406,6 @@ export function createShopOrderRepository(
     authenticatedFetch,
     config,
     now = () => new Date(),
-    randomId = randomUUID,
   } = dependencies;
   const orderSheet = quoteSheetName(config.sheetName);
   let numericSheetId: number | undefined;
@@ -839,7 +836,6 @@ export function createShopOrderRepository(
     const storageName = buildAttachmentStorageName(
       { ...safeMetadata, orderNumber: request.orderNumber },
       sessionCreatedAt,
-      randomId().replaceAll('-', '').slice(0, 8),
     );
     const generated = await drive.files.generateIds({
       count: 1,

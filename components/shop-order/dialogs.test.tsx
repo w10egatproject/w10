@@ -154,7 +154,7 @@ describe('Shop Order dialogs', () => {
     expect(screen.getByText('ไม่พบรูปตัวอย่าง')).toBeDefined();
     expect(screen.queryByRole('link', { name: 'เปิดไฟล์ต้นฉบับ' })).toBeNull();
   });
-  it('uses a public Drive download as a fallback after the thumbnail proxy fails', () => {
+  it('uses an inline public Drive preview as a fallback after the thumbnail proxy fails', () => {
     render(
       <OrderDetailDialog
         order={{
@@ -172,7 +172,7 @@ describe('Shop Order dialogs', () => {
     fireEvent.error(proxyPreview);
     const directPreview = screen.getByRole('img');
     expect(directPreview.getAttribute('src')).toBe(
-      'https://drive.google.com/uc?export=download&id=current-file-id',
+      'https://drive.google.com/uc?export=view&id=current-file-id',
     );
     fireEvent.error(directPreview);
     expect(screen.queryByRole('img')).toBeNull();

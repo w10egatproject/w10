@@ -27,7 +27,7 @@ const uploadMetadata: UploadMetadata = {
   size: PNG_BYTES.byteLength,
 };
 const storedUploadName =
-  'SO-123456-20260727-080910-a1b2c3d4.png';
+  'shoporder-20260727-123456.png';
 const pendingSince = '2026-07-27T08:09:10.000Z';
 const uploadSessionRequest = {
   orderNumber: '123456',
@@ -133,7 +133,6 @@ function makeDependencies() {
       folderId: 'folder-id',
     },
     now: () => new Date('2026-07-25T00:00:00.000Z'),
-    randomId: () => 'a1b2c3d4-e5f6-4789-8abc-def012345678',
   } satisfies ShopOrderRepositoryDependencies;
 
   return {
@@ -433,13 +432,13 @@ describe('ShopOrderRepository', () => {
     });
     expect(JSON.parse(fetchInit.body as string)).toEqual({
       id: 'generated-id',
-      name: 'SO-123456-20260727-080910-a1b2c3d4.png',
+      name: 'shoporder-20260727-123456.png',
       parents: ['oauth-folder-id'],
       appProperties: {
         status: 'pending',
         pendingSince: '2026-07-27T08:09:10.000Z',
         orderNumber: '123456',
-        expectedName: 'SO-123456-20260727-080910-a1b2c3d4.png',
+        expectedName: 'shoporder-20260727-123456.png',
         expectedMime: 'image/png',
         expectedSize: '8',
       },

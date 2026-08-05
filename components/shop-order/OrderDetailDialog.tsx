@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { driveFileDownloadUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
+import { driveFilePreviewUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
 
@@ -16,7 +16,7 @@ function AttachmentPreview({
   label: string;
 }) {
   const [previewSource, setPreviewSource] = useState<'proxy' | 'direct' | 'failed'>('proxy');
-  const directPreviewUrl = driveFileDownloadUrlFromCanonicalUrl(fileUrl);
+  const directPreviewUrl = driveFilePreviewUrlFromCanonicalUrl(fileUrl);
 
   if (!fileUrl) {
     return (
