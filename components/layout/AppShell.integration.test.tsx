@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import OtEmployeePage from '@/app/ot-employee/page';
@@ -57,51 +57,26 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('pilot route AppShell integration', () => {
-  it('renders the pilot route inside AppShell with console chrome only', async () => {
+describe('employee legacy route integration', () => {
+  it('renders employee content without the Console AppShell', async () => {
     render(
       <ShellMigrationGate>
         <OtEmployeePage />
       </ShellMigrationGate>,
     );
-
-    expect(screen.getByTestId('app-shell')).toBeDefined();
-    expect(screen.getByRole('complementary')).toBeDefined();
-    expect(screen.getByRole('main')).toBeDefined();
 
     await waitFor(() => {
       expect(screen.getAllByText(/Employee OT integration fixture/).length).toBeGreaterThan(0);
     });
 
+    expect(screen.queryByTestId('app-shell')).toBeNull();
     expect(
-      screen.getByRole('heading', { level: 1, name: 'สรุป OT พนักงาน' }),
+      screen.queryByRole('complementary', { name: '\u0e40\u0e21\u0e19\u0e39 EGAT' }),
+    ).toBeNull();
+    expect(screen.getByRole('button', { name: '\u0e40\u0e21\u0e19\u0e39\u0e2b\u0e19\u0e49\u0e32' })).toBeDefined();
+    expect(
+      screen.getByRole('heading', { level: 1, name: '\u0e2a\u0e23\u0e38\u0e1b OT \u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19' }),
     ).toBeDefined();
-    expect(screen.queryByRole('button', { name: 'เมนูหน้า' })).toBeNull();
-    expect(screen.getByRole('link', { current: 'page' }).getAttribute('href')).toBe(
-      '/ot-employee',
-    );
-  });
-
-  it('opens and closes the mobile drawer through the route shell', () => {
-    render(
-      <ShellMigrationGate>
-        <OtEmployeePage />
-      </ShellMigrationGate>,
-    );
-
-    const trigger = screen.getByRole('button', { name: 'เปิดเมนูนำทาง' });
-    fireEvent.click(trigger);
-
-    const drawer = screen.getByRole('dialog');
-    expect(drawer).toBeDefined();
-    expect(document.activeElement).toBe(
-      within(drawer).getByRole('button', { name: 'ปิดเมนูนำทาง' }),
-    );
-
-    fireEvent.keyDown(drawer, { key: 'Escape' });
-
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(document.activeElement).toBe(trigger);
   });
 
   it('keeps wide tables inside horizontal overflow containers', async () => {
@@ -115,6 +90,7 @@ describe('pilot route AppShell integration', () => {
       expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
     });
 
+    expect(screen.queryByTestId('app-shell')).toBeNull();
     for (const table of screen.getAllByRole('table')) {
       expect(table.parentElement?.className).toContain('overflow-x-auto');
     }

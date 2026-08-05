@@ -1,8 +1,6 @@
 import type { ComponentProps } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import OtEmployeePage from '@/app/ot-employee/page';
 
@@ -60,16 +58,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('/ot-employee pilot route', () => {
-  it('selects console chrome in the route wrapper', () => {
-    const source = readFileSync(join(process.cwd(), 'app/ot-employee/page.tsx'), 'utf8');
-
-    expect(source).toContain('chrome="console"');
-  });
-
-  it('shows the employee PageHeader without the legacy NavigationMenu', async () => {
+describe('/ot-employee legacy route', () => {
+  it('shows the employee legacy header and page menu', async () => {
     mockEmployeeFetch();
-
     render(<OtEmployeePage />);
 
     await waitFor(() => {
@@ -77,54 +68,43 @@ describe('/ot-employee pilot route', () => {
     });
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'สรุป OT พนักงาน' }),
+      screen.getByRole('heading', { level: 1, name: '\u0e2a\u0e23\u0e38\u0e1b OT \u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19' }),
     ).toBeDefined();
-    expect(screen.queryByRole('button', { name: 'เมนูหน้า' })).toBeNull();
+    expect(screen.getByRole('button', { name: '\u0e40\u0e21\u0e19\u0e39\u0e2b\u0e19\u0e49\u0e32' })).toBeDefined();
+    expect(screen.queryByRole('complementary', { name: '\u0e40\u0e21\u0e19\u0e39 EGAT' })).toBeNull();
   });
 
-  it('keeps source-sheet links in a separate card below the console hero', async () => {
+  it('shows the three employee Google Sheet links below the legacy header', async () => {
     mockEmployeeFetch();
-
     render(<OtEmployeePage />);
 
     await waitFor(() => {
       expect(screen.getAllByText('Employee One').length).toBeGreaterThan(0);
     });
 
-    const heading = screen.getByRole('heading', {
-      level: 1,
-      name: 'สรุป OT พนักงาน',
-    });
-    const pageHeader = heading.closest('header');
     const sourceLinks = screen.getAllByRole('link', {
-      name: /เปิด Google Sheet/,
+      name: /\u0e40\u0e1b\u0e34\u0e14 Google Sheet/,
     });
 
-    expect(pageHeader).not.toBeNull();
-    expect(sourceLinks.length).toBeGreaterThan(0);
-    const sourceCard = screen.getByRole('region', { name: 'แหล่งข้อมูล' });
-
-    expect(pageHeader?.contains(sourceLinks[0])).toBe(false);
-    expect(sourceCard.contains(sourceLinks[0])).toBe(true);
-    expect(sourceCard).not.toBe(pageHeader);
+    expect(sourceLinks).toHaveLength(3);
     expect(sourceLinks[0].getAttribute('href')).toBe(
       'https://docs.google.com/spreadsheets/d/1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA/edit?gid=1501422016#gid=1501422016',
     );
   });
 
-  it('renders the existing employee error message in an alert card', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('อ่านข้อมูล OT พนักงานไม่สำเร็จ กรุณาแชร์ชีทให้ service account ของระบบก่อน')));
+  it('renders the existing employee error message in the legacy layout', async () => {
+    const errorMessage = '\u0e2d\u0e48\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 OT \u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u0e01\u0e23\u0e38\u0e13\u0e32\u0e41\u0e0a\u0e23\u0e4c\u0e0a\u0e35\u0e17\u0e43\u0e2b\u0e49 service account \u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a\u0e01\u0e48\u0e2d\u0e19';
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error(errorMessage)));
 
     render(<OtEmployeePage />);
 
-    const alert = await screen.findByRole('alert');
-
-    expect(alert.textContent).toContain('อ่านข้อมูล OT พนักงานไม่สำเร็จ กรุณาแชร์ชีทให้ service account ของระบบก่อน');
-    expect(alert.querySelector('h2')).not.toBeNull();
+    expect(await screen.findByText(errorMessage)).toBeDefined();
+    expect(screen.getByRole('button', { name: '\u0e40\u0e21\u0e19\u0e39\u0e2b\u0e19\u0e49\u0e32' })).toBeDefined();
+    expect(screen.queryByTestId('app-shell')).toBeNull();
   });
+
   it('preserves employee rows and does not render contractor data', async () => {
     mockEmployeeFetch();
-
     render(<OtEmployeePage />);
 
     await waitFor(() => {
@@ -153,16 +133,16 @@ describe('/ot-employee pilot route', () => {
     render(<OtEmployeePage />);
 
     await waitFor(() => {
-      expect((screen.getByRole('button', { name: /รีเฟรชข้อมูล/ }) as HTMLButtonElement).disabled).toBe(false);
+      expect((screen.getByRole('button', { name: /\u0e23\u0e35\u0e40\u0e1f\u0e23\u0e0a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25/ }) as HTMLButtonElement).disabled).toBe(false);
     });
 
-    const refreshButton = screen.getByRole('button', { name: /รีเฟรชข้อมูล/ });
+    const refreshButton = screen.getByRole('button', { name: /\u0e23\u0e35\u0e40\u0e1f\u0e23\u0e0a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25/ });
     expect((refreshButton as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(refreshButton);
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
-      expect((screen.getByRole('button', { name: /รีเฟรชข้อมูล/ }) as HTMLButtonElement).disabled).toBe(true);
+      expect((screen.getByRole('button', { name: /\u0e23\u0e35\u0e40\u0e1f\u0e23\u0e0a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25/ }) as HTMLButtonElement).disabled).toBe(true);
     });
 
     resolveRefresh?.({
@@ -170,20 +150,20 @@ describe('/ot-employee pilot route', () => {
       json: async () => employeePayload,
     } as Response);
   });
-  it('keeps console chrome visible for the loading state', () => {
-    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)));
 
+  it('keeps legacy chrome visible for the loading state', () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)));
     render(<OtEmployeePage />);
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'สรุป OT พนักงาน' }),
+      screen.getByRole('heading', { level: 1, name: '\u0e2a\u0e23\u0e38\u0e1b OT \u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19' }),
     ).toBeDefined();
-    expect(screen.queryByRole('button', { name: 'เมนูหน้า' })).toBeNull();
+    expect(screen.getByRole('button', { name: '\u0e40\u0e21\u0e19\u0e39\u0e2b\u0e19\u0e49\u0e32' })).toBeDefined();
+    expect(screen.queryByTestId('app-shell')).toBeNull();
   });
 
-  it('keeps console chrome visible for the error state', async () => {
+  it('keeps legacy chrome visible for the error state', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('employee load failed')));
-
     render(<OtEmployeePage />);
 
     await waitFor(() => {
@@ -191,8 +171,9 @@ describe('/ot-employee pilot route', () => {
     });
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'สรุป OT พนักงาน' }),
+      screen.getByRole('heading', { level: 1, name: '\u0e2a\u0e23\u0e38\u0e1b OT \u0e1e\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19' }),
     ).toBeDefined();
-    expect(screen.queryByRole('button', { name: 'เมนูหน้า' })).toBeNull();
+    expect(screen.getByRole('button', { name: '\u0e40\u0e21\u0e19\u0e39\u0e2b\u0e19\u0e49\u0e32' })).toBeDefined();
+    expect(screen.queryByTestId('app-shell')).toBeNull();
   });
 });

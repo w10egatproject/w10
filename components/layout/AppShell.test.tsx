@@ -35,21 +35,21 @@ describe('ShellMigrationGate', () => {
 
     expect(screen.getByTestId('legacy-content')).toBeDefined();
     expect(screen.queryByTestId('app-shell')).toBeNull();
-    expect(screen.queryByRole('complementary', { name: 'เมนู EGAT' })).toBeNull();
+    expect(screen.queryByRole('complementary', { name: '\u0e40\u0e21\u0e19\u0e39 EGAT' })).toBeNull();
   });
 
-  it('wraps only the pilot route while preserving its children', () => {
+  it('returns employee route children without an AppShell', () => {
     usePathnameMock.mockReturnValue('/ot-employee');
 
     render(
       <ShellMigrationGate>
-        <p data-testid="pilot-content">Pilot content</p>
+        <p data-testid="employee-content">Employee content</p>
       </ShellMigrationGate>,
     );
 
-    expect(screen.getByTestId('app-shell')).toBeDefined();
-    expect(screen.getByTestId('pilot-content')).toBeDefined();
-    expect(screen.getByRole('main').contains(screen.getByTestId('pilot-content'))).toBe(true);
+    expect(screen.getByTestId('employee-content')).toBeDefined();
+    expect(screen.queryByTestId('app-shell')).toBeNull();
+    expect(screen.queryByRole('main')).toBeNull();
   });
 });
 

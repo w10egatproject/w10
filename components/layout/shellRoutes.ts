@@ -17,7 +17,7 @@ export const publicRoutes: readonly ConsoleRoute[] = [
   '/shop-order',
 ];
 
-export const consoleRoutes: readonly ConsoleRoute[] = ['/ot-employee'];
+export const consoleRoutes: readonly ConsoleRoute[] = [];
 
 export function isConsoleRoute(pathname: string): boolean {
   return consoleRoutes.some((route) => route === pathname);
