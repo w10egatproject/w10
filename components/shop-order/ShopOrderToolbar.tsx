@@ -1,4 +1,10 @@
-import { Plus, RefreshCw, RotateCcw, Search } from 'lucide-react';
+import {
+  FileSpreadsheet,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  Search,
+} from 'lucide-react';
 import type { ShopOrderFilters } from '@/lib/shop-order/types';
 
 interface Props {
@@ -89,7 +95,7 @@ export function ShopOrderToolbar({
             <option value="done">เสร็จสิ้น</option>
           </select>
         </label>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <button
             type="button"
             aria-label="รีเฟรชข้อมูล"
@@ -114,6 +120,15 @@ export function ShopOrderToolbar({
           >
             <RotateCcw className="h-4 w-4 text-slate-600" /> ล้าง
           </button>
+          <a
+            href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          >
+            <FileSpreadsheet aria-hidden className="h-4 w-4" />
+            เปิด Google Sheet
+          </a>
           {onAdd && (
             <button
               type="button"

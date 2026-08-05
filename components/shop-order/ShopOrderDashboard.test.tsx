@@ -84,6 +84,21 @@ describe('ShopOrderDashboard', () => {
     expect(screen.queryByText('แนวโน้มออเดอร์ — 30 วันล่าสุด')).toBeNull();
   });
 
+  it('links to the Shop Order source sheet in an isolated new tab', async () => {
+    render(<ShopOrderDashboard />);
+    await screen.findByText('งานเสร็จ');
+
+    const sourceSheetLink = screen.getByRole('link', {
+      name: 'เปิด Google Sheet',
+    });
+
+    expect(sourceSheetLink.getAttribute('href')).toBe(
+      'https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0',
+    );
+    expect(sourceSheetLink.getAttribute('target')).toBe('_blank');
+    expect(sourceSheetLink.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
   it('manually refreshes without polling', async () => {
     const user = userEvent.setup();
     render(<ShopOrderDashboard />);
