@@ -310,7 +310,7 @@ export default function DashboardPage() {
               W10 Dashboard
               <Image src="/picture/รูปภาพ14-Photoroom.png" alt="W10 Icon" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
             </h1>
-            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">EGAT Maintenance Dashboard</p>
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">หสบ-ช.</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
