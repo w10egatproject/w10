@@ -66,32 +66,45 @@ export function ShopOrderDashboard() {
     return result.data;
   };
 
-  const saveOrder = async ({ order, file }: { order: ShopOrderInput; file?: File }) => {
+  const uploadAttachment = async (
+    file: File | undefined,
+    orderNumber: string,
+  ): Promise<{ fileId?: string; failed: boolean }> => {
+    if (!file) return { failed: false };
+
+    const metadata = await inspectLocalFile(file);
+    try {
+      const session = await requestJson<UploadSession>(
+        '/api/shop-order/upload-session',
+        {
+          method: 'POST',
+          body: JSON.stringify({ orderNumber, ...metadata }),
+        },
+      );
+      setUploadProgress(0);
+      await uploadToDriveSession(file, session, setUploadProgress);
+      return { fileId: session.fileId, failed: false };
+    } catch {
+      setUploadProgress(undefined);
+      return { failed: true };
+    }
+  };
+
+  const saveOrder = async ({
+    order,
+    file,
+    repairFile,
+  }: {
+    order: ShopOrderInput;
+    file?: File;
+    repairFile?: File;
+  }) => {
     setMutationPending(true);
     setError('');
     setAttachmentWarning(null);
     try {
-      let uploadedFileId: string | undefined;
-      let uploadFailed = false;
-      if (file) {
-        const metadata = await inspectLocalFile(file);
-        try {
-          const session = await requestJson<UploadSession>(
-            '/api/shop-order/upload-session',
-            {
-              method: 'POST',
-              body: JSON.stringify({ orderNumber: order.number, ...metadata }),
-            },
-          );
-          setUploadProgress(0);
-          await uploadToDriveSession(file, session, setUploadProgress);
-          uploadedFileId = session.fileId;
-        } catch {
-          uploadFailed = true;
-          setUploadProgress(undefined);
-        }
-      }
-
+      const primaryUpload = await uploadAttachment(file, order.number);
+      const repairUpload = await uploadAttachment(repairFile, order.number);
       const mutation = await requestJson<ShopOrderMutationResult>(
         '/api/shop-order',
         {
@@ -99,13 +112,20 @@ export function ShopOrderDashboard() {
           body: JSON.stringify({
             ...(formMode === 'edit' && selected ? { no: selected.no } : {}),
             order,
-            uploadedFileId,
+            ...(primaryUpload.fileId
+              ? { uploadedFileId: primaryUpload.fileId }
+              : {}),
+            ...(repairUpload.fileId
+              ? { repairUploadedFileId: repairUpload.fileId }
+              : {}),
           }),
         },
       );
       const attachmentFailed =
-        uploadFailed ||
-        mutation.attachment.status === 'order_saved_without_attachment';
+        primaryUpload.failed ||
+        repairUpload.failed ||
+        mutation.attachment.status === 'order_saved_without_attachment' ||
+        mutation.repairAttachment?.status === 'order_saved_without_attachment';
       setFormMode(null);
       setSelected(null);
       setUploadProgress(undefined);
@@ -125,7 +145,6 @@ export function ShopOrderDashboard() {
       setMutationPending(false);
     }
   };
-
   const deleteOrder = async () => {
     if (!selected) return;
     setMutationPending(true); setError('');

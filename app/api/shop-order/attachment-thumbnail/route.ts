@@ -10,6 +10,13 @@ const THUMBNAIL_HEADERS = {
   'Content-Security-Policy': "default-src 'none'",
 } as const;
 
+function parseAttachmentSlot(request: Request): 'primary' | 'repair' | null {
+  const values = new URL(request.url).searchParams.getAll('slot');
+  if (values.length > 1) return null;
+  if (values.length === 0 || values[0] === 'primary') return 'primary';
+  return values[0] === 'repair' ? 'repair' : null;
+}
+
 function parseSequence(request: Request): number | null {
   const values = new URL(request.url).searchParams.getAll('no');
   if (values.length !== 1 || !/^[1-9]\d*$/.test(values[0])) return null;
@@ -19,7 +26,8 @@ function parseSequence(request: Request): number | null {
 
 export async function GET(request: Request): Promise<Response> {
   const no = parseSequence(request);
-  if (no === null) {
+  const slot = parseAttachmentSlot(request);
+  if (no === null || slot === null) {
     return jsonError(
       'VALIDATION_ERROR',
       'เลขลำดับ Shop Order ไม่ถูกต้อง',
@@ -29,7 +37,7 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     const repository = await getShopOrderRepository();
-    const thumbnail = await repository.getAttachmentThumbnail(no);
+    const thumbnail = await repository.getAttachmentThumbnail(no, slot);
     if (!thumbnail) {
       return jsonError(
         'THUMBNAIL_NOT_FOUND',

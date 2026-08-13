@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAttachmentStorageName,
   deletionDate,
-  driveFileDownloadUrlFromCanonicalUrl,
+  driveFilePreviewUrlFromCanonicalUrl,
   driveFileIdFromCanonicalUrl,
   isExpiredPending,
   parseAttachmentLifecycle,
@@ -41,9 +41,8 @@ describe('Shop Order attachment lifecycle', () => {
           size: 8,
         },
         new Date('2026-07-27T08:09:10.000Z'),
-        'a1b2c3d4',
       ),
-    ).toBe('SO-123456-20260727-080910-a1b2c3d4.png');
+    ).toBe('shoporder-20260727-123456.png');
   });
 
   it('normalizes a JPEG extension in the generated storage name', () => {
@@ -56,16 +55,13 @@ describe('Shop Order attachment lifecycle', () => {
           size: 8,
         },
         new Date('2026-07-27T08:09:10.000Z'),
-        'a1b2c3d4',
       ),
-    ).toBe('SO-123456-20260727-080910-a1b2c3d4.jpg');
+    ).toBe('shoporder-20260727-123456.jpg');
   });
 
   it.each([
-    ['invalid order number', '12345', 'a1b2c3d4'],
-    ['invalid short id', '123456', 'A1B2C3D4'],
-    ['short short id', '123456', 'a1b2c3'],
-  ])('rejects %s when building a storage name', (_, orderNumber, shortId) => {
+    ['invalid order number', '12345'],
+  ])('rejects %s when building a storage name', (_, orderNumber) => {
     expect(() =>
       buildAttachmentStorageName(
         {
@@ -75,7 +71,6 @@ describe('Shop Order attachment lifecycle', () => {
           size: 8,
         },
         new Date('2026-07-27T08:09:10.000Z'),
-        shortId,
       ),
     ).toThrow();
   });
@@ -170,19 +165,19 @@ describe('Shop Order attachment lifecycle', () => {
     expect(driveFileIdFromCanonicalUrl(url)).toBe(fileId);
   });
 
-  it('builds a safe public Drive download URL from a canonical file URL', () => {
+  it('builds an inline public Drive preview URL from a canonical file URL', () => {
     expect(
-      driveFileDownloadUrlFromCanonicalUrl(
+      driveFilePreviewUrlFromCanonicalUrl(
         'https://drive.google.com/file/d/1AbC_def-234/view?usp=sharing',
       ),
     ).toBe(
-      'https://drive.google.com/uc?export=download&id=1AbC_def-234',
+      'https://drive.google.com/uc?export=view&id=1AbC_def-234',
     );
   });
 
-  it('does not build a public download URL from a non-canonical URL', () => {
+  it('does not build a public preview URL from a non-canonical URL', () => {
     expect(
-      driveFileDownloadUrlFromCanonicalUrl(
+      driveFilePreviewUrlFromCanonicalUrl(
         'https://drive.google.com/open?id=1AbC_def-234',
       ),
     ).toBeNull();

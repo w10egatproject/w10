@@ -44,6 +44,7 @@ describe('Shop Order create form validation', () => {
           dateOut: null,
           note: '',
           fileUrl: '',
+          repairFileUrl: '',
         }}
         departments={['กอง ก']}
         receivers={['สมชาย']}

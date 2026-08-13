@@ -111,7 +111,7 @@ npm run build
 1. เปิด `/shop-order` และกดรีเฟรชข้อมูล
 2. เพิ่มออเดอร์เลข 6 หลักพร้อม PNG/JPEG ขนาดเล็ก
 3. ตรวจว่าแถวใหม่ถูกเพิ่มใน `Order1`
-4. ตรวจว่าไฟล์อยู่ใน `Picture-OAuth` และชื่อเป็น `SO-{เลขออเดอร์}-{เวลา}-{รหัสสุ่ม}.{นามสกุล}` โดยไม่มีชื่อต้นฉบับ
+4. ตรวจว่าไฟล์อยู่ใน `Picture-OAuth` และชื่อเป็น `shoporder-YYYYMMDD-orderID.ext` โดยไม่มีชื่อต้นฉบับ
 5. เปิดรายละเอียดและตรวจ thumbnail/ลิงก์ไฟล์
 6. แก้รายการโดยแทนไฟล์ด้วย PDF และตรวจว่าไฟล์เก่าถูกตั้ง `scheduled_delete`
 7. จำลองอัปโหลดล้มเหลว แล้วตรวจว่าออเดอร์ยังถูกบันทึกพร้อมแถบเตือน “เพิ่มไฟล์อีกครั้ง”
@@ -200,3 +200,10 @@ npx tsc --noEmit
 npx eslint app/api/shop-order components/shop-order lib/shop-order scripts/setup-shop-order-drive-oauth.mjs scripts/setup-shop-order-drive-oauth.test.mjs
 npm run build
 ```
+
+## Picture-OAuth migration note
+
+- Sheet columns J/K store canonical Drive file URLs (`/file/d/<id>/view`), not a local path or a folder path.
+- Moving a legacy file from `Picture` into `Picture-OAuth` does not make it OAuth-app-managed under the least-privilege `drive.file` scope. The strict authenticated thumbnail proxy can therefore return 404 even when the public file URL still works.
+- Legacy public images use an inline `export=view` fallback in the detail dialog. Files that are not public must be re-uploaded through `/shop-order` or copied by an OAuth flow that can access the source file; do not broaden the app to the full `drive` scope.
+- New uploads are named `shoporder-YYYYMMDD-orderID.ext` and are created directly under the configured `SHOP_ORDER_DRIVE_FOLDER_ID`.

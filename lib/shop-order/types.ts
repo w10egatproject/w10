@@ -12,9 +12,10 @@ export interface ShopOrder {
   dateOut: string | null;
   note: string;
   fileUrl: string;
+  repairFileUrl: string;
 }
 
-export type ShopOrderInput = Omit<ShopOrder, 'no' | 'from' | 'fileUrl'>;
+export type ShopOrderInput = Omit<ShopOrder, 'no' | 'from' | 'fileUrl' | 'repairFileUrl'>;
 
 export interface ShopOrderFilters {
   query: string;
@@ -65,6 +66,7 @@ export type AttachmentOutcome =
 export interface ShopOrderMutationResult {
   order: ShopOrder;
   attachment: AttachmentOutcome;
+  repairAttachment: AttachmentOutcome;
 }
 
 export interface AttachmentCleanupSummary {

@@ -19,10 +19,9 @@ describe('shell route foundation', () => {
     ]);
   });
 
-  it('enables only the pilot route for the console shell', () => {
-    expect(consoleRoutes).toEqual(['/ot-employee']);
-
-    expect(isConsoleRoute('/ot-employee')).toBe(true);
+  it('keeps both OT routes on the legacy shell', () => {
+    expect(consoleRoutes).toEqual([]);
+    expect(isConsoleRoute('/ot-employee')).toBe(false);
     expect(isConsoleRoute('/ot-summary')).toBe(false);
     expect(isConsoleRoute('/')).toBe(false);
   });

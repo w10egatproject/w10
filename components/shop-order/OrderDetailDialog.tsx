@@ -1,23 +1,38 @@
 'use client';
 import { useState } from 'react';
-import { driveFileDownloadUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
+import { driveFilePreviewUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
 
-function AttachmentPreview({ order }: { order: ShopOrder }) {
+function AttachmentPreview({
+  order,
+  fileUrl,
+  slot,
+  label,
+}: {
+  order: ShopOrder;
+  fileUrl: string;
+  slot: 'primary' | 'repair';
+  label: string;
+}) {
   const [previewSource, setPreviewSource] = useState<'proxy' | 'direct' | 'failed'>('proxy');
-  const directPreviewUrl = driveFileDownloadUrlFromCanonicalUrl(order.fileUrl);
+  const directPreviewUrl = driveFilePreviewUrlFromCanonicalUrl(fileUrl);
 
-  if (!order.fileUrl) {
+  if (!fileUrl) {
     return (
-      <div className="flex h-44 w-full flex-col items-center justify-center rounded-xl bg-slate-50 border border-slate-100 text-center">
-        <span className="text-xs font-bold text-slate-400">ไม่มีไฟล์แนบ</span>
+      <div className="flex h-32 w-full flex-col items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-center">
+        <span className="text-xs font-bold text-slate-400">ไม่พบรูปตัวอย่าง</span>
       </div>
     );
   }
 
+  const thumbnailUrl =
+    '/api/shop-order/attachment-thumbnail?no=' +
+    order.no +
+    (slot === 'repair' ? '&slot=repair' : '');
+
   return (
-    <div className="flex h-44 w-full items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-2 overflow-hidden">
+    <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-2">
       {previewSource === 'failed' ? (
         <div className="flex h-full w-full items-center justify-center rounded-lg bg-slate-100 text-center text-xs font-bold text-slate-500">
           ไม่พบรูปตัวอย่าง
@@ -26,12 +41,8 @@ function AttachmentPreview({ order }: { order: ShopOrder }) {
         // The authenticated, no-store proxy must be requested directly.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={
-            previewSource === 'proxy'
-              ? `/api/shop-order/attachment-thumbnail?no=${order.no}`
-              : directPreviewUrl ?? ''
-          }
-          alt={`ตัวอย่างไฟล์แนบรายการ ${order.no}`}
+          src={previewSource === 'proxy' ? thumbnailUrl : directPreviewUrl ?? ''}
+          alt={slot === 'repair' ? 'ตัวอย่างไฟล์แนบรายการ ' + order.no + ' ' + label : 'ตัวอย่างไฟล์แนบรายการ ' + order.no}
           className="h-full w-full rounded-lg object-contain"
           onError={() => {
             if (previewSource === 'proxy' && directPreviewUrl) {
@@ -45,7 +56,6 @@ function AttachmentPreview({ order }: { order: ShopOrder }) {
     </div>
   );
 }
-
 export function OrderDetailDialog({
   order,
   pending,
@@ -109,17 +119,52 @@ export function OrderDetailDialog({
         </div>
 
         <div className="mt-5 flex flex-col gap-6 sm:flex-row">
-          {/* Left Side: Uploaded Image Preview */}
-          <div className="w-full sm:w-48 shrink-0">
-            <dt className="mb-2 text-xs font-bold text-slate-500">ไฟล์</dt>
-            <dd>
-              <AttachmentPreview
-                key={`${order.no}:${order.fileUrl}`}
-                order={order}
-              />
+          <div className="w-full shrink-0 sm:w-64">
+            <dt className="mb-2 text-xs font-bold text-slate-500">ไฟล์แนบ</dt>
+            <dd className="grid gap-3">
+              {[
+                {
+                  slot: 'primary' as const,
+                  label: 'Pic',
+                  fileUrl: order.fileUrl,
+                },
+                {
+                  slot: 'repair' as const,
+                  label: 'Pic แจ้งซ่อม',
+                  fileUrl: order.repairFileUrl,
+                },
+              ].filter(({ fileUrl }) => fileUrl).length === 0 ? (
+                <AttachmentPreview
+                  order={order}
+                  fileUrl=""
+                  slot="primary"
+                  label="Pic"
+                />
+              ) : (
+                [
+                  {
+                    slot: 'primary' as const,
+                    label: 'Pic',
+                    fileUrl: order.fileUrl,
+                  },
+                  {
+                    slot: 'repair' as const,
+                    label: 'Pic แจ้งซ่อม',
+                    fileUrl: order.repairFileUrl,
+                  },
+                ]
+                  .filter(({ fileUrl }) => fileUrl)
+                  .map((attachment) => (
+                    <div key={attachment.slot}>
+                      <p className="mb-1 text-[11px] font-bold text-slate-500">
+                        {attachment.label}
+                      </p>
+                      <AttachmentPreview order={order} {...attachment} />
+                    </div>
+                  ))
+              )}
             </dd>
           </div>
-
           {/* Right Side: Order Detail Fields */}
           <dl className="grid flex-1 gap-x-4 sm:grid-cols-2">
             {rows.map(([label, value]) => (
