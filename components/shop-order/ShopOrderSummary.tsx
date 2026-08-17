@@ -1,7 +1,19 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+
+import dynamic from 'next/dynamic';
 import type { ShopOrderFilters, ShopOrderSummary as Summary } from '@/lib/shop-order/types';
+
+const HighchartsClient = dynamic(
+  () => import('@/components/charts/HighchartsClient'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-44 items-center justify-center rounded-2xl bg-slate-900 text-xs font-bold text-slate-400">
+        Loading 3D Chart...
+      </div>
+    ),
+  },
+);
 
 interface ShopOrderSummaryProps {
   summary: Summary;
@@ -14,16 +26,6 @@ export function ShopOrderSummary({
   activeStatus = 'all',
   onStatusSelect,
 }: ShopOrderSummaryProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const chart = [
-    { name: 'รอดำเนินการ', value: summary.wait },
-    { name: 'เสร็จสิ้น', value: summary.done },
-  ];
   const donePercent = summary.total
     ? Math.round((summary.done * 100) / summary.total)
     : 0;
@@ -60,8 +62,54 @@ export function ShopOrderSummary({
 
   const maxUnitCount = summary.popularUnits[0]?.count || 1;
 
+  const chartOptions = {
+    chart: {
+      type: 'pie',
+      options3d: {
+        enabled: true,
+        alpha: 45,
+        beta: 0,
+      },
+      backgroundColor: 'transparent',
+      height: 180,
+      margin: [0, 0, 0, 0],
+      spacing: [0, 0, 0, 0],
+    },
+    title: { text: '' },
+    credits: { enabled: false },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      borderColor: '#334155',
+      style: {
+        color: '#ffffff',
+        fontFamily: 'Inter, Noto Sans Thai, sans-serif',
+        fontSize: '12px',
+      },
+      pointFormat: '<b>{point.y} รายการ</b> ({point.percentage:.1f}%)',
+    },
+    plotOptions: {
+      pie: {
+        innerSize: '55%',
+        depth: 35,
+        dataLabels: { enabled: false },
+        showInLegend: false,
+        borderWidth: 0,
+      },
+    },
+    series: [
+      {
+        name: 'สถานะ',
+        data: [
+          { name: 'รอดำเนินการ', y: summary.wait, color: '#f59e0b' },
+          { name: 'เสร็จสิ้น', y: summary.done, color: '#10b981' },
+        ],
+      },
+    ],
+  };
+
   return (
     <aside className="space-y-4" aria-label="สรุปรายการ">
+      {/* KPI Mini Cards */}
       <div className="grid grid-cols-3 gap-2 lg:grid-cols-1 xl:grid-cols-3">
         {kpis.map(({ label, value, color, testId, status }) => {
           const isActive = activeStatus === status;
@@ -83,56 +131,45 @@ export function ShopOrderSummary({
           );
         })}
       </div>
+
+      {/* 3D Highcharts Status Chart (Dark Container) */}
       <section
         data-testid="status-summary"
-        className="rounded-2xl bg-slate-950 p-4 text-white shadow-sm"
+        className="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-5 text-white shadow-xl"
       >
-        <h2 className="text-sm font-bold text-white">สรุปสถานะ</h2>
-        <div className="relative mx-auto h-44 max-w-56">
-          {isMounted && (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <PieChart>
-                <Pie
-                  data={chart}
-                  dataKey="value"
-                  innerRadius={48}
-                  outerRadius={67}
-                  strokeWidth={0}
-                >
-                  <Cell fill="#f59e0b" />
-                  <Cell fill="#10b981" />
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          )}
+        <h2 className="text-sm font-bold text-white">สรุปสถานะ (3D Chart)</h2>
+        <div className="relative mx-auto h-44 w-full">
+          <HighchartsClient options={chartOptions} />
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <strong className="text-xl">{donePercent}%</strong>
-            <span className="text-[10px] text-slate-300">เสร็จสิ้น</span>
+            <strong className="text-xl font-black text-white">{donePercent}%</strong>
+            <span className="text-[10px] font-bold text-slate-400">เสร็จสิ้น</span>
           </div>
         </div>
-        <div className="space-y-2 text-xs">
-          <p className="flex justify-between">
+        <div className="mt-2 space-y-2 border-t border-slate-800 pt-3 text-xs">
+          <p className="flex justify-between text-slate-300">
             <span>
-              <i className="mr-2 inline-block h-2 w-2 rounded-full bg-amber-500" />
+              <i className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-amber-500" />
               รอดำเนินการ
             </span>
-            <b>{summary.wait} รายการ</b>
+            <b className="text-white">{summary.wait} รายการ</b>
           </p>
-          <p className="flex justify-between">
+          <p className="flex justify-between text-slate-300">
             <span>
-              <i className="mr-2 inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              <i className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />
               เสร็จสิ้น
             </span>
-            <b>{summary.done} รายการ</b>
+            <b className="text-white">{summary.done} รายการ</b>
           </p>
         </div>
       </section>
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h2 className="mb-3 text-sm font-bold text-slate-800">
+
+      {/* Popular Units Ranking (Image 2 style layout) */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-4 text-sm font-bold text-slate-900">
           หน่วยงานยอดนิยม
         </h2>
         {summary.popularUnits.length ? (
-          <ol className="space-y-3 text-sm">
+          <ol className="space-y-3.5 text-sm">
             {summary.popularUnits.map((unit, index) => {
               const percent = Math.min(
                 100,
@@ -144,12 +181,12 @@ export function ShopOrderSummary({
                     <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-700">
                       {index + 1}
                     </span>
-                    <span className="min-w-0 flex-1 truncate font-medium text-slate-700">
+                    <span className="min-w-0 flex-1 truncate font-semibold text-slate-800">
                       {unit.name}
                     </span>
-                    <b className="text-slate-900">{unit.count}</b>
+                    <b className="text-slate-900 font-black">{unit.count}</b>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
                       className="h-full rounded-full bg-indigo-600 transition-all duration-500"
                       style={{ width: `${percent}%` }}
@@ -160,7 +197,7 @@ export function ShopOrderSummary({
             })}
           </ol>
         ) : (
-          <p className="text-sm text-slate-500">ยังไม่มีข้อมูลหน่วยงาน</p>
+          <p className="text-xs text-slate-500">ยังไม่มีข้อมูลหน่วยงาน</p>
         )}
       </section>
     </aside>

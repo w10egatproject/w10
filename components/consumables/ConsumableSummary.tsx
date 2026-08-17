@@ -157,7 +157,7 @@ export function ConsumableSummaryComponent({ summary }: Props) {
         </div>
       </div>
 
-      {/* Receiver Ranking Panel */}
+      {/* Receiver Ranking Panel (Image 2 style layout) */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="mb-4 text-sm font-bold text-slate-900">
           ผู้เบิกของมากที่สุด
@@ -165,33 +165,36 @@ export function ConsumableSummaryComponent({ summary }: Props) {
         {summary.topReceivers.length === 0 ? (
           <div className="text-xs text-slate-400">ไม่มีข้อมูล</div>
         ) : (
-          <div className="flex flex-col gap-2.5">
+          <ol className="space-y-3.5 text-sm">
             {summary.topReceivers.map((rec, idx) => {
-              const pct = Math.round((rec.quantity / maxReceiverQty) * 100);
+              const pct = Math.min(
+                100,
+                Math.max(4, Math.round((rec.quantity / maxReceiverQty) * 100)),
+              );
               return (
-                <div key={rec.name} className="flex items-center gap-2 text-xs">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[11px] font-black text-emerald-700">
-                    {idx + 1}
+                <li key={rec.name} className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700">
+                      {idx + 1}
+                    </span>
+                    <span
+                      className="min-w-0 flex-1 truncate font-semibold text-slate-800"
+                      title={rec.name}
+                    >
+                      {rec.name}
+                    </span>
+                    <b className="text-slate-900 font-black">{rec.quantity}</b>
                   </div>
-                  <div
-                    className="w-24 shrink-0 truncate font-semibold text-slate-800"
-                    title={rec.name}
-                  >
-                    {rec.name}
-                  </div>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div className="w-8 shrink-0 text-right font-black text-slate-700">
-                    {rec.quantity}
-                  </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
         )}
       </div>
     </aside>
