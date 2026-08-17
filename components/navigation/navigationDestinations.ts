@@ -66,4 +66,11 @@ export const navigationDestinations: readonly NavigationDestination[] = [
     iconClassName: 'text-indigo-500',
     hoverClassName: 'hover:bg-indigo-50',
   },
+  {
+    href: '/consumables',
+    label: 'Consumables',
+    icon: Package,
+    iconClassName: 'text-emerald-500',
+    hoverClassName: 'hover:bg-emerald-50',
+  },
 ];

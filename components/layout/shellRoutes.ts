@@ -5,7 +5,8 @@ export type ConsoleRoute =
   | '/beml-inventory'
   | '/ot-summary'
   | '/ot-employee'
-  | '/shop-order';
+  | '/shop-order'
+  | '/consumables';
 
 export const publicRoutes: readonly ConsoleRoute[] = [
   '/',
@@ -15,6 +16,7 @@ export const publicRoutes: readonly ConsoleRoute[] = [
   '/ot-summary',
   '/ot-employee',
   '/shop-order',
+  '/consumables',
 ];
 
 export const consoleRoutes: readonly ConsoleRoute[] = [];

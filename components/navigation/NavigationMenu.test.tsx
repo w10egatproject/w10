@@ -34,6 +34,7 @@ const destinations = [
   { href: '/ot-summary', label: 'สรุป OT ลูกจ้าง' },
   { href: '/ot-employee', label: 'สรุป OT พนักงาน' },
   { href: '/shop-order', label: 'Shop Order' },
+  { href: '/consumables', label: 'Consumables' },
 ] as const;
 
 function renderOpenMenu(
@@ -64,7 +65,7 @@ afterEach(() => {
 
 describe('NavigationMenu route contract', () => {
   it.each(destinations.slice(1))(
-    'renders all seven destinations and disables the current route $href',
+    'renders all destinations and disables the current route $href',
     ({ href, label }) => {
       const navigation = renderOpenMenu(href);
       const renderedDestinations = within(navigation).getAllByTestId(
@@ -78,7 +79,7 @@ describe('NavigationMenu route contract', () => {
       const currentItem = within(navigation).getByText(label);
       expect(currentItem.getAttribute('aria-current')).toBe('page');
       expect(currentItem.closest('a')).toBeNull();
-      expect(within(navigation).getAllByRole('link')).toHaveLength(6);
+      expect(within(navigation).getAllByRole('link')).toHaveLength(7);
     },
   );
 
@@ -87,9 +88,9 @@ describe('NavigationMenu route contract', () => {
 
     expect(
       within(navigation).getAllByTestId('navigation-destination'),
-    ).toHaveLength(6);
+    ).toHaveLength(7);
     expect(within(navigation).queryByText('หน้าหลัก')).toBeNull();
-    expect(within(navigation).getAllByRole('link')).toHaveLength(6);
+    expect(within(navigation).getAllByRole('link')).toHaveLength(7);
   });
 
   it('preserves page-specific trigger and accent classes', () => {
