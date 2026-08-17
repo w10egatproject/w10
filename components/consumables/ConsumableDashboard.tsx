@@ -199,7 +199,7 @@ export function ConsumableDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <NavigationMenu buttonClassName="border-2 border-emerald-500 bg-emerald-50 text-emerald-800 hover:bg-emerald-100" />
+            <NavigationMenu buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a] shadow-md shadow-yellow-200/60" />
           </div>
         </div>
       </header>
