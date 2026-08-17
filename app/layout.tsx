@@ -57,9 +57,9 @@ export default function RootLayout({
   return (
     <html
       lang="th"
-      className={cn("h-full", "antialiased", cmuFont.variable, "font-sans")}
+      className={cn("h-full", "antialiased", cmuFont.variable, cmuFont.className)}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className={cn("min-h-full flex flex-col", cmuFont.className)}>
         <ShellMigrationGate>{children}</ShellMigrationGate>
       </body>
     </html>
