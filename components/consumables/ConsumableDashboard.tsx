@@ -174,38 +174,29 @@ export function ConsumableDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 pb-12">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b-4 border-yellow-400 bg-white px-4 py-3 shadow-sm md:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 shadow-md">
-              <Image
-                src="https://www.egat.co.th/home/wp-content/uploads/2025/02/LOGO-EGAT-THAI-ALL-06.png"
-                alt="กฟผ."
-                fill
-                unoptimized
-                className="object-contain p-1"
-              />
-            </div>
-            <div>
-              <h1 className="flex items-center gap-2 text-lg font-black text-slate-900 md:text-xl">
-                Consumables <Package className="h-5 w-5 text-emerald-600" />
-              </h1>
-              <p className="text-xs font-semibold text-slate-500">
-                ระบบคลังวัสดุเบิกจ่าย · W10
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <NavigationMenu buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a] shadow-md shadow-yellow-200/60" />
+    <div className="min-h-screen bg-slate-200 p-3 font-sans text-slate-800 md:p-6">
+      {/* Header — matches Shop Order card style */}
+      <header className="sticky top-0 z-30 mb-4 flex flex-col gap-3 rounded-2xl border-b-4 border-amber-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/picture/egat.png"
+            alt="การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย"
+            width={48}
+            height={48}
+            priority
+          />
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-black md:text-2xl">
+              Consumables <Package className="h-6 w-6 text-emerald-600" />
+            </h1>
+            <p className="text-xs font-bold text-slate-500">ระบบคลังวัสดุเบิกจ่าย · W10</p>
           </div>
         </div>
+        <NavigationMenu buttonClassName="bg-amber-300 text-slate-900 hover:bg-amber-400" accentClassName="text-emerald-600" />
       </header>
 
       {/* Main Content Container */}
-      <main className="mx-auto max-w-7xl px-4 pt-6 md:px-8">
+      <main>
         <ConsumableToolbar
           filters={filters}
           years={years}
