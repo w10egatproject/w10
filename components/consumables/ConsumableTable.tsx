@@ -1,6 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { ConsumableItem } from '@/lib/consumables/types';
 
 interface Props {
@@ -26,19 +30,19 @@ export function ConsumableTable({
 }: Props) {
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+      <Card className="flex flex-col items-center justify-center p-16 text-slate-400">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
         <p className="mt-3 text-sm font-medium">กำลังโหลดข้อมูล Consumables...</p>
-      </div>
+      </Card>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+      <Card className="flex flex-col items-center justify-center p-16 text-slate-400">
         <span className="text-4xl">📦</span>
         <p className="mt-2 text-sm font-medium">ไม่พบข้อมูล Consumable ตามเงื่อนไขที่เลือก</p>
-      </div>
+      </Card>
     );
   }
 
@@ -46,46 +50,46 @@ export function ConsumableTable({
   const endIdx = Math.min(page * pageSize, totalItems);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <Card className="overflow-hidden border-slate-200 shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-              <th className="px-4 py-3 text-center w-16">ลำดับ</th>
-              <th className="px-4 py-3 w-28">วันที่</th>
-              <th className="px-4 py-3 min-w-[180px]">รายการ</th>
-              <th className="px-4 py-3 text-center w-20">จำนวน</th>
-              <th className="px-4 py-3 w-32">ผู้รับ</th>
-              <th className="px-4 py-3 min-w-[140px]">หมายเหตุ</th>
-              <th className="px-4 py-3 text-center w-20">รูป</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-800">
+        <Table className="min-w-full text-sm">
+          <TableHeader className="bg-slate-50">
+            <TableRow className="border-b border-slate-200">
+              <TableHead className="px-4 py-3 text-center w-16 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
+              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่</TableHead>
+              <TableHead className="px-4 py-3 min-w-[180px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">รายการ</TableHead>
+              <TableHead className="px-4 py-3 text-center w-20 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จำนวน</TableHead>
+              <TableHead className="px-4 py-3 w-32 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
+              <TableHead className="px-4 py-3 min-w-[140px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
+              <TableHead className="px-4 py-3 text-center w-20 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">รูป</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="text-slate-800">
             {items.map((item) => (
-              <tr
+              <TableRow
                 key={item.no}
                 onClick={() => onSelect(item)}
                 className="cursor-pointer transition-colors hover:bg-emerald-50/60"
               >
-                <td className="px-4 py-3 text-center font-bold text-slate-500">
+                <TableCell className="px-4 py-3 text-center font-bold text-slate-500">
                   {item.no}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
+                </TableCell>
+                <TableCell className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
                   {item.dateDisplay || '—'}
-                </td>
-                <td className="px-4 py-3 font-semibold text-slate-900">
+                </TableCell>
+                <TableCell className="px-4 py-3 font-semibold text-slate-900">
                   {item.item || '—'}
-                </td>
-                <td className="px-4 py-3 text-center font-black text-emerald-600">
+                </TableCell>
+                <TableCell className="px-4 py-3 text-center font-black text-emerald-600">
                   {item.quantity}
-                </td>
-                <td className="px-4 py-3 font-medium text-slate-700">
+                </TableCell>
+                <TableCell className="px-4 py-3 font-medium text-slate-700">
                   {item.receiver || '—'}
-                </td>
-                <td className="px-4 py-3 text-slate-500 truncate max-w-[200px]">
-                  {item.note || '—'}
-                </td>
-                <td className="px-4 py-3 text-center">
+                </TableCell>
+                <TableCell className="px-4 py-3 text-slate-500">
+                  <div className="truncate max-w-[200px]">{item.note || '—'}</div>
+                </TableCell>
+                <TableCell className="px-4 py-3 text-center">
                   {item.picUrl ? (
                     <div className="relative inline-block h-8 w-8 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                       <Image
@@ -99,11 +103,11 @@ export function ConsumableTable({
                   ) : (
                     <span className="text-slate-300">—</span>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination Bar */}
@@ -112,14 +116,15 @@ export function ConsumableTable({
           แสดง {startIdx}-{endIdx} จาก {totalItems} รายการ
         </div>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="icon"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="flex h-8 min-w-[32px] items-center justify-center rounded-lg border border-slate-200 bg-white font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+            className="h-8 w-8"
           >
             ‹
-          </button>
+          </Button>
 
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter(
@@ -133,31 +138,29 @@ export function ConsumableTable({
               return (
                 <span key={p} className="flex items-center gap-1">
                   {showEllipsis && <span className="px-1 text-slate-400">…</span>}
-                  <button
-                    type="button"
+                  <Button
+                    variant={p === page ? "default" : "outline"}
+                    size="icon"
                     onClick={() => onPageChange(p)}
-                    className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border font-bold transition ${
-                      p === page
-                        ? 'border-emerald-600 bg-emerald-600 text-white'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
+                    className={`h-8 w-8 ${p === page ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
                   >
                     {p}
-                  </button>
+                  </Button>
                 </span>
               );
             })}
 
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="icon"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="flex h-8 min-w-[32px] items-center justify-center rounded-lg border border-slate-200 bg-white font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+            className="h-8 w-8"
           >
             ›
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

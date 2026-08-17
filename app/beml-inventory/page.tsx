@@ -5,6 +5,11 @@ import { RefreshCw, Search, Package, AlertCircle, CheckCircle2, Info, ChevronDow
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InventoryItem {
   code: string;
@@ -204,7 +209,7 @@ export default function ShopOrderPage() {
           <div className="flex flex-col">
             <h1 className="text-xl md:text-3xl font-black tracking-tight text-[#4A4A49] uppercase flex items-center gap-2 md:gap-3">
               <Image src="/picture/egat.png" alt="EGAT Logo" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
-              คลังอะไหล่ BEML
+              <SplitText text="คลังอะไหล่ BEML" className="inline-block" />
               <Package className="w-8 h-8 md:w-10 h-10 text-[#d4a300]" />
             </h1>
             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">BEML Inventory - PrintCheck Dashboard</p>
@@ -231,17 +236,15 @@ export default function ShopOrderPage() {
             )}
           </AnimatePresence>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
+          <Button
+            variant="outline"
             onClick={() => loadData()}
             disabled={isLoading}
-            className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 transition-all"
+            className="rounded-xl md:rounded-2xl text-xs md:text-sm font-black border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 transition-all h-10 md:h-12"
           >
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-            รีเฟรชข้อมูล
-          </motion.button>
+            <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+          </Button>
 
           {/* Navigation Dropdown Menu */}
           <NavigationMenu
@@ -333,17 +336,17 @@ export default function ShopOrderPage() {
           </div>
           {/* System Dropdown */}
           <div className="relative min-w-[200px]">
-            <select
-              value={selectedSystem}
-              onChange={(e) => setSelectedSystem(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-[#d4a300] text-sm appearance-none cursor-pointer pr-10"
-            >
-              <option value="ALL">ทุกระบบ (All Systems)</option>
-              {systems.map(sys => (
-                <option key={sys} value={sys}>{sys}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+            <Select value={selectedSystem} onValueChange={(val) => setSelectedSystem(val ?? '')}>
+              <SelectTrigger className="w-full xl:w-[200px] h-[42px] border-slate-200 rounded-xl text-sm font-semibold">
+                <SelectValue placeholder="ทุกระบบ (All Systems)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">ทุกระบบ (All Systems)</SelectItem>
+                {systems.map(sys => (
+                  <SelectItem key={sys} value={sys}>{sys}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -357,7 +360,7 @@ export default function ShopOrderPage() {
           </button>
         </div>
       ) : (
-        <>
+        <BlurFade delay={0.1}>
           {/* Dashboard view */}
           {currentTab === 'dashboard' && (
             <>
@@ -428,7 +431,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{stats.total}</span>
+                        <span className="text-3xl font-extrabold text-slate-900 tracking-tight"><NumberTicker value={stats.total} /></span>
                         <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-500"><Boxes className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -447,7 +450,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-emerald-600 tracking-tight">{stats.normal}</span>
+                        <span className="text-3xl font-extrabold text-emerald-600 tracking-tight"><NumberTicker value={stats.normal} /></span>
                         <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-500"><CheckCircle2 className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -466,7 +469,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-amber-600 tracking-tight">{stats.low}</span>
+                        <span className="text-3xl font-extrabold text-amber-600 tracking-tight"><NumberTicker value={stats.low} /></span>
                         <div className="p-1.5 bg-amber-50 rounded-lg text-amber-500"><AlertCircle className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -485,7 +488,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-rose-600 tracking-tight">{stats.out}</span>
+                        <span className="text-3xl font-extrabold text-rose-600 tracking-tight"><NumberTicker value={stats.out} /></span>
                         <div className="p-1.5 bg-rose-50 rounded-lg text-rose-500"><X className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -554,7 +557,7 @@ export default function ShopOrderPage() {
 
                         {/* Center Text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
+                          <span className="text-lg font-black leading-none"><NumberTicker value={stats.normalPct} />%</span>
                           <span className="text-[9px] text-slate-400 mt-1">ปกติ</span>
                         </div>
 
@@ -783,7 +786,7 @@ export default function ShopOrderPage() {
               </div>
             </div>
           )}
-        </>
+        </BlurFade>
       )}
 
       {/* Item Detail Popover Overlay Modal */}

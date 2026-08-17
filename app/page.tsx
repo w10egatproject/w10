@@ -6,6 +6,12 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -93,17 +99,19 @@ const GroupBlock: React.FC<GroupBlockProps> = ({ name, stats, themeColor, isSumm
           </div>
         )}
         <div className="text-sm sm:text-xl md:text-base lg:text-xl xl:text-2xl font-black text-slate-900 leading-tight">
-          {name} {isSummary ? "" : "เข้า"} {stats?.entrance || 0}
+          {name} {isSummary ? "" : "เข้า"} <NumberTicker value={stats?.entrance || 0} />
         </div>
       </div>
       
       {!isSummary && (
-        <div className="text-[13px] sm:text-[15px] font-bold text-slate-600 space-y-2 bg-white/50 backdrop-blur p-3 sm:p-4 rounded-2xl border border-white/50 z-10 mt-auto">
-          <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้ยังไม่เสร็จ</span><span className="text-slate-900">{stats?.left || 0}</span></div>
-          <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้เสร็จ</span><span className="text-slate-900">{stats?.finish || 0}</span></div>
-          <div className="flex justify-between gap-4 px-1"><span>เสร็จจากเดือนอื่น</span><span className="text-slate-900">{stats?.otherFinish || 0}</span></div>
-          <div className="flex justify-between gap-4 font-black text-slate-950 pt-2 mt-2 border-t border-slate-200/50 px-1"><span>งานออก</span><span className="text-xl">{stats?.out || 0}</span></div>
-        </div>
+        <Card className="text-[13px] sm:text-[15px] font-bold text-slate-600 bg-white/50 backdrop-blur p-3 sm:p-4 rounded-2xl border border-white/50 z-10 mt-auto">
+          <div className="space-y-2">
+            <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้ยังไม่เสร็จ</span><span className="text-slate-900"><NumberTicker value={stats?.left || 0} /></span></div>
+            <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้เสร็จ</span><span className="text-slate-900"><NumberTicker value={stats?.finish || 0} /></span></div>
+            <div className="flex justify-between gap-4 px-1"><span>เสร็จจากเดือนอื่น</span><span className="text-slate-900"><NumberTicker value={stats?.otherFinish || 0} /></span></div>
+            <div className="flex justify-between gap-4 font-black text-slate-950 pt-2 mt-2 border-t border-slate-200/50 px-1"><span>งานออก</span><span className="text-xl"><NumberTicker value={stats?.out || 0} /></span></div>
+          </div>
+        </Card>
       )}
     </motion.div>
   );
@@ -288,9 +296,9 @@ export default function DashboardPage() {
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white p-8 rounded-3xl shadow-xl border-b-4 border-red-500">
         <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
         <div className="font-black text-slate-800 text-2xl mb-4">{error}</div>
-        <button onClick={() => loadDashboard(year, month)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all active:scale-95 flex items-center gap-2 mx-auto">
+        <Button onClick={() => loadDashboard(year, month)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all active:scale-95 flex items-center gap-2 mx-auto">
           <RefreshCw size={18} /> ลองใหม่อีกครั้ง
-        </button>
+        </Button>
       </motion.div>
     </div>
   );
@@ -307,7 +315,7 @@ export default function DashboardPage() {
           <div className="flex flex-col">
             <h1 className="text-xl md:text-3xl font-black tracking-tight text-[#4A4A49] uppercase flex items-center gap-2 md:gap-3">
               <Image src="/picture/egat.png" alt="EGAT Logo" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
-              W10 Dashboard
+              <SplitText text="W10 Dashboard" className="inline-block" />
               <Image src="/picture/รูปภาพ14-Photoroom.png" alt="W10 Icon" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
             </h1>
             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">หสบ-ช. maintenance dashboard</p>
@@ -327,27 +335,35 @@ export default function DashboardPage() {
                 </motion.span>
               )}
             </AnimatePresence>
-            <div className="flex gap-1.5 bg-slate-100 p-1 md:p-1.5 rounded-xl md:rounded-2xl border border-slate-200">
-              <select className="px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-white text-xs md:text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={year} onChange={handleYearChange}>
-                <option value="all">รวมทุกปี</option>
-                {["2023", "2024", "2025", "2026"].map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-              <select className="px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-white text-xs md:text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={month} onChange={handleMonthChange}>
-                <option value="all">รวมทุกเดือน</option>
-                {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-              </select>
+            <div className="flex gap-1.5 p-1 md:p-1.5 items-center">
+              <Select value={year} onValueChange={(val) => handleYearChange({ target: { value: val } } as any)}>
+                <SelectTrigger className="w-[100px] bg-white rounded-xl font-bold shadow-sm border-slate-200">
+                  <SelectValue placeholder="ปี" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">รวมทุกปี</SelectItem>
+                  {["2023", "2024", "2025", "2026"].map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={month} onValueChange={(val) => handleMonthChange({ target: { value: val } } as any)}>
+                <SelectTrigger className="w-[120px] bg-white rounded-xl font-bold shadow-sm border-slate-200">
+                  <SelectValue placeholder="เดือน" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">รวมทุกเดือน</SelectItem>
+                  {THAI_MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
+            <Button
+              variant="outline"
+              size="icon"
               onClick={handleRefresh}
               disabled={isLoading}
-              className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 transition-all"
+              className="rounded-xl md:rounded-2xl border-slate-200 shadow-sm transition-all h-10 w-10 shrink-0"
             >
               <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-              รีเฟรชข้อมูล
-            </motion.button>
+            </Button>
             <NavigationMenu
               buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
               accentClassName="text-[#d4a300]"
@@ -367,12 +383,13 @@ export default function DashboardPage() {
             <RefreshCw size={24} className="animate-spin mr-3 text-[#d4a300]" /> กำลังโหลดข้อมูล...
           </motion.div>
         ) : (
-          <motion.div 
-            key="content"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <BlurFade delay={0.1}>
+            <motion.div 
+              key="content"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
             {/* Section 1: Operation Status */}
             <motion.div variants={itemVariants} className="bg-[#e8f5ff]/95 border-b-4 border-[#b9dcff] p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm shadow-sky-100/60 relative overflow-hidden flex flex-col mb-6 md:mb-8">
                 <div className="flex items-center justify-between mb-6 md:mb-8">
@@ -389,7 +406,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col rounded-2xl p-5 bg-[#5c607f] border-2 border-[#858bb5] shadow-md relative overflow-hidden transition-all hover:shadow-lg h-full">
                       <Activity className="absolute -right-4 -bottom-4 w-32 h-32 text-white/5 pointer-events-none" />
                       <div className="text-[12px] font-black text-[#ffef9a] uppercase tracking-widest mb-1.5 z-10">Total W/O</div>
-                      <div className="text-5xl font-black text-white mb-2 z-10">{statusData?.total || 0}</div>
+                      <div className="text-5xl font-black text-white mb-2 z-10"><NumberTicker value={statusData?.total || 0} /></div>
                       <div className="flex-1 flex items-center justify-center min-h-[200px]">
                         <div className="w-full h-full scale-110 origin-center">
                           <HighchartsClient
@@ -418,7 +435,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="mt-auto z-10">
-                        <div className="text-5xl font-black text-slate-800 mb-2">{statusData?.pending || 0}</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.pending || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
                             <motion.div initial={{ width: 0 }} animate={{ width: `${pendingPct}%` }} transition={{ duration: 1 }} className="h-full bg-rose-500 rounded-full"></motion.div>
@@ -437,7 +454,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="mt-auto z-10">
-                        <div className="text-5xl font-black text-slate-800 mb-2">{statusData?.finish || 0}</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.finish || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
                             <motion.div initial={{ width: 0 }} animate={{ width: `${finishPct}%` }} transition={{ duration: 1 }} className="h-full bg-amber-500 rounded-full"></motion.div>
@@ -456,7 +473,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="mt-auto z-10">
-                        <div className="text-5xl font-black text-slate-800 mb-2">{statusData?.sap || 0}</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.sap || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
                             <motion.div initial={{ width: 0 }} animate={{ width: `${sapPct}%` }} transition={{ duration: 1 }} className="h-full bg-emerald-500 rounded-full"></motion.div>
@@ -486,7 +503,7 @@ export default function DashboardPage() {
 
             <motion.div variants={itemVariants} className="bg-[#cdc1ff] p-6 rounded-3xl border border-[#c4b5fd] shadow-sm shadow-purple-100/50 mb-6 md:mb-8 text-center">
                 <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-1">รวม W/O ทั้งหมด</div>
-                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-6xl font-black text-slate-900">{w_all?.entrance || 0}</motion.div>
+                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-6xl font-black text-slate-900"><NumberTicker value={w_all?.entrance || 0} /></motion.div>
             </motion.div>
 
             {/* Section 3: Work by Group */}
@@ -581,6 +598,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </motion.div>
+          </BlurFade>
         )}
       </AnimatePresence>
     </div>

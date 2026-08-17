@@ -1,5 +1,9 @@
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   orders: ShopOrder[];
@@ -31,7 +35,7 @@ export function ShopOrderTable({
     'สถานะ',
   ];
   return (
-    <section className="min-w-0 rounded-2xl bg-white shadow-sm">
+    <Card className="min-w-0 shadow-sm border-none overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <div>
           <h2 className="font-bold">ตารางรายการ Shop Order</h2>
@@ -41,24 +45,24 @@ export function ShopOrderTable({
         </div>
       </div>
       <div className="max-h-[68vh] overflow-auto">
-        <table className="w-full min-w-[1100px] border-collapse text-left text-xs">
-          <thead className="sticky top-0 z-10 bg-slate-100">
-            <tr>
+        <Table className="min-w-[1100px] text-xs">
+          <TableHeader className="sticky top-0 z-10 bg-slate-100">
+            <TableRow>
               {headers.map((h) => (
-                <th
+                <TableHead
                   key={h}
-                  className="whitespace-nowrap border-b border-slate-200 px-3 py-3 font-bold"
+                  className="whitespace-nowrap font-bold text-slate-900"
                 >
                   {h}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {orders.map((order) => {
               const done = getOrderStatus(order) === 'done';
               return (
-                <tr
+                <TableRow
                   key={order.no}
                   tabIndex={onSelect ? 0 : undefined}
                   onClick={() => onSelect?.(order)}
@@ -74,37 +78,37 @@ export function ShopOrderTable({
                       : 'hover:bg-slate-50'
                   }
                 >
-                  <td className="px-3 py-3 font-bold">{order.no}</td>
-                  <td className="px-3 py-3">{order.from}</td>
-                  <td className="px-3 py-3 font-mono">{order.number}</td>
-                  <td className="px-3 py-3">{formatThaiDate(order.dateIn)}</td>
-                  <td className="max-w-64 px-3 py-3 font-medium">
+                  <TableCell className="font-bold">{order.no}</TableCell>
+                  <TableCell>{order.from}</TableCell>
+                  <TableCell className="font-mono">{order.number}</TableCell>
+                  <TableCell>{formatThaiDate(order.dateIn)}</TableCell>
+                  <TableCell className="max-w-64 font-medium">
                     {order.subject}
-                  </td>
-                  <td className="px-3 py-3">{order.receivingUnit || '—'}</td>
-                  <td className="px-3 py-3">{order.receiverName || '—'}</td>
-                  <td className="px-3 py-3">
+                  </TableCell>
+                  <TableCell>{order.receivingUnit || '—'}</TableCell>
+                  <TableCell>{order.receiverName || '—'}</TableCell>
+                  <TableCell>
                     {formatThaiDate(order.dateOut) || '—'}
-                  </td>
-                  <td className="max-w-52 truncate px-3 py-3">
+                  </TableCell>
+                  <TableCell className="max-w-52 truncate">
                     {order.note || '—'}
-                  </td>
-                  <td className="px-3 py-3">
-                    <span
-                      className={`whitespace-nowrap rounded-full px-2 py-1 font-bold ${
-                        done
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {done ? 'เสร็จสิ้น' : 'รอดำเนินการ'}
-                    </span>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell>
+                    {done ? (
+                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none font-bold">
+                        เสร็จสิ้น
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none font-bold">
+                        รอดำเนินการ
+                      </Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         {!orders.length && (
           <div className="p-12 text-center">
             <p className="font-bold">ไม่พบรายการ</p>
@@ -119,22 +123,26 @@ export function ShopOrderTable({
           หน้า {page} / {totalPages}
         </span>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             disabled={page <= 1}
             onClick={() => onPage(page - 1)}
-            className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
+            className="rounded-lg"
           >
             ก่อนหน้า
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             disabled={page >= totalPages}
             onClick={() => onPage(page + 1)}
-            className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
+            className="rounded-lg"
           >
             ถัดไป
-          </button>
+          </Button>
         </div>
       </div>
-    </section>
+    </Card>
   );
 }

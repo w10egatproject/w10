@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import type { ShopOrderFilters, ShopOrderSummary as Summary } from '@/lib/shop-order/types';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 
 const HighchartsClient = dynamic(
   () => import('@/components/charts/HighchartsClient'),
@@ -114,20 +116,23 @@ export function ShopOrderSummary({
         {kpis.map(({ label, value, color, testId, status }) => {
           const isActive = activeStatus === status;
           return (
-            <button
-              type="button"
+            <Card
               key={label}
               data-testid={testId}
               onClick={() => onStatusSelect?.(status)}
-              className={`rounded-2xl p-3 text-left transition-all shadow-sm ${
+              className={`cursor-pointer transition-all border-none ${
                 isActive
-                  ? 'border-2 border-indigo-600 bg-indigo-50/70 shadow-md ring-2 ring-indigo-500/20'
-                  : 'border border-transparent bg-white hover:border-slate-300 hover:shadow-md'
+                  ? 'bg-indigo-50/70 shadow-md ring-2 ring-indigo-500/20'
+                  : 'bg-white hover:shadow-md'
               }`}
             >
-              <strong className={`block text-2xl ${color}`}>{value}</strong>
-              <span className="text-xs font-bold text-slate-700">{label}</span>
-            </button>
+              <CardContent className="p-3 text-left">
+                <strong className={`block text-2xl ${color}`}>
+                  <NumberTicker value={value} />
+                </strong>
+                <span className="text-xs font-bold text-slate-700">{label}</span>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
@@ -164,10 +169,13 @@ export function ShopOrderSummary({
       </section>
 
       {/* Popular Units Ranking (Image 2 style layout) */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-bold text-slate-900">
-          หน่วยงานยอดนิยม
-        </h2>
+      <Card className="shadow-sm border-none">
+        <CardHeader className="p-5 pb-0">
+          <CardTitle className="text-sm font-bold text-slate-900">
+            หน่วยงานยอดนิยม
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-5 pt-4">
         {summary.popularUnits.length ? (
           <ol className="space-y-3.5 text-sm">
             {summary.popularUnits.map((unit, index) => {
@@ -199,7 +207,8 @@ export function ShopOrderSummary({
         ) : (
           <p className="text-xs text-slate-500">ยังไม่มีข้อมูลหน่วยงาน</p>
         )}
-      </section>
+        </CardContent>
+      </Card>
     </aside>
   );
 }

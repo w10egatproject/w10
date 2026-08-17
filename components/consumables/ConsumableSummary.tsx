@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NumberTicker } from '@/components/magicui/number-ticker';
 import type { ConsumableSummary } from '@/lib/consumables/types';
 
 const HighchartsClient = dynamic(
@@ -85,29 +87,30 @@ export function ConsumableSummaryComponent({ summary }: Props) {
     >
       {/* KPI Mini Cards */}
       <div className="grid grid-cols-2 gap-2.5">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm transition-all hover:border-slate-300">
-          <div className="text-3xl font-black text-slate-800">
-            {summary.totalItems.toLocaleString()}
-          </div>
-          <div className="mt-1 text-xs font-bold text-slate-500">
-            ทั้งหมด (รายการ)
-          </div>
-        </div>
-        <div className="rounded-2xl border border-emerald-300 bg-emerald-50/70 p-4 text-center shadow-sm transition-all hover:border-emerald-400">
-          <div className="text-3xl font-black text-emerald-700">
-            {summary.totalQuantity.toLocaleString()}
-          </div>
-          <div className="mt-1 text-xs font-bold text-emerald-800">
-            จำนวนรวม (ชิ้น)
-          </div>
-        </div>
+        <Card className="shadow-sm transition-all hover:border-slate-300">
+          <CardContent className="p-4 text-center">
+            <NumberTicker value={summary.totalItems} className="text-3xl font-black text-slate-800 tracking-tight" />
+            <div className="mt-1 text-xs font-bold text-slate-500">
+              ทั้งหมด (รายการ)
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-emerald-300 bg-emerald-50/70 shadow-sm transition-all hover:border-emerald-400">
+          <CardContent className="p-4 text-center">
+            <NumberTicker value={summary.totalQuantity} className="text-3xl font-black text-emerald-700 tracking-tight" />
+            <div className="mt-1 text-xs font-bold text-emerald-800">
+              จำนวนรวม (ชิ้น)
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 3D Highcharts Donut Panel (Dark Theme) */}
-      <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-5 text-white shadow-xl">
-        <h3 className="mb-3 text-sm font-bold text-slate-200">
-          สรุปการเบิก (3D Chart)
-        </h3>
+      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl">
+        <CardContent className="p-5">
+          <h3 className="mb-3 text-sm font-bold text-slate-200">
+            สรุปการเบิก (3D Chart)
+          </h3>
 
         <div className="relative mb-3 h-44 w-full">
           {summary.topItems.length > 0 ? (
@@ -118,9 +121,7 @@ export function ConsumableSummaryComponent({ summary }: Props) {
             </div>
           )}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <strong className="text-xl font-black text-white">
-              {summary.totalQuantity.toLocaleString()}
-            </strong>
+            <NumberTicker value={summary.totalQuantity} className="text-xl font-black text-white tracking-tight" />
             <span className="text-[10px] font-bold text-slate-400">
               ชิ้นรวม
             </span>
@@ -155,13 +156,17 @@ export function ConsumableSummaryComponent({ summary }: Props) {
             ))
           )}
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Receiver Ranking Panel (Image 2 style layout) */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-4 text-sm font-bold text-slate-900">
-          ผู้เบิกของมากที่สุด
-        </h3>
+      <Card className="shadow-sm">
+        <CardHeader className="p-5 pb-0 mb-4">
+          <CardTitle className="text-sm font-bold text-slate-900">
+            ผู้เบิกของมากที่สุด
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-5 pt-0">
         {summary.topReceivers.length === 0 ? (
           <div className="text-xs text-slate-400">ไม่มีข้อมูล</div>
         ) : (
@@ -196,7 +201,8 @@ export function ConsumableSummaryComponent({ summary }: Props) {
             })}
           </ol>
         )}
-      </div>
+        </CardContent>
+      </Card>
     </aside>
   );
 }

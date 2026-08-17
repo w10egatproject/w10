@@ -13,6 +13,9 @@ import { OrderFormDialog } from './OrderFormDialog';
 import { ShopOrderSummary } from './ShopOrderSummary';
 import { ShopOrderTable } from './ShopOrderTable';
 import { ShopOrderToolbar } from './ShopOrderToolbar';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { SplitText } from "@/components/reactbits/split-text";
 
 const EMPTY_FILTERS: ShopOrderFilters = { query: '', year: 'all', month: 'all', status: 'all' };
 
@@ -158,20 +161,29 @@ export function ShopOrderDashboard() {
   };
 
   return (
+    <BlurFade delay={0.1}>
     <main className="min-h-screen bg-slate-200 p-3 text-slate-800 md:p-6">
       <header className="sticky top-0 z-30 mb-4 flex flex-col gap-3 rounded-2xl border-b-4 border-amber-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Image src="/picture/egat.png" alt="การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย" width={48} height={48} priority />
-          <div><h1 className="flex items-center gap-2 text-xl font-black md:text-2xl">Shop Order <ClipboardList className="h-6 w-6 text-indigo-600" /></h1>
-            <p className="text-xs font-bold text-slate-500">ระบบติดตามหนังสือสั่งการ · W10</p></div>
+          <div>
+            <div className="flex items-center gap-2">
+              <SplitText text="Shop Order" className="text-xl font-black md:text-2xl" />
+              <ClipboardList className="h-6 w-6 text-indigo-600" />
+            </div>
+            <p className="text-xs font-bold text-slate-500">ระบบติดตามหนังสือสั่งการ · W10</p>
+          </div>
         </div>
         <NavigationMenu buttonClassName="bg-amber-300 text-slate-900 hover:bg-amber-400" accentClassName="text-indigo-600" />
       </header>
 
       <ShopOrderToolbar filters={filters} years={years} loading={loading} onChange={updateFilters} onRefresh={() => void loadData()} onAdd={() => { setSelected(null); setFormMode('create'); }} />
-      {error && <div role="alert" className="mb-4 flex items-center justify-between rounded-xl bg-rose-50 p-4 text-sm font-bold text-rose-800">
-        <span>{error}</span><button onClick={() => { setLoading(true); void loadData(); }} className="flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5"><RefreshCw className="h-4 w-4" /> ลองใหม่</button>
-      </div>}
+      {error && (
+        <Alert variant="destructive" className="mb-4 flex items-center justify-between">
+          <AlertDescription className="font-bold">{error}</AlertDescription>
+          <button onClick={() => { setLoading(true); void loadData(); }} className="flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5"><RefreshCw className="h-4 w-4" /> ลองใหม่</button>
+        </Alert>
+      )}
       {attachmentWarning && <div role="status" className="mb-4 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-900 sm:flex-row sm:items-center sm:justify-between">
         <span>{attachmentWarning.message}</span>
         <button type="button" onClick={() => { setSelected(attachmentWarning.order); setFormMode('edit'); setAttachmentWarning(null); }} className="rounded-lg border border-amber-400 bg-white px-3 py-1.5">เพิ่มไฟล์อีกครั้ง</button>
@@ -190,7 +202,7 @@ export function ShopOrderDashboard() {
       </div>}
       {data && <p className="mt-4 text-right text-xs text-slate-500">อัปเดตล่าสุด {new Date(data.generatedAt).toLocaleString('th-TH')}</p>}
       {selected && !formMode && <OrderDetailDialog order={selected} pending={mutationPending} onClose={() => setSelected(null)} onEdit={() => setFormMode('edit')} onDelete={() => void deleteOrder()} />}
-      {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}
+      {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} error={error} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}
 
       {/* Save Success Modal */}
       {showSaveSuccess && (
@@ -272,5 +284,6 @@ export function ShopOrderDashboard() {
         </div>
       )}
     </main>
+    </BlurFade>
   );
 }

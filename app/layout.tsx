@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Prompt } from "next/font/google";
+import { Prompt, Geist } from "next/font/google";
 import "./globals.css";
 import ShellMigrationGate from "@/components/layout/ShellMigrationGate";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const prompt = Prompt({
   weight: ["300", "400", "500", "600", "700"],
@@ -25,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="th"
-      className={`${prompt.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", prompt.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col"><ShellMigrationGate>{children}</ShellMigrationGate></body>
     </html>

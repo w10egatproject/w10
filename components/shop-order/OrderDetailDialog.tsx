@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { driveFilePreviewUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 function AttachmentPreview({
   order,
@@ -84,39 +87,19 @@ export function OrderDetailDialog({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-3">
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="order-detail-title"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && !pending) onClose();
-        }}
-        className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
-      >
-        <div className="flex justify-between">
-          <div>
-            <h2 id="order-detail-title" className="text-lg font-black">
-              รายละเอียด Shop Order #{order.no}
-            </h2>
-            <span
-              className={`mt-1 inline-block rounded-full px-2 py-1 text-xs font-bold ${
-                getOrderStatus(order) === 'done'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-amber-100 text-amber-800'
-              }`}
-            >
-              {getOrderStatus(order) === 'done' ? 'เสร็จสิ้น' : 'รอดำเนินการ'}
-            </span>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="ปิด"
-            className="h-9 w-9 rounded-lg text-xl hover:bg-slate-100"
-          >
-            ×
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => !open && !pending && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-black flex items-center gap-2">
+            รายละเอียด Shop Order #{order.no}
+            {getOrderStatus(order) === 'done' ? (
+              <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none">เสร็จสิ้น</Badge>
+            ) : (
+              <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none">รอดำเนินการ</Badge>
+            )}
+          </DialogTitle>
+          <DialogDescription className="sr-only">Order details for {order.no}</DialogDescription>
+        </DialogHeader>
 
         <div className="mt-5 flex flex-col gap-6 sm:flex-row">
           <div className="w-full shrink-0 sm:w-64">
@@ -176,22 +159,23 @@ export function OrderDetailDialog({
           </dl>
         </div>
 
-        <div className="mt-5 flex justify-end gap-2">
-          <button
+        <DialogFooter className="mt-5 flex justify-end gap-2 sm:justify-end">
+          <Button
+            variant="destructive"
             disabled={pending}
             onClick={() => setConfirming(true)}
-            className="rounded-xl border border-rose-300 px-4 py-2 font-bold text-rose-700 hover:bg-rose-50"
+            className="font-bold"
           >
             ลบรายการ
-          </button>
-          <button
+          </Button>
+          <Button
             disabled={pending}
             onClick={onEdit}
-            className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700"
+            className="bg-indigo-600 font-bold text-white hover:bg-indigo-700"
           >
             แก้ไข
-          </button>
-        </div>
+          </Button>
+        </DialogFooter>
 
         {confirming && (
           <div
@@ -208,23 +192,25 @@ export function OrderDetailDialog({
               หลัง 30 วัน ส่วนไฟล์เดิม (Legacy) จะไม่ถูกจัดการ
             </p>
             <div className="mt-3 flex justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setConfirming(false)}
-                className="rounded-lg border px-3 py-1.5"
               >
                 ยกเลิก
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 disabled={pending}
                 onClick={onDelete}
-                className="rounded-lg bg-rose-700 px-3 py-1.5 font-bold text-white"
               >
                 ยืนยันลบ
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </section>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

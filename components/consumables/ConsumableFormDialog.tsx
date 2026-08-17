@@ -1,6 +1,11 @@
 'use client';
 
 import { Camera, Paperclip, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import type { ConsumableInput, ConsumableItem } from '@/lib/consumables/types';
@@ -117,72 +122,68 @@ export function ConsumableFormDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
-        <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4">
-          <h2 className="text-lg font-bold text-slate-900">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && !pending && onClose()}>
+      <DialogContent className="max-w-lg p-0 overflow-hidden" aria-describedby="consumable-form-description">
+        <DialogDescription id="consumable-form-description" className="sr-only">
+          {mode === 'edit' ? 'ฟอร์มแก้ไขรายการ' : 'ฟอร์มเพิ่มรายการ'}
+        </DialogDescription>
+        <DialogHeader className="border-b border-slate-100 p-6 pb-4">
+          <DialogTitle className="text-lg font-bold text-slate-900 text-left">
             {mode === 'edit' ? '✏️ แก้ไขรายการ Consumable' : '📦 เพิ่มรายการ Consumable'}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-2 space-y-4 text-sm max-h-[75vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block font-bold text-slate-700">วันที่</label>
-              <input
+              <Label className="mb-2 block font-bold text-slate-700">วันที่</Label>
+              <Input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="h-10 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 text-slate-800 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 rounded-xl border-slate-300 focus-visible:ring-emerald-500"
               />
               <small className="mt-1 block text-[11px] font-semibold text-emerald-600">
                 {thaiDatePreview}
               </small>
             </div>
             <div>
-              <label className="mb-1 block font-bold text-slate-700">จำนวน</label>
-              <input
+              <Label className="mb-2 block font-bold text-slate-700">จำนวน</Label>
+              <Input
                 type="number"
                 min="1"
                 step="1"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 placeholder="จำนวนชิ้น"
-                className="h-10 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 text-slate-800 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 rounded-xl border-slate-300 focus-visible:ring-emerald-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block font-bold text-slate-700">
+            <Label className="mb-2 block font-bold text-slate-700">
               รายการ <span className="text-rose-500">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               required
               value={item}
               onChange={(e) => setItem(e.target.value)}
               placeholder="เช่น ปากกาเคมีสีแดง"
-              className="h-10 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 text-slate-800 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-xl border-slate-300 focus-visible:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="mb-1 block font-bold text-slate-700">ผู้รับ</label>
-            <input
+            <Label className="mb-2 block font-bold text-slate-700">ผู้รับ</Label>
+            <Input
               type="text"
               list="consumableReceiverList"
               value={receiver}
               onChange={(e) => setReceiver(e.target.value)}
               placeholder="ชื่อผู้รับ หรือเลือกจากรายการ"
-              className="h-10 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 text-slate-800 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="h-10 rounded-xl border-slate-300 focus-visible:ring-emerald-500"
             />
             <datalist id="consumableReceiverList">
               {receivers.map((name) => (
@@ -192,15 +193,15 @@ export function ConsumableFormDialog({
           </div>
 
           <div>
-            <label className="mb-1 block font-bold text-slate-700">
+            <Label className="mb-2 block font-bold text-slate-700">
               หมายเหตุ <span className="font-normal text-slate-400">(ไม่บังคับ)</span>
-            </label>
-            <textarea
+            </Label>
+            <Textarea
               rows={2}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="รายละเอียดเพิ่มเติม..."
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 p-3 text-slate-800 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 resize-y"
+              className="rounded-xl border-slate-300 focus-visible:ring-emerald-500 resize-y"
             />
           </div>
 
@@ -252,25 +253,26 @@ export function ConsumableFormDialog({
             <div className="text-xs font-bold text-rose-600">{errorMsg}</div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button
+          <DialogFooter className="gap-2 pt-4">
+            <Button
               type="button"
+              variant="outline"
               disabled={pending}
               onClick={onClose}
-              className="rounded-xl border border-slate-300 px-5 py-2.5 font-bold text-slate-700 hover:bg-slate-100 transition disabled:opacity-50"
+              className="rounded-xl border-slate-300 font-bold text-slate-700"
             >
               ยกเลิก
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={pending}
-              className="rounded-xl bg-emerald-600 px-6 py-2.5 font-bold text-white shadow-md hover:bg-emerald-700 transition disabled:opacity-50"
+              className="rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700"
             >
               {pending ? 'กำลังบันทึก...' : 'บันทึก'}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

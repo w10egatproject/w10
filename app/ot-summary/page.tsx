@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { AlertCircle, Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, UserRound } from 'lucide-react';
@@ -7,6 +7,10 @@ import NavigationMenu from '@/components/navigation/NavigationMenu';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SourceSheetCard } from '@/components/layout/SourceSheetCard';
 import { RouteChromeAdapter } from '@/components/layout/RouteChromeAdapter';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
 
 type EmployeeOtRow = {
   sequence: number;
@@ -526,7 +530,9 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                       <HeaderIcon size={28} strokeWidth={2.5} />
                     </motion.div>
                     <div>
-                      <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">{pageTitle}</h1>
+                      <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">
+                        <SplitText text={pageTitle} className="inline-block" />
+                      </h1>
                       <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
                     </div>
                   </div>
@@ -548,17 +554,15 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                       <Filter size={16} className="text-slate-400" />
                       {rangeLabel}
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="button"
+                    <Button
+                      variant="outline"
                       onClick={handleRefresh}
                       disabled={isLoading}
-                      className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60"
+                      className="rounded-xl md:rounded-2xl text-xs md:text-sm font-black border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 h-10 md:h-12"
                     >
                       <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-                      รีเฟรชข้อมูล
-                    </motion.button>
+                      <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+                    </Button>
                     <NavigationMenu
                       buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
                       accentClassName="text-[#d4a300]"
@@ -646,23 +650,26 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
             ) : error}
           </motion.div>
         ) : isLoading || !data ? (
-          <motion.div 
-            key="loading"
-            className={chrome === 'console' ? 'flex items-center justify-center gap-3 rounded-2xl border border-[#cbdff0] bg-[#edf7ff] p-8 text-base font-bold text-slate-600 shadow-sm sm:p-10 md:p-12 uppercase tracking-widest' : 'flex items-center justify-center gap-3 rounded-[2rem] border-2 border-[#dbeafe] bg-[#e8f5ff]/95 p-20 text-base font-black text-slate-400 shadow-sm uppercase tracking-widest'}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <RefreshCw size={24} className="animate-spin text-[#d4a300]" /> กำลังโหลดข้อมูล...
-          </motion.div>
+          <BlurFade delay={0.1}>
+            <motion.div 
+              key="loading"
+              className={chrome === 'console' ? 'flex items-center justify-center gap-3 rounded-2xl border border-[#cbdff0] bg-[#edf7ff] p-8 text-base font-bold text-slate-600 shadow-sm sm:p-10 md:p-12 uppercase tracking-widest' : 'flex items-center justify-center gap-3 rounded-[2rem] border-2 border-[#dbeafe] bg-[#e8f5ff]/95 p-20 text-base font-black text-slate-400 shadow-sm uppercase tracking-widest'}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <RefreshCw size={24} className="animate-spin text-[#d4a300]" /> กำลังโหลดข้อมูล...
+            </motion.div>
+          </BlurFade>
         ) : (
-          <motion.div 
-            key="content"
-            className={`flex flex-col ${chrome === 'console' ? 'gap-5' : 'gap-8'}`}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <BlurFade delay={0.1}>
+            <motion.div 
+              key="content"
+              className={`flex flex-col ${chrome === 'console' ? 'gap-5' : 'gap-8'}`}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
             {!isEmployeePage && contractorSections.map(({ group, rows, errors, totals, etasRows, etasTotals }) => (
               <motion.section 
                 key={group} 
@@ -684,15 +691,15 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     <dl className="mt-6 grid gap-3 text-base font-extrabold text-[#334155]">
                       <div className="flex items-center justify-between gap-4 rounded-xl bg-[#fff0f6] px-4 py-3">
                         <dt>จำนวนคน</dt>
-                        <dd className="text-xl font-black text-[#061b3d]">{formatNumber(rows.length)} คน</dd>
+                        <dd className="text-xl font-black text-[#061b3d]"><NumberTicker value={rows.length} /> คน</dd>
                       </div>
                       <div className="flex items-center justify-between gap-4 rounded-xl bg-[#fff8da] px-4 py-3">
                         <dt>ชม.วันหยุด</dt>
-                        <dd className="text-xl font-black text-[#061b3d]">{formatNumber(totals.holidayHours)} ชั่วโมง</dd>
+                        <dd className="text-xl font-black text-[#061b3d]"><NumberTicker value={totals.holidayHours} decimalPlaces={2} /> ชั่วโมง</dd>
                       </div>
                       <div className="flex items-center justify-between gap-4 rounded-xl bg-[#e8f5ff] px-4 py-3">
                         <dt>ชม.วันปกติ</dt>
-                        <dd className="text-xl font-black text-[#061b3d]">{formatNumber(totals.total)} ชั่วโมง</dd>
+                        <dd className="text-xl font-black text-[#061b3d]"><NumberTicker value={totals.total} decimalPlaces={2} /> ชั่วโมง</dd>
                       </div>
                     </dl>
                   </aside>
@@ -773,11 +780,11 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     <dl className="mt-6 grid gap-3 text-base font-extrabold text-[#334155]">
                       <div className="flex items-center justify-between gap-4 rounded-xl bg-[#fff8da] px-4 py-3">
                         <dt>จำนวนคน</dt>
-                        <dd className="text-xl font-black text-[#061b3d]">{formatNumber(rows.length)} คน</dd>
+                        <dd className="text-xl font-black text-[#061b3d]"><NumberTicker value={rows.length} /> คน</dd>
                       </div>
                       <div className="flex items-center justify-between gap-4 rounded-xl bg-[#fff0f6] px-4 py-3">
                         <dt>OT รวม</dt>
-                        <dd className="text-xl font-black text-[#061b3d]">{formatNumber(totals.total)} ชั่วโมง</dd>
+                        <dd className="text-xl font-black text-[#061b3d]"><NumberTicker value={totals.total} decimalPlaces={2} /> ชั่วโมง</dd>
                       </div>
                     </dl>
                   </aside>
@@ -837,7 +844,8 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
               </div>
             </motion.section>
             )}
-          </motion.div>
+            </motion.div>
+          </BlurFade>
         )}
       </AnimatePresence>
       </div>

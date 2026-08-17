@@ -2,6 +2,9 @@
 
 import Image from 'next/image';
 import { Edit, Trash2, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { ConsumableItem } from '@/lib/consumables/types';
 
@@ -26,29 +29,25 @@ export function ConsumableDetailDialog({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-xl p-0 overflow-hidden" aria-describedby="consumable-detail-description">
+          <DialogDescription id="consumable-detail-description" className="sr-only">
+            รายละเอียด Consumable #{item.no}
+          </DialogDescription>
           {/* Top Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 p-6">
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">
+          <DialogHeader className="border-b border-slate-100 p-6 pb-4">
+            <div className="flex flex-col items-start text-left">
+              <DialogTitle className="text-lg font-extrabold text-slate-900">
                 รายละเอียด Consumable #{item.no}
-              </h2>
-              <span className="mt-1 inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-800">
+              </DialogTitle>
+              <Badge variant="secondary" className="mt-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
                 Consumable
-              </span>
+              </Badge>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          </DialogHeader>
 
           {/* Body Content */}
-          <div className="p-6">
+          <div className="p-6 pt-2 max-h-[60vh] overflow-y-auto">
             <div className="flex flex-col gap-6 sm:flex-row">
               {/* Left Photo Preview */}
               <div className="w-full sm:w-44 shrink-0">
@@ -139,24 +138,26 @@ export function ConsumableDetailDialog({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-2 border-t border-slate-100 p-4">
-            <button
+          <DialogFooter className="border-t border-slate-100 p-4 bg-slate-50 flex-row justify-end sm:justify-end gap-2">
+            <Button
               type="button"
+              variant="outline"
               onClick={() => onDelete(item)}
-              className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition"
+              className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
             >
-              <Trash2 className="h-3.5 w-3.5" /> ลบรายการ
-            </button>
-            <button
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> ลบรายการ
+            </Button>
+            <Button
               type="button"
+              variant="outline"
               onClick={() => onEdit(item)}
-              className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition"
+              className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
             >
-              <Edit className="h-3.5 w-3.5" /> แก้ไข
-            </button>
-          </div>
-        </div>
-      </div>
+              <Edit className="mr-1.5 h-3.5 w-3.5" /> แก้ไข
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Lightbox Overlay */}
       {showLightbox && item.picUrl && (

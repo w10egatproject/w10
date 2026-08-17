@@ -6,6 +6,11 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type GaugeData = { empNorm?: number; empOT?: number; w11_1?: number; };
 type NameValue = { name: string; value: number; };
@@ -262,7 +267,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, tone = 'slate', theme
     >
       {iconMap[label]}
       <div className="whitespace-nowrap text-[13px] font-black uppercase tracking-wide text-slate-500 z-10">{label}</div>
-      <div className="flex items-center justify-center text-5xl font-black z-10 text-[#4A4A49] group-hover:scale-105 transition-transform">{value}</div>
+      <div className="flex items-center justify-center text-5xl font-black z-10 text-[#4A4A49] group-hover:scale-105 transition-transform"><NumberTicker value={Number(value) || 0} /></div>
     </motion.div>
   );
 };
@@ -581,7 +586,7 @@ export function PurchasingPageContent({
             </motion.div>
             <div>
               <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49] flex items-center gap-3">
-                {pageTitle}
+                <SplitText text={pageTitle} className="inline-block" />
                 <Image src="/picture/First-Photoroom.png" alt="Purchasing Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16 object-contain" priority />
               </h1>
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
@@ -602,28 +607,35 @@ export function PurchasingPageContent({
               </motion.span>
             )}
           </AnimatePresence>
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
-            <Filter size={16} className="ml-2 text-slate-400" />
-            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-80 transition" value={year} onChange={handleYearChange} disabled={fixedFilters}>
-              <option value="all">รวมทุกปี</option>
-              {['2023', '2024', '2025', '2026'].map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-80 transition" value={month} onChange={handleMonthChange} disabled={fixedFilters}>
-              <option value="all">รวมทุกเดือน</option>
-              {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-            </select>
+          <div className="flex items-center gap-1.5 p-1.5">
+            <Select value={year} onValueChange={(val) => handleYearChange({ target: { value: val } } as any)} disabled={fixedFilters}>
+              <SelectTrigger className="w-[100px] h-10 rounded-xl bg-white px-4 text-sm font-black shadow-sm border-slate-200">
+                <SelectValue placeholder="ปี" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">รวมทุกปี</SelectItem>
+                {['2023', '2024', '2025', '2026'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={month} onValueChange={(val) => handleMonthChange({ target: { value: val } } as any)} disabled={fixedFilters}>
+              <SelectTrigger className="w-[120px] h-10 rounded-xl bg-white px-4 text-sm font-black shadow-sm border-slate-200">
+                <SelectValue placeholder="เดือน" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">รวมทุกเดือน</SelectItem>
+                {THAI_MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
+          <Button
+            variant="outline"
             onClick={handleRefresh}
             disabled={isLoading}
-            className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-slate-50 border border-slate-200 shadow-sm transition-all flex items-center gap-2 disabled:opacity-60"
+            className="rounded-xl md:rounded-2xl text-xs md:text-sm font-black border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 h-10 md:h-12"
           >
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? `animate-spin ${t.accent}` : 'text-slate-500'} />
-            รีเฟรชข้อมูล
-          </motion.button>
+            <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+          </Button>
           <NavigationMenu
             buttonClassName={t.menuBtn}
             accentClassName={t.accent}
@@ -644,12 +656,13 @@ export function PurchasingPageContent({
             <RefreshCw size={24} className={`animate-spin ${t.accent}`} /> กำลังโหลดข้อมูล...
           </motion.div>
         ) : (
-          <motion.div 
-            key="content"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <BlurFade delay={0.1}>
+            <motion.div 
+              key="content"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
             <div className={`mb-10 grid grid-cols-1 gap-8 ${overviewGridClass}`}>
               {showGaugePanel && (
               <section className="grid grid-cols-1 gap-4">
@@ -737,7 +750,7 @@ export function PurchasingPageContent({
                     รายละเอียดรายการจัดซื้อจัดจ้าง
                   </h2>
                   <p className="mt-2 text-[13px] font-black uppercase text-slate-500 tracking-wide">
-                    Summary Total: <span className="text-[#4A4A49]">{totalSummary}</span>
+                    Summary Total: <span className="text-[#4A4A49]"><NumberTicker value={totalSummary} /></span>
                     <AnimatePresence>
                       {hoveredPurchaseStatus && (
                         <motion.span 
@@ -812,7 +825,8 @@ export function PurchasingPageContent({
                   </table>
                 </div>
             </motion.section>
-          </motion.div>
+            </motion.div>
+          </BlurFade>
         )}
       </AnimatePresence>
     </div>

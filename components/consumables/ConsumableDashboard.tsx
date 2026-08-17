@@ -3,6 +3,11 @@
 import Image from 'next/image';
 import { Package } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BlurFade } from '@/components/magicui/blur-fade';
+import { SplitText } from '@/components/reactbits/split-text';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
 import {
   filterAndSortConsumables,
@@ -40,13 +45,12 @@ export function ConsumableDashboard() {
   const [selected, setSelected] = useState<ConsumableItem | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
   const [formPending, setFormPending] = useState(false);
-  const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null);
-
   const showToast = (message: string, isError = false) => {
-    setToast({ message, isError });
-    window.setTimeout(() => {
-      setToast(null);
-    }, 3500);
+    if (isError) {
+      toast.error(message);
+    } else {
+      toast.success(message);
+    }
   };
 
   const loadData = useCallback(async () => {
@@ -174,9 +178,10 @@ export function ConsumableDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-200 p-3 font-sans text-slate-800 md:p-6">
-      {/* Header — matches Shop Order card style */}
-      <header className="sticky top-0 z-30 mb-4 flex flex-col gap-3 rounded-2xl border-b-4 border-amber-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <BlurFade delay={0.1}>
+      <div className="min-h-screen bg-slate-200 p-3 font-sans text-slate-800 md:p-6">
+        {/* Header — matches Shop Order card style */}
+        <header className="sticky top-0 z-30 mb-4 flex flex-col gap-3 rounded-2xl border-b-4 border-amber-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Image
             src="/picture/egat.png"
@@ -187,7 +192,8 @@ export function ConsumableDashboard() {
           />
           <div>
             <h1 className="flex items-center gap-2 text-xl font-black md:text-2xl">
-              Consumables <Package className="h-6 w-6 text-emerald-600" />
+              <SplitText text="Consumables" className="flex items-center gap-2 text-xl font-black md:text-2xl" />
+              <Package className="h-6 w-6 text-emerald-600" />
             </h1>
             <p className="text-xs font-bold text-slate-500">ระบบคลังวัสดุเบิกจ่าย · W10</p>
           </div>
@@ -207,9 +213,9 @@ export function ConsumableDashboard() {
         />
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-bold text-rose-700">
-            {error}
-          </div>
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription className="font-bold">{error}</AlertDescription>
+          </Alert>
         )}
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -251,16 +257,8 @@ export function ConsumableDashboard() {
         onSubmit={handleSaveForm}
       />
 
-      {/* Toast Feedback */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-2xl transition-all ${
-            toast.isError ? 'bg-rose-600' : 'bg-slate-900'
-          }`}
-        >
-          {toast.message}
-        </div>
-      )}
+      <Toaster />
     </div>
+    </BlurFade>
   );
 }
