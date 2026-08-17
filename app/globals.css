@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-cmu), "CMU", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ─────────────────────────────────────────
@@ -139,7 +139,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-prompt), sans-serif;
+    font-family: var(--font-cmu), "CMU", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   html {

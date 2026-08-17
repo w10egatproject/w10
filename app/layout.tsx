@@ -1,15 +1,44 @@
 import type { Metadata } from "next";
-import { Prompt, Geist } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import ShellMigrationGate from "@/components/layout/ShellMigrationGate";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const prompt = Prompt({
-  weight: ["300", "400", "500", "600", "700"],
-  subsets: ["thai", "latin"],
-  variable: "--font-prompt",
+const cmuFont = localFont({
+  src: [
+    {
+      path: "../public/fonts/cmu/CMU-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/cmu/CMU-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/cmu/CMU-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/cmu/CMU-LightItalic.woff2",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/cmu/CMU-Italic.woff2",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/cmu/CMU-BoldItalic.woff2",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-cmu",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -28,9 +57,11 @@ export default function RootLayout({
   return (
     <html
       lang="th"
-      className={cn("h-full", "antialiased", prompt.variable, "font-sans", geist.variable)}
+      className={cn("h-full", "antialiased", cmuFont.variable, "font-sans")}
     >
-      <body className="min-h-full flex flex-col"><ShellMigrationGate>{children}</ShellMigrationGate></body>
+      <body className="min-h-full flex flex-col font-sans">
+        <ShellMigrationGate>{children}</ShellMigrationGate>
+      </body>
     </html>
   );
 }
