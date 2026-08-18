@@ -110,7 +110,7 @@ export function ShopOrderSummary({
   };
 
   return (
-    <aside className="space-y-4" aria-label="สรุปรายการ">
+    <aside className="space-y-4 h-full flex flex-col" aria-label="สรุปรายการ">
       {/* KPI Mini Cards */}
       <div className="grid grid-cols-3 gap-2 lg:grid-cols-1 xl:grid-cols-3">
         {kpis.map(({ label, value, color, testId, status }) => {
@@ -169,13 +169,13 @@ export function ShopOrderSummary({
       </section>
 
       {/* Popular Units Ranking (Image 2 style layout) */}
-      <Card className="shadow-sm border-none">
+      <Card className="shadow-sm border-none flex-1 flex flex-col">
         <CardHeader className="p-5 pb-0">
           <CardTitle className="text-sm font-bold text-slate-900">
             หน่วยงานยอดนิยม
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-5 pt-4">
+        <CardContent className="p-5 pt-4 flex-1 flex flex-col">
         {summary.popularUnits.length ? (
           <ol className="space-y-3.5 text-sm">
             {summary.popularUnits.map((unit, index) => {

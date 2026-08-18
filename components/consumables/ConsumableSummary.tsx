@@ -82,7 +82,7 @@ export function ConsumableSummaryComponent({ summary }: Props) {
 
   return (
     <aside
-      className="sticky top-20 flex w-full flex-col gap-4 lg:w-80 lg:shrink-0"
+      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0"
       aria-label="สรุปรายการ Consumables"
     >
       {/* KPI Mini Cards */}
@@ -160,13 +160,13 @@ export function ConsumableSummaryComponent({ summary }: Props) {
       </Card>
 
       {/* Receiver Ranking Panel (Image 2 style layout) */}
-      <Card className="shadow-sm">
+      <Card className="shadow-sm flex-1 flex flex-col">
         <CardHeader className="p-5 pb-0 mb-4">
           <CardTitle className="text-sm font-bold text-slate-900">
             ผู้เบิกของมากที่สุด
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-5 pt-0">
+        <CardContent className="p-5 pt-0 flex-1 flex flex-col">
         {summary.topReceivers.length === 0 ? (
           <div className="text-xs text-slate-400">ไม่มีข้อมูล</div>
         ) : (
