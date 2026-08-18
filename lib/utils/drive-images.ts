@@ -52,3 +52,33 @@ export function getDriveThumbnailFallbackUrl(urlOrId: string | null | undefined)
   if (!fileId) return null;
   return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
 }
+
+/**
+ * Extracts Google Drive Folder ID from any folder URL or raw ID:
+ * - https://drive.google.com/drive/folders/FOLDER_ID...
+ * - https://drive.google.com/drive/u/0/folders/FOLDER_ID...
+ * - Raw Google Drive folder ID
+ */
+export function extractDriveFolderId(urlOrId: string | null | undefined): string | null {
+  if (!urlOrId || typeof urlOrId !== 'string') return null;
+  let trimmed = urlOrId.trim();
+  if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    trimmed = trimmed.slice(1, -1).trim();
+  }
+  if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+    trimmed = trimmed.slice(1, -1).trim();
+  }
+  if (!trimmed) return null;
+
+  const folderMatch = trimmed.match(/\/folders\/([a-zA-Z0-9_-]{15,})/);
+  if (folderMatch?.[1]) return folderMatch[1];
+
+  const queryMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
+  if (queryMatch?.[1]) return queryMatch[1];
+
+  if (/^[a-zA-Z0-9_-]{15,60}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  return null;
+}

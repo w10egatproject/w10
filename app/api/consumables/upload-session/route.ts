@@ -1,3 +1,4 @@
+import { extractDriveFolderId } from '@/lib/utils/drive-images';
 import { assertUploadMetadata } from '@/lib/shop-order/file-rules';
 import { getShopOrderRepository } from '@/lib/shop-order/repository';
 import type { UploadSessionRequest } from '@/lib/shop-order/types';
@@ -60,9 +61,10 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     const repository = await getShopOrderRepository();
-    const folderId = process.env.CONSUMABLES_DRIVE_FOLDER_ID;
+    const folderId = extractDriveFolderId(process.env.CONSUMABLES_DRIVE_FOLDER_ID) || undefined;
     return jsonSuccess(await repository.createUploadSession(metadata, folderId), 201);
-  } catch {
+  } catch (error) {
+    console.error('Error creating consumable upload session:', error);
     return internalError('create_consumable_upload_session');
   }
 }
