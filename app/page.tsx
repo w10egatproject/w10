@@ -335,21 +335,21 @@ export default function DashboardPage() {
                 </motion.span>
               )}
             </AnimatePresence>
-            <div className="flex gap-1.5 p-1 md:p-1.5 items-center">
+            <div className="flex items-center gap-2">
               <Select value={year} onValueChange={(val) => handleYearChange({ target: { value: val } } as any)}>
-                <SelectTrigger className="w-[100px] bg-white rounded-xl font-bold shadow-sm border-slate-200">
+                <SelectTrigger className="w-[105px] h-10 md:h-12 bg-white rounded-xl md:rounded-2xl font-black text-slate-700 shadow-sm border-slate-200 hover:border-amber-400/60">
                   <SelectValue placeholder="ปี" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="min-w-[120px]">
                   <SelectItem value="all">รวมทุกปี</SelectItem>
                   {["2023", "2024", "2025", "2026"].map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={month} onValueChange={(val) => handleMonthChange({ target: { value: val } } as any)}>
-                <SelectTrigger className="w-[120px] bg-white rounded-xl font-bold shadow-sm border-slate-200">
+                <SelectTrigger className="w-[125px] h-10 md:h-12 bg-white rounded-xl md:rounded-2xl font-black text-slate-700 shadow-sm border-slate-200 hover:border-amber-400/60">
                   <SelectValue placeholder="เดือน" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="min-w-[140px]">
                   <SelectItem value="all">รวมทุกเดือน</SelectItem>
                   {THAI_MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
                 </SelectContent>
