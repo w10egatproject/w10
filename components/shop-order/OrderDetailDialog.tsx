@@ -88,7 +88,7 @@ export function OrderDetailDialog({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && !pending && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-black flex items-center gap-2">
             รายละเอียด Shop Order #{order.no}
@@ -149,7 +149,7 @@ export function OrderDetailDialog({
             </dd>
           </div>
           {/* Right Side: Order Detail Fields */}
-          <dl className="grid flex-1 gap-x-4 sm:grid-cols-2">
+          <dl className="grid min-w-0 flex-1 grid-cols-1 gap-x-6 sm:grid-cols-2">
             {rows.map(([label, value]) => (
               <div key={String(label)} className="border-b border-slate-100 py-2">
                 <dt className="text-xs font-bold text-slate-500">{label}</dt>
