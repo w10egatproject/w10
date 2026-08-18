@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import ShellMigrationGate from "@/components/layout/ShellMigrationGate";
+import { RouteTitleSync } from "@/components/layout/RouteTitleSync";
 import { cn } from "@/lib/utils";
 
 const cmuFont = localFont({
@@ -60,6 +61,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", cmuFont.variable, cmuFont.className)}
     >
       <body className={cn("min-h-full flex flex-col", cmuFont.className)}>
+        <RouteTitleSync />
         <ShellMigrationGate>{children}</ShellMigrationGate>
       </body>
     </html>
