@@ -115,7 +115,10 @@ export interface ShopOrderRepository {
     repairUploadedFileId?: string,
   ): Promise<ShopOrderMutationResult>;
   remove(no: number): Promise<void>;
-  createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
+  createUploadSession(
+    request: UploadSessionRequest,
+    targetFolderId?: string,
+  ): Promise<UploadSession>;
   getAttachmentThumbnail(
     no: number,
     slot?: 'primary' | 'repair',
@@ -830,6 +833,7 @@ export function createShopOrderRepository(
 
   async function createUploadSession(
     request: UploadSessionRequest,
+    targetFolderId?: string,
   ): Promise<UploadSession> {
     const safeMetadata = assertUploadMetadata(request);
     const sessionCreatedAt = now();
@@ -847,6 +851,7 @@ export function createShopOrderRepository(
       throw new Error('Google Drive did not return a file ID');
     }
     const accessToken = await getAccessToken();
+    const effectiveFolderId = targetFolderId || config.folderId;
     const response = await authenticatedFetch(
       `${GOOGLE_UPLOAD_ORIGIN}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
       {
@@ -860,7 +865,7 @@ export function createShopOrderRepository(
         body: JSON.stringify({
           id: fileId,
           name: storageName,
-          parents: [config.folderId],
+          parents: [effectiveFolderId],
           appProperties: {
             status: 'pending',
             pendingSince: sessionCreatedAt.toISOString(),

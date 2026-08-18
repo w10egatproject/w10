@@ -60,7 +60,8 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     const repository = await getShopOrderRepository();
-    return jsonSuccess(await repository.createUploadSession(metadata), 201);
+    const folderId = process.env.CONSUMABLES_DRIVE_FOLDER_ID;
+    return jsonSuccess(await repository.createUploadSession(metadata, folderId), 201);
   } catch {
     return internalError('create_consumable_upload_session');
   }
