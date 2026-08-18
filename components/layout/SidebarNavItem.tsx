@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
 
 import type { NavigationDestination } from '@/components/navigation/navigationDestinations';
 
@@ -15,6 +16,26 @@ export function SidebarNavItem({
 }: SidebarNavItemProps) {
   const isCurrent = pathname === destination.href;
   const Icon = destination.icon;
+
+  if (destination.external || destination.href.startsWith('http')) {
+    return (
+      <a
+        href={destination.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex min-h-11 items-center gap-3 rounded-lg border-l-4 border-transparent px-3 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-colors duration-150 motion-reduce:transition-none hover:bg-[var(--surface-mist)] hover:text-[var(--egat-blue)]"
+      >
+        <Icon
+          aria-hidden="true"
+          size={19}
+          strokeWidth={2}
+          className="text-[var(--text-muted)]"
+        />
+        <span className="min-w-0 flex-1 truncate">{destination.label}</span>
+        <ExternalLink size={14} className="text-slate-400" />
+      </a>
+    );
+  }
 
   return (
     <Link

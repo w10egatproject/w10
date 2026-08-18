@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ConsumableItem } from '@/lib/consumables/types';
+import { getDriveImageThumbnailUrl } from '@/lib/utils/drive-images';
 
 interface Props {
   items: ConsumableItem[];
@@ -93,7 +94,7 @@ export function ConsumableTable({
                   {item.picUrl ? (
                     <div className="relative inline-block h-8 w-8 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                       <Image
-                        src={item.picUrl}
+                        src={getDriveImageThumbnailUrl(item.picUrl) || item.picUrl}
                         alt="pic thumbnail"
                         fill
                         unoptimized

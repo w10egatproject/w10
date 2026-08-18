@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { ExternalLink, X } from 'lucide-react';
 import type { KeyboardEvent, RefObject } from 'react';
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -93,36 +93,57 @@ export function MobileNavigationDrawer({
 
               return (
                 <li key={destination.href}>
-                  <Link
-                    href={destination.href}
-                    aria-current={isCurrent ? 'page' : undefined}
-                    onClick={onClose}
-                    className={`flex min-h-11 items-center gap-3 rounded-lg border-l-4 px-3 py-2.5 text-sm transition-colors duration-150 motion-reduce:transition-none ${
-                      isCurrent
-                        ? 'border-[var(--mae-moh-amber)] bg-[var(--surface-muted)] font-semibold text-[var(--console-navy)]'
-                        : 'border-transparent font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-mist)] hover:text-[var(--egat-blue)]'
-                    }`}
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      size={19}
-                      strokeWidth={isCurrent ? 2.75 : 2}
-                      className={
-                        isCurrent
-                          ? 'text-[var(--egat-blue)]'
-                          : 'text-[var(--text-muted)]'
-                      }
-                    />
-                    <span className="min-w-0 flex-1 truncate">
-                      {destination.label}
-                    </span>
-                    {isCurrent ? (
-                      <span
+                  {destination.external || destination.href.startsWith('http') ? (
+                    <a
+                      href={destination.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={onClose}
+                      className="flex min-h-11 items-center gap-3 rounded-lg border-l-4 border-transparent px-3 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-colors duration-150 motion-reduce:transition-none hover:bg-[var(--surface-mist)] hover:text-[var(--egat-blue)]"
+                    >
+                      <Icon
                         aria-hidden="true"
-                        className="h-2 w-2 shrink-0 rounded-full bg-[var(--mae-moh-amber)]"
+                        size={19}
+                        strokeWidth={2}
+                        className="text-[var(--text-muted)]"
                       />
-                    ) : null}
-                  </Link>
+                      <span className="min-w-0 flex-1 truncate">
+                        {destination.label}
+                      </span>
+                      <ExternalLink size={14} className="text-slate-400" />
+                    </a>
+                  ) : (
+                    <Link
+                      href={destination.href}
+                      aria-current={isCurrent ? 'page' : undefined}
+                      onClick={onClose}
+                      className={`flex min-h-11 items-center gap-3 rounded-lg border-l-4 px-3 py-2.5 text-sm transition-colors duration-150 motion-reduce:transition-none ${
+                        isCurrent
+                          ? 'border-[var(--mae-moh-amber)] bg-[var(--surface-muted)] font-semibold text-[var(--console-navy)]'
+                          : 'border-transparent font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-mist)] hover:text-[var(--egat-blue)]'
+                      }`}
+                    >
+                      <Icon
+                        aria-hidden="true"
+                        size={19}
+                        strokeWidth={isCurrent ? 2.75 : 2}
+                        className={
+                          isCurrent
+                            ? 'text-[var(--egat-blue)]'
+                            : 'text-[var(--text-muted)]'
+                        }
+                      />
+                      <span className="min-w-0 flex-1 truncate">
+                        {destination.label}
+                      </span>
+                      {isCurrent ? (
+                        <span
+                          aria-hidden="true"
+                          className="h-2 w-2 shrink-0 rounded-full bg-[var(--mae-moh-amber)]"
+                        />
+                      ) : null}
+                    </Link>
+                  )}
                 </li>
               );
             })}

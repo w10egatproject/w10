@@ -12,11 +12,12 @@ import {
 import type { ConsoleRoute } from '@/components/layout/shellRoutes';
 
 export interface NavigationDestination {
-  href: ConsoleRoute;
+  href: ConsoleRoute | string;
   label: string;
   icon: LucideIcon;
   iconClassName?: string;
   hoverClassName: string;
+  external?: boolean;
 }
 
 export const navigationDestinations: readonly NavigationDestination[] = [
@@ -44,6 +45,14 @@ export const navigationDestinations: readonly NavigationDestination[] = [
     label: 'คลังอะไหล่ BEML',
     icon: Package,
     hoverClassName: 'hover:bg-yellow-50/50',
+  },
+  {
+    href: 'https://ot-plus.vercel.app/',
+    label: 'ระบบลงเวลา OT (OT+)',
+    icon: Clock,
+    iconClassName: 'text-indigo-600',
+    hoverClassName: 'hover:bg-indigo-50',
+    external: true,
   },
   {
     href: '/ot-summary',

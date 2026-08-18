@@ -31,6 +31,7 @@ const destinations = [
   { href: '/purchasing', label: 'จัดซื้อจัดจ้าง' },
   { href: '/purchasing-all', label: 'สถานะการซื้อจ้างทั้งหมด' },
   { href: '/beml-inventory', label: 'คลังอะไหล่ BEML' },
+  { href: 'https://ot-plus.vercel.app/', label: 'ระบบลงเวลา OT (OT+)' },
   { href: '/ot-summary', label: 'สรุป OT ลูกจ้าง' },
   { href: '/ot-employee', label: 'สรุป OT พนักงาน' },
   { href: '/shop-order', label: 'Shop Order' },
@@ -64,7 +65,7 @@ afterEach(() => {
 });
 
 describe('NavigationMenu route contract', () => {
-  it.each(destinations.slice(1))(
+  it.each(destinations.filter(d => !d.href.startsWith('http')).slice(1))(
     'renders all destinations and disables the current route $href',
     ({ href, label }) => {
       const navigation = renderOpenMenu(href);
@@ -79,7 +80,7 @@ describe('NavigationMenu route contract', () => {
       const currentItem = within(navigation).getByText(label);
       expect(currentItem.getAttribute('aria-current')).toBe('page');
       expect(currentItem.closest('a')).toBeNull();
-      expect(within(navigation).getAllByRole('link')).toHaveLength(7);
+      expect(within(navigation).getAllByRole('link')).toHaveLength(8);
     },
   );
 
@@ -88,9 +89,9 @@ describe('NavigationMenu route contract', () => {
 
     expect(
       within(navigation).getAllByTestId('navigation-destination'),
-    ).toHaveLength(7);
+    ).toHaveLength(8);
     expect(within(navigation).queryByText('หน้าหลัก')).toBeNull();
-    expect(within(navigation).getAllByRole('link')).toHaveLength(7);
+    expect(within(navigation).getAllByRole('link')).toHaveLength(8);
   });
 
   it('preserves page-specific trigger and accent classes', () => {

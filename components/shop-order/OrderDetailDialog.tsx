@@ -159,19 +159,19 @@ export function OrderDetailDialog({
           </dl>
         </div>
 
-        <DialogFooter className="mt-5 flex justify-end gap-2 sm:justify-end">
+        <DialogFooter className="mt-6 flex flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100 px-2 pb-1 sm:justify-end">
           <Button
-            variant="destructive"
+            variant="outline"
             disabled={pending}
             onClick={() => setConfirming(true)}
-            className="font-bold"
+            className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-bold px-4"
           >
             ลบรายการ
           </Button>
           <Button
             disabled={pending}
             onClick={onEdit}
-            className="bg-indigo-600 font-bold text-white hover:bg-indigo-700"
+            className="bg-indigo-600 font-bold text-white hover:bg-indigo-700 px-5 shadow-sm"
           >
             แก้ไข
           </Button>

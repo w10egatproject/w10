@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -166,7 +167,24 @@ export function NavigationMenu({
 
                 return (
                   <li key={destination.href}>
-                    {pathname === destination.href ? (
+                    {destination.external || destination.href.startsWith('http') ? (
+                      <a
+                        data-testid="navigation-destination"
+                        href={destination.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={closeMenu}
+                        className={`${commonClassName} ${itemHoverClassName ?? destination.hoverClassName} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-500`}
+                      >
+                        <Icon
+                          aria-hidden="true"
+                          size={18}
+                          className={iconClassName}
+                        />
+                        <span className="flex-1">{destination.label}</span>
+                        <ExternalLink size={14} className="text-slate-400" />
+                      </a>
+                    ) : pathname === destination.href ? (
                       <span
                         data-testid="navigation-destination"
                         aria-current="page"

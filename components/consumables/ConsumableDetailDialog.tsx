@@ -1,12 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { Edit, Trash2, X } from 'lucide-react';
+import { Edit, ExternalLink, Trash2, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { ConsumableItem } from '@/lib/consumables/types';
+import { getDriveImageThumbnailUrl, getDriveThumbnailFallbackUrl } from '@/lib/utils/drive-images';
 
 interface Props {
   item: ConsumableItem | null;
@@ -24,13 +25,17 @@ export function ConsumableDetailDialog({
   onDelete,
 }: Props) {
   const [showLightbox, setShowLightbox] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   if (!isOpen || !item) return null;
+
+  const initialImgUrl = getDriveImageThumbnailUrl(item.picUrl) || item.picUrl || null;
+  const currentImgSrc = imgSrc ?? initialImgUrl;
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden" aria-describedby="consumable-detail-description">
+        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-2xl" aria-describedby="consumable-detail-description">
           <DialogDescription id="consumable-detail-description" className="sr-only">
             รายละเอียด Consumable #{item.no}
           </DialogDescription>
@@ -56,19 +61,26 @@ export function ConsumableDetailDialog({
                 </div>
                 <div
                   onClick={() => {
-                    if (item.picUrl) setShowLightbox(true);
+                    if (currentImgSrc) setShowLightbox(true);
                   }}
                   className={`relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 ${
-                    item.picUrl ? 'cursor-pointer hover:opacity-90' : ''
+                    currentImgSrc ? 'cursor-pointer hover:opacity-90' : ''
                   }`}
                 >
-                  {item.picUrl ? (
-                    <Image
-                      src={item.picUrl}
+                  {currentImgSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={currentImgSrc}
                       alt="pic full preview"
-                      fill
-                      unoptimized
-                      className="object-cover"
+                      className="h-full w-full object-cover"
+                      onError={() => {
+                        const fallback = getDriveThumbnailFallbackUrl(item.picUrl);
+                        if (fallback && currentImgSrc !== fallback) {
+                          setImgSrc(fallback);
+                        } else {
+                          setImgSrc(null);
+                        }
+                      }}
                     />
                   ) : (
                     <span className="text-xs font-medium text-slate-400">
@@ -77,9 +89,21 @@ export function ConsumableDetailDialog({
                   )}
                 </div>
                 {item.picUrl && (
-                  <p className="mt-1.5 text-center text-xs font-semibold text-emerald-600">
-                    กดเพื่อดูภาพเต็ม
-                  </p>
+                  <div className="mt-1.5 flex flex-col items-center gap-1">
+                    {currentImgSrc && (
+                      <p className="text-center text-xs font-semibold text-emerald-600">
+                        กดเพื่อดูภาพเต็ม
+                      </p>
+                    )}
+                    <a
+                      href={item.picUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline"
+                    >
+                      <ExternalLink size={12} /> เปิดไฟล์ใน Google Drive
+                    </a>
+                  </div>
                 )}
               </div>
 
@@ -138,12 +162,12 @@ export function ConsumableDetailDialog({
           </div>
 
           {/* Footer Actions */}
-          <DialogFooter className="border-t border-slate-100 p-4 bg-slate-50 flex-row justify-end sm:justify-end gap-2">
+          <DialogFooter className="border-t border-slate-100 p-5 bg-slate-50/80 flex flex-row items-center justify-end sm:justify-end gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => onDelete(item)}
-              className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
+              className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-bold px-4"
             >
               <Trash2 className="mr-1.5 h-3.5 w-3.5" /> ลบรายการ
             </Button>
@@ -151,7 +175,7 @@ export function ConsumableDetailDialog({
               type="button"
               variant="outline"
               onClick={() => onEdit(item)}
-              className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
+              className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 font-bold px-4"
             >
               <Edit className="mr-1.5 h-3.5 w-3.5" /> แก้ไข
             </Button>
@@ -160,7 +184,7 @@ export function ConsumableDetailDialog({
       </Dialog>
 
       {/* Lightbox Overlay */}
-      {showLightbox && item.picUrl && (
+      {showLightbox && currentImgSrc && (
         <div
           onClick={() => setShowLightbox(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md cursor-pointer"
@@ -173,7 +197,7 @@ export function ConsumableDetailDialog({
             <X className="h-6 w-6" />
           </button>
           <img
-            src={item.picUrl}
+            src={currentImgSrc}
             alt="full resolution"
             className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
           />

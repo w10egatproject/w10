@@ -582,6 +582,17 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                    <a
+                      href="https://ot-plus.vercel.app/"
+                      target="_blank"
+                      rel="noreferrer"
+                      title="เข้าสู่ระบบลงเวลา OT (OT Plus)"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-4 text-sm font-black text-white shadow-sm hover:from-sky-700 hover:to-indigo-700 transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                    >
+                      <Clock size={16} strokeWidth={2.5} />
+                      ระบบลงเวลา OT (OT+)
+                      <ExternalLink size={14} />
+                    </a>
                     {sourceSheetLinks.map((sourceSheet) => (
                       <a
                         key={sourceSheet.href}
