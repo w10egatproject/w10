@@ -31,8 +31,8 @@ export function ShopOrderToolbar({
   const set = (patch: Partial<ShopOrderFilters>) =>
     onChange({ ...filters, ...patch });
   return (
-    <Card className="mb-5 shadow-sm border-none rounded-2xl">
-      <CardContent className="p-4">
+    <Card className="mb-5 rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+      <CardContent className="p-4 sm:p-5">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_140px_130px_160px_auto]">
         <label className="relative flex flex-col justify-end">
           <span className="mb-1 block text-xs font-bold text-slate-600">
@@ -41,13 +41,13 @@ export function ShopOrderToolbar({
           <div className="relative">
             <Search
               aria-hidden
-              className="absolute bottom-3 left-3 h-4 w-4 text-slate-500 z-10"
+              className="absolute bottom-3 left-3 h-4 w-4 text-slate-400 z-10"
             />
             <Input
               value={filters.query}
               onChange={(e) => set({ query: e.target.value })}
               placeholder="เลขที่ เรื่อง หน่วยงาน ผู้รับ..."
-              className="h-10 w-full rounded-xl bg-white pl-9 pr-3 text-sm"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm font-medium text-slate-800 shadow-sm focus-visible:ring-amber-400 focus-visible:border-amber-400"
             />
           </div>
         </label>
@@ -58,7 +58,7 @@ export function ShopOrderToolbar({
           <select
             value={filters.year}
             onChange={(e) => set({ year: e.target.value })}
-            className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
           >
             <option value="all">ทุกปี</option>
             {years.map((year) => (
@@ -73,7 +73,7 @@ export function ShopOrderToolbar({
           <select
             value={filters.month}
             onChange={(e) => set({ month: e.target.value })}
-            className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
           >
             <option value="all">ทุกเดือน</option>
             {Array.from({ length: 12 }, (_, i) => (
@@ -92,7 +92,7 @@ export function ShopOrderToolbar({
             onChange={(e) =>
               set({ status: e.target.value as ShopOrderFilters['status'] })
             }
-            className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
           >
             <option value="all">ทั้งหมด</option>
             <option value="wait">รอดำเนินการ</option>
@@ -105,11 +105,11 @@ export function ShopOrderToolbar({
             size="sm"
             onClick={onRefresh}
             disabled={loading}
-            className="h-10 rounded-xl"
+            className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-amber-700 shadow-sm transition-all"
             aria-label="รีเฟรชข้อมูล"
           >
             <RefreshCw
-              className={`h-4 w-4 mr-1.5 ${
+              className={`h-4 w-4 mr-1.5 text-slate-600 ${
                 loading ? 'animate-spin' : ''
               }`}
             />
@@ -121,16 +121,16 @@ export function ShopOrderToolbar({
             onClick={() =>
               onChange({ query: '', year: 'all', month: 'all', status: 'all' })
             }
-            className="h-10 rounded-xl"
+            className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-rose-600 shadow-sm transition-all"
             aria-label="ล้างตัวกรอง"
           >
-            <RotateCcw className="h-4 w-4 mr-1.5" /> ล้าง
+            <RotateCcw className="h-4 w-4 mr-1.5 text-slate-600" /> ล้าง
           </Button>
           <a
             href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 hover:bg-emerald-100 transition-colors"
+            className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 text-sm font-bold text-emerald-800 hover:bg-emerald-100 shadow-sm transition-colors"
           >
             <FileSpreadsheet aria-hidden className="h-4 w-4 mr-1.5" />
             เปิด Google Sheet
@@ -139,7 +139,7 @@ export function ShopOrderToolbar({
             <Button
               size="sm"
               onClick={onAdd}
-              className="h-10 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+              className="h-10 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-sm transition-all"
             >
               <Plus className="h-4 w-4 mr-1.5" /> เพิ่ม
             </Button>

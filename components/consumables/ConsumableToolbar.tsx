@@ -35,8 +35,8 @@ export function ConsumableToolbar({
     onChange({ ...filters, ...patch });
 
   return (
-    <Card className="mb-5 border-none bg-transparent shadow-none sm:bg-white sm:border-solid sm:border-slate-200 sm:shadow-sm">
-      <CardContent className="p-0 sm:p-4">
+    <Card className="mb-5 rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+      <CardContent className="p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_140px_140px_auto]">
           <label className="relative">
             <span className="mb-1 block text-xs font-bold text-slate-600">
@@ -44,13 +44,13 @@ export function ConsumableToolbar({
             </span>
             <Search
               aria-hidden
-              className="absolute bottom-3 left-3 h-4 w-4 text-slate-500 z-10"
+              className="absolute bottom-3 left-3 h-4 w-4 text-slate-400 z-10"
             />
             <Input
               value={filters.query}
               onChange={(e) => set({ query: e.target.value })}
               placeholder="ค้นหา รายการ ผู้รับ หมายเหตุ..."
-              className="h-10 pl-9 rounded-xl border-slate-300 focus-visible:ring-emerald-500"
+              className="h-10 pl-9 rounded-xl border-slate-200 bg-white font-medium text-slate-800 shadow-sm focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
             />
           </label>
           <label>
@@ -60,7 +60,7 @@ export function ConsumableToolbar({
             <select
               value={filters.year}
               onChange={(e) => set({ year: e.target.value })}
-              className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
             >
               <option value="all">ทุกปี</option>
               {years.map((year) => (
@@ -77,7 +77,7 @@ export function ConsumableToolbar({
             <select
               value={filters.month}
               onChange={(e) => set({ month: e.target.value })}
-              className="h-10 w-full rounded-xl border border-input bg-white px-3 text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 outline-none"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
             >
               <option value="all">ทุกเดือน</option>
               {Array.from({ length: 12 }, (_, i) => (
@@ -93,7 +93,7 @@ export function ConsumableToolbar({
               size="sm"
               onClick={onRefresh}
               disabled={loading}
-              className="h-10 rounded-xl border-slate-300 font-bold text-slate-700 hover:bg-slate-50"
+              className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 shadow-sm transition-all"
             >
               <RefreshCw
                 className={`mr-1.5 h-4 w-4 text-slate-600 ${
@@ -106,7 +106,7 @@ export function ConsumableToolbar({
               variant="outline"
               size="sm"
               onClick={() => onChange({ query: '', year: 'all', month: 'all' })}
-              className="h-10 rounded-xl border-slate-300 font-bold text-slate-700 hover:bg-slate-50"
+              className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-rose-600 shadow-sm transition-all"
             >
               <RotateCcw className="mr-1.5 h-4 w-4 text-slate-600" /> ล้าง
             </Button>
@@ -114,7 +114,7 @@ export function ConsumableToolbar({
               href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 hover:bg-emerald-100 transition-colors"
+              className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 text-sm font-bold text-emerald-800 hover:bg-emerald-100 shadow-sm transition-colors"
             >
               <FileSpreadsheet aria-hidden className="mr-1.5 h-4 w-4" />
               เปิด Google Sheet
@@ -123,7 +123,7 @@ export function ConsumableToolbar({
               <Button
                 size="sm"
                 onClick={onAdd}
-                className="h-10 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700"
+                className="h-10 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-sm transition-all"
               >
                 <Plus className="mr-1.5 h-4 w-4" /> เพิ่ม
               </Button>
