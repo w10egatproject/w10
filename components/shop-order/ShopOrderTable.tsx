@@ -22,18 +22,6 @@ export function ShopOrderTable({
   onPage,
   onSelect,
 }: Props) {
-  const headers = [
-    'ลำดับ',
-    'จาก',
-    'เลขที่',
-    'วันที่รับ',
-    'เรื่อง',
-    'หน่วยงานรับ',
-    'ผู้รับ',
-    'วันที่ออก',
-    'หมายเหตุ',
-    'สถานะ',
-  ];
   return (
     <Card className="min-w-0 shadow-sm border-none overflow-hidden h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3">
@@ -45,17 +33,19 @@ export function ShopOrderTable({
         </div>
       </div>
       <div className="max-h-[68vh] overflow-auto flex-1">
-        <Table className="min-w-[1100px] text-xs">
+        <Table className="min-w-[1100px] table-fixed text-xs">
           <TableHeader className="sticky top-0 z-10 bg-slate-100">
             <TableRow>
-              {headers.map((h) => (
-                <TableHead
-                  key={h}
-                  className="whitespace-nowrap font-bold text-slate-900"
-                >
-                  {h}
-                </TableHead>
-              ))}
+              <TableHead className="w-14 whitespace-nowrap font-bold text-slate-900">ลำดับ</TableHead>
+              <TableHead className="w-20 whitespace-nowrap font-bold text-slate-900">จาก</TableHead>
+              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">เลขที่</TableHead>
+              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">วันที่รับ</TableHead>
+              <TableHead className="whitespace-nowrap font-bold text-slate-900">เรื่อง</TableHead>
+              <TableHead className="w-28 whitespace-nowrap font-bold text-slate-900">หน่วยงานรับ</TableHead>
+              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">ผู้รับ</TableHead>
+              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">วันที่ออก</TableHead>
+              <TableHead className="w-36 whitespace-nowrap font-bold text-slate-900">หมายเหตุ</TableHead>
+              <TableHead className="w-28 whitespace-nowrap font-bold text-slate-900">สถานะ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -79,18 +69,18 @@ export function ShopOrderTable({
                   }
                 >
                   <TableCell className="font-bold">{order.no}</TableCell>
-                  <TableCell>{order.from}</TableCell>
-                  <TableCell className="font-mono">{order.number}</TableCell>
-                  <TableCell>{formatThaiDate(order.dateIn)}</TableCell>
-                  <TableCell className="max-w-64 font-medium">
+                  <TableCell className="truncate">{order.from}</TableCell>
+                  <TableCell className="font-mono truncate">{order.number}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatThaiDate(order.dateIn)}</TableCell>
+                  <TableCell className="truncate font-medium" title={order.subject}>
                     {order.subject}
                   </TableCell>
-                  <TableCell>{order.receivingUnit || '—'}</TableCell>
-                  <TableCell>{order.receiverName || '—'}</TableCell>
-                  <TableCell>
+                  <TableCell className="truncate" title={order.receivingUnit || '—'}>{order.receivingUnit || '—'}</TableCell>
+                  <TableCell className="truncate" title={order.receiverName || '—'}>{order.receiverName || '—'}</TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {formatThaiDate(order.dateOut) || '—'}
                   </TableCell>
-                  <TableCell className="max-w-52 truncate">
+                  <TableCell className="truncate" title={order.note || '—'}>
                     {order.note || '—'}
                   </TableCell>
                   <TableCell>
