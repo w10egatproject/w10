@@ -150,11 +150,11 @@ export function NavigationMenu({
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 top-full z-50 w-64 pt-2">
+        <div className="absolute left-0 sm:left-auto sm:right-0 top-full z-50 w-64 max-w-[calc(100vw-2rem)] pt-2">
           <nav
             id={menuId}
             aria-label="เมนูนำทางหลัก"
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-300/40"
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40"
           >
             <ul>
               {visibleDestinations.map((destination, index) => {
