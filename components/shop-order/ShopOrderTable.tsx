@@ -35,7 +35,7 @@ export function ShopOrderTable({
     'สถานะ',
   ];
   return (
-    <Card className="min-w-0 shadow-sm border-none overflow-hidden">
+    <Card className="min-w-0 shadow-sm border-none overflow-hidden h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3">
         <div>
           <h2 className="font-bold">ตารางรายการ Shop Order</h2>
@@ -44,7 +44,7 @@ export function ShopOrderTable({
           </p>
         </div>
       </div>
-      <div className="max-h-[68vh] overflow-auto">
+      <div className="max-h-[68vh] overflow-auto flex-1">
         <Table className="min-w-[1100px] text-xs">
           <TableHeader className="sticky top-0 z-10 bg-slate-100">
             <TableRow>

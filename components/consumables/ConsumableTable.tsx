@@ -50,8 +50,8 @@ export function ConsumableTable({
   const endIdx = Math.min(page * pageSize, totalItems);
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm">
-      <div className="overflow-x-auto">
+    <Card className="overflow-hidden border-slate-200 shadow-sm h-full flex flex-col">
+      <div className="overflow-x-auto flex-1">
         <Table className="min-w-full text-sm">
           <TableHeader className="bg-slate-50">
             <TableRow className="border-b border-slate-200">
