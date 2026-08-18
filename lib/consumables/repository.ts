@@ -128,7 +128,7 @@ export class ConsumableRepository {
     }
 
     const picUrl = uploadedFileId
-      ? `https://drive.google.com/uc?export=view&id=${uploadedFileId}`
+      ? `https://drive.google.com/file/d/${uploadedFileId}/view`
       : '';
 
     const rowData = [
@@ -208,7 +208,7 @@ export class ConsumableRepository {
     }
 
     const picUrl = uploadedFileId
-      ? `https://drive.google.com/uc?export=view&id=${uploadedFileId}`
+      ? `https://drive.google.com/file/d/${uploadedFileId}/view`
       : existingPicUrl || '';
 
     const rowData = [
