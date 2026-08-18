@@ -171,7 +171,7 @@ describe('Shop Order attachment lifecycle', () => {
         'https://drive.google.com/file/d/1AbC_def-234/view?usp=sharing',
       ),
     ).toBe(
-      'https://drive.google.com/uc?export=view&id=1AbC_def-234',
+      'https://lh3.googleusercontent.com/d/1AbC_def-234',
     );
   });
 

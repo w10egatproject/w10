@@ -128,7 +128,7 @@ export function deletionDate(now: Date): string {
 export function driveFileIdFromCanonicalUrl(url: string): string | null {
   try {
     const parsedUrl = new URL(url);
-    const match = parsedUrl.pathname.match(/^\/file\/d\/([^/]+)\/view$/);
+    const match = parsedUrl.pathname.match(/^\/file\/d\/([^/]+)(?:\/(?:view|edit|preview))?\/?$/);
     const fileId = match?.[1] ?? '';
 
     if (
@@ -153,6 +153,6 @@ export function driveFilePreviewUrlFromCanonicalUrl(
 ): string | null {
   const fileId = driveFileIdFromCanonicalUrl(url);
   return fileId
-    ? `https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`
+    ? `https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}`
     : null;
 }

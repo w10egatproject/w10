@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+import { ExternalLink } from 'lucide-react';
+
 function AttachmentPreview({
   order,
   fileUrl,
@@ -35,26 +37,51 @@ function AttachmentPreview({
     (slot === 'repair' ? '&slot=repair' : '');
 
   return (
-    <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-2">
-      {previewSource === 'failed' ? (
-        <div className="flex h-full w-full items-center justify-center rounded-lg bg-slate-100 text-center text-xs font-bold text-slate-500">
-          ไม่พบรูปตัวอย่าง
-        </div>
-      ) : (
-        // The authenticated, no-store proxy must be requested directly.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={previewSource === 'proxy' ? thumbnailUrl : directPreviewUrl ?? ''}
-          alt={slot === 'repair' ? 'ตัวอย่างไฟล์แนบรายการ ' + order.no + ' ' + label : 'ตัวอย่างไฟล์แนบรายการ ' + order.no}
-          className="h-full w-full rounded-lg object-contain"
-          onError={() => {
-            if (previewSource === 'proxy' && directPreviewUrl) {
-              setPreviewSource('direct');
-              return;
-            }
-            setPreviewSource('failed');
-          }}
-        />
+    <div className="flex flex-col gap-1">
+      <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-2">
+        {previewSource === 'failed' ? (
+          <div className="flex h-full w-full flex-col items-center justify-center rounded-lg bg-slate-100 p-2 text-center text-xs font-bold text-slate-500">
+            <span>ไม่พบรูปตัวอย่าง</span>
+            {fileUrl && (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-indigo-600 shadow-sm hover:bg-slate-50"
+              >
+                เปิดไฟล์ใน Drive <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+        ) : (
+          // The authenticated, no-store proxy must be requested directly.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewSource === 'proxy' ? thumbnailUrl : directPreviewUrl ?? ''}
+            alt={slot === 'repair' ? 'ตัวอย่างไฟล์แนบรายการ ' + order.no + ' ' + label : 'ตัวอย่างไฟล์แนบรายการ ' + order.no}
+            className="h-full w-full rounded-lg object-contain cursor-pointer hover:opacity-95"
+            onClick={() => {
+              if (fileUrl) window.open(fileUrl, '_blank');
+            }}
+            onError={() => {
+              if (previewSource === 'proxy' && directPreviewUrl) {
+                setPreviewSource('direct');
+                return;
+              }
+              setPreviewSource('failed');
+            }}
+          />
+        )}
+      </div>
+      {fileUrl && (
+        <a
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-600 hover:underline"
+        >
+          <ExternalLink size={12} /> เปิดดูไฟล์ใน Google Drive
+        </a>
       )}
     </div>
   );
