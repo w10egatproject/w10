@@ -189,8 +189,9 @@ const itemVariants: Variants = {
 /**
  * renderEmployeeTable: แสดงตารางสรุป OT สำหรับพนักงาน (Staff)
  */
-const renderEmployeeTable = (rows: EmployeeOtRow[], group: string) => {
+const renderEmployeeTable = (rows: EmployeeOtRow[], group: string, title?: string) => {
   const isAll = group === 'ALL-EMPLOYEES';
+  const displayTitle = title || 'สรุป OT ประจำเดือน กบย-ช., หสบ-ช. (ล่วงเวลา 30 , 45 ชั่วโมง)';
   return (
     <div className="overflow-x-auto">
       <table className={`w-full ${isAll ? 'min-w-[1400px]' : 'min-w-[800px] xl:min-w-0'} table-fixed border-collapse border border-[#21324a] text-center text-[10px] md:text-[11px]`}>
@@ -208,8 +209,9 @@ const renderEmployeeTable = (rows: EmployeeOtRow[], group: string) => {
         <thead className="text-[9px] md:text-[10px] font-black text-slate-900">
           <tr>
             <th colSpan={4} className="border border-slate-700 bg-white px-1 py-1 font-black">
-              <div className="text-[11px] md:text-[12px]">มิถุนายน 2569</div>
-              <div className="text-[9px] md:text-[10px]">กบย-ช., หสบ-ช. (ล่วงเวลา 30 , 45 ชั่วโมง)</div>
+              <div className="text-[10px] md:text-[11px] font-black leading-tight text-[#061b3d] whitespace-normal">
+                {displayTitle}
+              </div>
             </th>
             <th colSpan={31} className="border border-slate-700 bg-white px-1 py-1 font-black text-[11px] md:text-[12px]">วันที่</th>
             <th colSpan={2} className="border border-slate-700 bg-white px-1 py-1 font-black"></th>
@@ -251,7 +253,12 @@ const renderEmployeeTable = (rows: EmployeeOtRow[], group: string) => {
 /**
  * renderContractorTable: แสดงตารางสรุป OT สำหรับลูกจ้าง (Contractor)
  */
-const renderContractorTable = (rows: EmployeeOtRow[], totals: typeof emptyContractorTotals, group: string) => (
+const renderContractorTable = (
+  rows: EmployeeOtRow[],
+  totals: typeof emptyContractorTotals,
+  group: string,
+  title?: string,
+) => (
   <div className="overflow-x-auto">
     <table className="w-full min-w-[1400px] table-fixed border-collapse border border-[#21324a] text-center text-[11px]">
       <colgroup>
@@ -267,7 +274,7 @@ const renderContractorTable = (rows: EmployeeOtRow[], totals: typeof emptyContra
       </colgroup>
       <thead className="text-[10px] font-black text-slate-900">
         <tr>
-          <th colSpan={3} className="border border-slate-700 bg-white px-1 py-1 font-black text-[11px] md:text-[12px]">ล่วงเวลาลูกจ้าง มิถุนายน 2569</th>
+          <th colSpan={3} className="border border-slate-700 bg-white px-1 py-1 font-black text-[10px] md:text-[11px] leading-tight text-[#061b3d] whitespace-normal">{title || 'ล่วงเวลาลูกจ้าง'}</th>
           <th colSpan={31} className="border border-slate-700 bg-white px-1 py-1 font-black text-[11px] md:text-[12px]">วันที่</th>
           <th colSpan={2} className="border border-slate-700 bg-white px-1 py-1 font-black"></th>
           <th className="border border-slate-700 bg-white px-1 py-1 font-black text-[#dc2626]">1เท่า</th>
@@ -715,7 +722,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     </dl>
                   </aside>
                   <div className="min-w-0">
-                    {renderContractorTable(rows, totals, group)}
+                    {renderContractorTable(rows, totals, group, data.contractorTitle)}
                     <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <h3 className="text-lg font-black text-[#0284c7] mb-3 flex items-center gap-2">
                         <div className="w-2 h-5 bg-[#38bdf8] rounded-full"></div>
@@ -750,7 +757,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                 <p className="mt-2 text-sm font-extrabold text-slate-600">{data.contractorTitle || 'สรุป OT ลูกจ้าง'} · ตารางรวมหลัง W14</p>
               </div>
               <div className="p-4 md:p-8">
-                {renderContractorTable(contractors, data.officialContractorTotals || allContractorTotals, 'ALL-CONTRACTORS')}
+                {renderContractorTable(contractors, data.officialContractorTotals || allContractorTotals, 'ALL-CONTRACTORS', data.contractorTitle)}
                 <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
                     <div className="w-2 h-6 bg-[#38bdf8] rounded-full"></div>
@@ -800,7 +807,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     </dl>
                   </aside>
                   <div className="min-w-0">
-                    {renderEmployeeTable(rows, group)}
+                    {renderEmployeeTable(rows, group, data.employeeTitle)}
                     <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <h3 className="text-lg font-black text-[#0284c7] mb-3 flex items-center gap-2">
                         <div className="w-2 h-5 bg-[#38bdf8] rounded-full"></div>
@@ -835,7 +842,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                 <p className="mt-2 text-sm font-extrabold text-slate-600">{data.employeeTitle || 'สรุป OT พนักงาน'} · ตารางรวมหลัง W14</p>
               </div>
               <div className="p-4 md:p-8">
-                {renderEmployeeTable(employees, 'ALL-EMPLOYEES')}
+                {renderEmployeeTable(employees, 'ALL-EMPLOYEES', data.employeeTitle)}
                 <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
                     <div className="w-2 h-6 bg-[#38bdf8] rounded-full"></div>
