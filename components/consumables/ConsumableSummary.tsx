@@ -19,6 +19,8 @@ const HighchartsClient = dynamic(
 
 interface Props {
   summary: ConsumableSummary;
+  selectedReceiver?: string;
+  onSelectReceiver?: (receiver: string) => void;
 }
 
 const DONUT_COLORS = [
@@ -30,7 +32,11 @@ const DONUT_COLORS = [
   '#94a3b8',
 ];
 
-export function ConsumableSummaryComponent({ summary }: Props) {
+export function ConsumableSummaryComponent({
+  summary,
+  selectedReceiver,
+  onSelectReceiver,
+}: Props) {
   const maxReceiverQty =
     summary.topReceivers.length > 0 ? summary.topReceivers[0].quantity : 1;
 
@@ -105,7 +111,114 @@ export function ConsumableSummaryComponent({ summary }: Props) {
         </Card>
       </div>
 
-      {/* 3D Highcharts Donut Panel (Dark Theme) */}
+      {/* Receiver Ranking Panel (Moved to TOP with clickable filter) */}
+      <Card className="shadow-sm flex flex-col transition-all">
+        <CardHeader className="p-5 pb-0 mb-3 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-sm font-bold text-slate-900">
+              ผู้เบิกของมากที่สุด
+            </CardTitle>
+            <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+              {selectedReceiver ? `กำลังกรอง: ${selectedReceiver}` : 'คลิกชื่อเพื่อกรองรายการ'}
+            </p>
+          </div>
+          {selectedReceiver && onSelectReceiver && (
+            <button
+              type="button"
+              onClick={() => onSelectReceiver('')}
+              className="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+            >
+              ล้าง
+            </button>
+          )}
+        </CardHeader>
+        <CardContent className="p-5 pt-0 flex-1 flex flex-col">
+        {summary.topReceivers.length === 0 ? (
+          <div className="text-xs text-slate-400">ไม่มีข้อมูล</div>
+        ) : (
+          <ol className="space-y-2 text-sm">
+            {summary.topReceivers.map((rec, idx) => {
+              const isSelected =
+                selectedReceiver?.trim().toLowerCase() === rec.name.trim().toLowerCase();
+              const pct = Math.min(
+                100,
+                Math.max(4, Math.round((rec.quantity / maxReceiverQty) * 100)),
+              );
+              return (
+                <li
+                  key={rec.name}
+                  onClick={() => onSelectReceiver?.(rec.name)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectReceiver?.(rec.name);
+                    }
+                  }}
+                  className={`group relative rounded-xl p-2.5 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-emerald-50 border-2 border-emerald-500 shadow-sm'
+                      : 'hover:bg-slate-50 border border-transparent'
+                  }`}
+                  title={
+                    isSelected
+                      ? `คลิกเพื่อยกเลิกการกรอง ${rec.name}`
+                      : `คลิกเพื่อกรองเฉพาะ ${rec.name}`
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors ${
+                        isSelected
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-emerald-100/80 text-emerald-800 group-hover:bg-emerald-200'
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span
+                      className={`min-w-0 flex-1 truncate font-bold ${
+                        isSelected
+                          ? 'text-emerald-900 font-extrabold'
+                          : 'text-slate-800 group-hover:text-emerald-700'
+                      }`}
+                      title={rec.name}
+                    >
+                      {rec.name}
+                    </span>
+                    {isSelected && (
+                      <span className="text-[10px] font-bold bg-emerald-200/80 text-emerald-800 px-1.5 py-0.5 rounded-md">
+                        เลือกอยู่
+                      </span>
+                    )}
+                    <b
+                      className={`font-black ${
+                        isSelected ? 'text-emerald-700' : 'text-slate-900'
+                      }`}
+                    >
+                      {rec.quantity}
+                    </b>
+                  </div>
+                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        isSelected
+                          ? 'bg-emerald-600'
+                          : 'bg-emerald-500 group-hover:bg-emerald-600'
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+        </CardContent>
+      </Card>
+
+      {/* 3D Highcharts Donut Panel (Moved to BOTTOM) */}
       <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl">
         <CardContent className="p-5">
           <h3 className="mb-3 text-sm font-bold text-slate-200">
@@ -156,51 +269,6 @@ export function ConsumableSummaryComponent({ summary }: Props) {
             ))
           )}
         </div>
-        </CardContent>
-      </Card>
-
-      {/* Receiver Ranking Panel (Image 2 style layout) */}
-      <Card className="shadow-sm flex-1 flex flex-col">
-        <CardHeader className="p-5 pb-0 mb-4">
-          <CardTitle className="text-sm font-bold text-slate-900">
-            ผู้เบิกของมากที่สุด
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-5 pt-0 flex-1 flex flex-col">
-        {summary.topReceivers.length === 0 ? (
-          <div className="text-xs text-slate-400">ไม่มีข้อมูล</div>
-        ) : (
-          <ol className="space-y-3.5 text-sm">
-            {summary.topReceivers.map((rec, idx) => {
-              const pct = Math.min(
-                100,
-                Math.max(4, Math.round((rec.quantity / maxReceiverQty) * 100)),
-              );
-              return (
-                <li key={rec.name} className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700">
-                      {idx + 1}
-                    </span>
-                    <span
-                      className="min-w-0 flex-1 truncate font-semibold text-slate-800"
-                      title={rec.name}
-                    >
-                      {rec.name}
-                    </span>
-                    <b className="text-slate-900 font-black">{rec.quantity}</b>
-                  </div>
-                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
         </CardContent>
       </Card>
     </aside>

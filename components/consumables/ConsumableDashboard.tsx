@@ -80,7 +80,22 @@ export function ConsumableDashboard() {
     [data, filters],
   );
 
-  const summary = useMemo(() => summarizeConsumables(filtered), [filtered]);
+  const periodFiltered = useMemo(() => {
+    return (data?.items ?? []).filter((d) => {
+      if (filters.year !== 'all' && String(d.year) !== filters.year) return false;
+      if (filters.month !== 'all' && String(d.month) !== filters.month) return false;
+      return true;
+    });
+  }, [data, filters.year, filters.month]);
+
+  const periodSummary = useMemo(() => summarizeConsumables(periodFiltered), [periodFiltered]);
+  const filteredSummary = useMemo(() => summarizeConsumables(filtered), [filtered]);
+
+  const summary = useMemo(() => ({
+    ...filteredSummary,
+    topReceivers: periodSummary.topReceivers,
+  }), [filteredSummary, periodSummary]);
+
   const pagination = useMemo(() => paginateConsumables(filtered, page, 20), [filtered, page]);
 
   const years = useMemo(() => {
@@ -234,7 +249,20 @@ export function ConsumableDashboard() {
           </section>
 
           {/* Sidebar Summary */}
-          <ConsumableSummaryComponent summary={summary} />
+          <ConsumableSummaryComponent
+            summary={summary}
+            selectedReceiver={filters.query}
+            onSelectReceiver={(receiver) => {
+              if (
+                filters.query &&
+                filters.query.trim().toLowerCase() === receiver.trim().toLowerCase()
+              ) {
+                handleFilterChange({ ...filters, query: '' });
+              } else {
+                handleFilterChange({ ...filters, query: receiver });
+              }
+            }}
+          />
         </div>
       </main>
 
