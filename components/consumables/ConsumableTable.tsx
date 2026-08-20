@@ -51,7 +51,7 @@ export function ConsumableTable({
   const endIdx = Math.min(page * pageSize, totalItems);
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm h-full flex flex-col">
+    <Card className="overflow-hidden border-slate-200 shadow-sm h-full flex flex-col justify-between">
       <div className="overflow-x-auto flex-1">
         <Table className="min-w-full text-sm">
           <TableHeader className="bg-slate-50">
@@ -112,7 +112,7 @@ export function ConsumableTable({
       </div>
 
       {/* Pagination Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 mt-auto bg-white">
         <div>
           แสดง {startIdx}-{endIdx} จาก {totalItems} รายการ
         </div>
