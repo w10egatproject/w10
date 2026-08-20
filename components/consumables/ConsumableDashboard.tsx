@@ -56,16 +56,26 @@ export function ConsumableDashboard() {
   const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch('/api/consumables', { cache: 'no-store' });
+      const response = await fetch('/api/consumables', {
+        cache: 'no-store',
+        signal: controller.signal,
+      });
       const result = (await response.json()) as ConsumableApiResult<ConsumableBootstrap>;
       if (!response.ok || !result.ok) {
         throw new Error(result.ok ? '' : result.error.message);
       }
       setData(result.data);
-    } catch {
-      setError('ไม่สามารถโหลดข้อมูล Consumables ได้ กรุณาลองใหม่');
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setError('การเชื่อมต่อกับ Google Sheets หมดเวลา (Timeout) กรุณากดปุ่มรีเฟรชข้อมูลเพื่อลองใหม่อีกครั้ง');
+      } else {
+        setError('ไม่สามารถโหลดข้อมูล Consumables ได้ กรุณาลองใหม่');
+      }
     } finally {
+      window.clearTimeout(timeoutId);
       setLoading(false);
     }
   }, []);
@@ -251,6 +261,7 @@ export function ConsumableDashboard() {
           {/* Sidebar Summary */}
           <ConsumableSummaryComponent
             summary={summary}
+            loading={loading}
             selectedReceiver={filters.query}
             onSelectReceiver={(receiver) => {
               if (

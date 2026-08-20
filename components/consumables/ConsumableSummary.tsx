@@ -21,6 +21,7 @@ interface Props {
   summary: ConsumableSummary;
   selectedReceiver?: string;
   onSelectReceiver?: (receiver: string) => void;
+  loading?: boolean;
 }
 
 const DONUT_COLORS = [
@@ -36,6 +37,7 @@ export function ConsumableSummaryComponent({
   summary,
   selectedReceiver,
   onSelectReceiver,
+  loading = false,
 }: Props) {
   const maxReceiverQty =
     summary.topReceivers.length > 0 ? summary.topReceivers[0].quantity : 1;
@@ -85,6 +87,42 @@ export function ConsumableSummaryComponent({
       },
     ],
   };
+
+  if (loading && summary.totalItems === 0) {
+    return (
+      <aside
+        className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full"
+        aria-label="สรุปรายการ Consumables"
+      >
+        <div className="grid grid-cols-2 gap-2.5">
+          <Card className="shadow-sm p-4 text-center">
+            <div className="h-8 w-16 bg-slate-200 animate-pulse rounded-lg mx-auto mb-2" />
+            <div className="h-3 w-20 bg-slate-100 animate-pulse rounded mx-auto" />
+          </Card>
+          <Card className="shadow-sm p-4 text-center border-emerald-200 bg-emerald-50/50">
+            <div className="h-8 w-16 bg-emerald-200/60 animate-pulse rounded-lg mx-auto mb-2" />
+            <div className="h-3 w-20 bg-emerald-100 animate-pulse rounded mx-auto" />
+          </Card>
+        </div>
+        <Card className="shadow-sm flex-1 p-4 flex flex-col gap-3">
+          <div className="h-4 w-32 bg-slate-200 animate-pulse rounded" />
+          <div className="space-y-2.5 mt-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-8 w-full bg-slate-100 animate-pulse rounded-lg" />
+            ))}
+          </div>
+        </Card>
+        <Card className="bg-slate-900 text-white p-4 flex flex-col gap-3">
+          <div className="h-4 w-28 bg-slate-800 animate-pulse rounded" />
+          <div className="h-28 w-28 rounded-full border-4 border-slate-800 border-t-emerald-500 animate-spin mx-auto my-2" />
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="h-3 bg-slate-800 animate-pulse rounded" />
+            <div className="h-3 bg-slate-800 animate-pulse rounded" />
+          </div>
+        </Card>
+      </aside>
+    );
+  }
 
   return (
     <aside

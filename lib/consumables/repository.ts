@@ -31,7 +31,12 @@ function normalizePrivateKey(key: string): string {
   return normalized;
 }
 
+let cachedSheetsClient: ReturnType<typeof google.sheets> | null = null;
+
 function getSheetsClient() {
+  if (cachedSheetsClient) {
+    return cachedSheetsClient;
+  }
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
   const rawKey = process.env.GOOGLE_PRIVATE_KEY;
 
@@ -46,7 +51,8 @@ function getSheetsClient() {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
-  return google.sheets({ version: 'v4', auth });
+  cachedSheetsClient = google.sheets({ version: 'v4', auth });
+  return cachedSheetsClient;
 }
 
 export class ConsumableRepository {
@@ -58,14 +64,20 @@ export class ConsumableRepository {
 
     try {
       const [consumableRes, receiverRes] = await Promise.all([
-        sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
-          range: `'${CONSUMABLES_TAB_NAME}'!A2:G2000`,
-        }),
-        sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
-          range: `'${RECEIVER_TAB_NAME}'!A2:A500`,
-        }).catch(() => ({ data: { values: [] } })),
+        sheets.spreadsheets.values.get(
+          {
+            spreadsheetId: SPREADSHEET_ID,
+            range: `'${CONSUMABLES_TAB_NAME}'!A2:G2000`,
+          },
+          { timeout: 10000 },
+        ),
+        sheets.spreadsheets.values.get(
+          {
+            spreadsheetId: SPREADSHEET_ID,
+            range: `'${RECEIVER_TAB_NAME}'!A2:A500`,
+          },
+          { timeout: 10000 },
+        ).catch(() => ({ data: { values: [] } })),
       ]);
 
       const rawRows = consumableRes.data.values || [];
