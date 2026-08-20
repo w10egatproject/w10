@@ -66,9 +66,9 @@ export function ConsumableTable({
             </TableRow>
           </TableHeader>
           <TableBody className="text-slate-800">
-            {items.map((item) => (
+            {items.map((item, index) => (
               <TableRow
-                key={item.no}
+                key={`${item.no}-${item.item}-${item.receiver}-${item.dateDisplay || ''}-${index}`}
                 onClick={() => onSelect(item)}
                 className="cursor-pointer transition-colors hover:bg-emerald-50/60"
               >

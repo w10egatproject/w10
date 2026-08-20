@@ -47,20 +47,35 @@ export function normalizeDate(value: unknown): Date | null {
   if (!str || str === '-') return null;
 
   const parts = str.split(/[\/\-\.]/);
-  if (parts.length !== 3) return null;
-
   let day: number;
   let month: number;
   let year: number;
 
-  if (parts[0].length === 4) {
-    year = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    day = parseInt(parts[2], 10);
+  if (parts.length === 3) {
+    if (parts[0].length === 4) {
+      year = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10);
+      day = parseInt(parts[2], 10);
+    } else {
+      day = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10);
+      year = parseInt(parts[2], 10);
+    }
+  } else if (parts.length === 2) {
+    // Handle edge case like 6/82569 or 06/082569 where month and 4-digit year are merged
+    const p0 = parseInt(parts[0], 10);
+    const p1 = parts[1].trim();
+    if (p1.length >= 5 && p1.length <= 6) {
+      const mStr = p1.length === 5 ? p1.slice(0, 1) : p1.slice(0, 2);
+      const yStr = p1.length === 5 ? p1.slice(1) : p1.slice(2);
+      day = p0;
+      month = parseInt(mStr, 10);
+      year = parseInt(yStr, 10);
+    } else {
+      return null;
+    }
   } else {
-    day = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-    year = parseInt(parts[2], 10);
+    return null;
   }
 
   if (isNaN(day) || isNaN(month) || isNaN(year)) return null;

@@ -70,11 +70,24 @@ export class ConsumableRepository {
 
       const rawRows = consumableRes.data.values || [];
       const items: ConsumableItem[] = [];
+      const seenMap = new Map<string, ConsumableItem>();
 
       rawRows.forEach((row) => {
         const item = parseSheetRow(row);
-        if (item) {
+        if (!item || !item.no) return;
+
+        const dedupKey = `${item.no}-${item.item.trim().toLowerCase()}-${item.receiver.trim().toLowerCase()}-${item.quantity}`;
+        const existing = seenMap.get(dedupKey);
+
+        if (!existing) {
+          seenMap.set(dedupKey, item);
           items.push(item);
+        } else if (!existing.picUrl && item.picUrl) {
+          const index = items.indexOf(existing);
+          if (index !== -1) {
+            items[index] = item;
+            seenMap.set(dedupKey, item);
+          }
         }
       });
 
