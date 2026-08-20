@@ -300,6 +300,7 @@ type PurchasingPageContentProps = {
   colorTheme?: ColorTheme;
   dateStartLabel?: string;
   showEcmLinks?: boolean;
+  colorDueDate?: boolean;
 };
 
 export function PurchasingPageContent({
@@ -313,6 +314,7 @@ export function PurchasingPageContent({
   colorTheme = 'gold',
   dateStartLabel = 'Date เริ่มงาน',
   showEcmLinks = false,
+  colorDueDate = false,
 }: PurchasingPageContentProps = {}) {
   const t = themeTokens[colorTheme];
 
@@ -512,6 +514,17 @@ export function PurchasingPageContent({
     if (s.includes('เสร็จ')) return 'bg-yellow-400 text-slate-900'; // เหลือง
     if (s.includes('ยกเลิก') || s.toLowerCase().includes('help me')) return 'bg-white text-slate-400 border border-slate-200'; // ขาว
     return 'bg-[#FFD100] text-[#4A4A49]'; // default
+  };
+
+  const getDueDateClass = (dateStr: string, today: Date): string => {
+    if (!dateStr || !dateStr.trim() || dateStr.trim() === '-') return 'text-slate-600';
+    const parts = dateStr.trim().split('/').map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return 'text-slate-600';
+    const [d, m, y] = parts;
+    const target = new Date(y, m - 1, d);
+    const now = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const daysUntil = Math.round((target.getTime() - now.getTime()) / 86400000);
+    return daysUntil <= 7 ? 'text-red-600 font-black' : 'text-slate-600';
   };
 
   const chartOptions = useMemo(() => ({ chart: { type: 'pie', backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 }, height: 300 }, colors: chartColors, credits: { enabled: false }, title: { text: '' }, plotOptions: { pie: { innerSize: '58%', depth: 38, colorByPoint: true, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.0f}%', style: { fontWeight: '800', textOutline: 'none', color: '#4b5563' } } } }, series: [{ name: 'Purchasing', data: primaryChartData }] }), [primaryChartData]);
@@ -832,7 +845,7 @@ export function PurchasingPageContent({
                           <td className={`max-w-[400px] px-6 py-5 font-bold text-[#4A4A49] leading-relaxed border ${t.dtTblBorder}`}>{row.item || '-'}</td>
                           <td className={`px-6 py-5 font-black text-slate-600 border ${t.dtTblBorder}`}>{row.equip || '-'}</td>
                           <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_in || '-'}</td>
-                          <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_start || '-'}</td>
+                          <td className={`px-6 py-5 font-bold whitespace-nowrap border ${t.dtTblBorder} ${colorDueDate ? getDueDateClass(row.date_start, new Date()) : 'text-slate-600'}`}>{row.date_start || '-'}</td>
                           <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_out || '-'}</td>
                           <td className={`px-6 py-5 border ${t.dtTblBorder}`}>
                             <span className={`inline-flex rounded-lg px-3 py-1.5 text-[12px] font-black uppercase tracking-wide shadow-sm ${getStatusStyle(row.status)}`}>{row.status || '-'}</span>
@@ -857,5 +870,5 @@ export function PurchasingPageContent({
 }
 
 export default function PurchasingPage() {
-  return <PurchasingPageContent dateStartLabel="คาดว่าจะเสร็จ" showEcmLinks />;
+  return <PurchasingPageContent dateStartLabel="คาดว่าจะเสร็จ" showEcmLinks colorDueDate />;
 }

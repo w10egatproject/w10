@@ -10,6 +10,9 @@ export default function PurchasingAllPage() {
       showGaugePanel={false}
       tableColumnCount={10}
       colorTheme="teal"
+      dateStartLabel="คาดว่าจะเสร็จ"
+      showEcmLinks
+      colorDueDate
     />
   );
 }
