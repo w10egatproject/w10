@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { ConsumableItem } from '@/lib/consumables/types';
@@ -50,46 +50,46 @@ export function ConsumableTable({
   const endIdx = Math.min(page * pageSize, totalItems);
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm h-full flex flex-col justify-between">
-      <div className="overflow-x-auto flex-1 min-h-0">
-        <Table className="min-w-full text-sm">
+    <Card className="overflow-hidden border-slate-200 shadow-sm h-full flex flex-col">
+      <div className="flex flex-col flex-1 min-h-0 overflow-x-auto">
+        <table className="min-w-full w-full text-sm flex-1 min-h-0 flex flex-col">
           <TableHeader className="bg-slate-50">
-            <TableRow className="border-b border-slate-200">
-              <TableHead className="px-4 py-3 text-center w-16 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
-              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่</TableHead>
-              <TableHead className="px-4 py-3 min-w-[180px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">รายการ</TableHead>
-              <TableHead className="px-4 py-3 text-center w-20 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จำนวน</TableHead>
-              <TableHead className="px-4 py-3 w-32 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
-              <TableHead className="px-4 py-3 min-w-[140px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
-              <TableHead className="px-4 py-3 text-center w-20 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">รูป</TableHead>
+            <TableRow className="flex border-b border-slate-200">
+              <TableHead className="flex items-center px-4 py-3 text-center w-16 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-28 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่</TableHead>
+              <TableHead className="flex items-center px-4 py-3 min-w-[180px] flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">รายการ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 text-center w-20 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จำนวน</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-32 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 min-w-[140px] flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 text-center w-20 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">รูป</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="text-slate-800">
+          <TableBody className="flex flex-1 flex-col text-slate-800">
             {items.map((item, index) => (
               <TableRow
                 key={`${item.no}-${item.item}-${item.receiver}-${item.dateDisplay || ''}-${index}`}
                 onClick={() => onSelect(item)}
-                className="cursor-pointer transition-colors hover:bg-emerald-50/60"
+                className="flex flex-1 cursor-pointer transition-colors hover:bg-emerald-50/60"
               >
-                <TableCell className="px-4 py-3 text-center font-bold text-slate-500">
+                <TableCell className="flex items-center px-4 py-3 text-center w-16 shrink-0 justify-center font-bold text-slate-500">
                   {item.no}
                 </TableCell>
-                <TableCell className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
+                <TableCell className="flex items-center px-4 py-3 w-28 shrink-0 whitespace-nowrap font-medium text-slate-700">
                   {item.dateDisplay || '—'}
                 </TableCell>
-                <TableCell className="px-4 py-3 font-semibold text-slate-900">
+                <TableCell className="flex items-center px-4 py-3 min-w-[180px] flex-1 font-semibold text-slate-900">
                   {item.item || '—'}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-center font-black text-emerald-600">
+                <TableCell className="flex items-center px-4 py-3 text-center w-20 shrink-0 justify-center font-black text-emerald-600">
                   {item.quantity}
                 </TableCell>
-                <TableCell className="px-4 py-3 font-medium text-slate-700">
+                <TableCell className="flex items-center px-4 py-3 w-32 shrink-0 font-medium text-slate-700">
                   {item.receiver || '—'}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-slate-500">
-                  <div className="truncate max-w-[200px]">{item.note || '—'}</div>
+                <TableCell className="flex items-center px-4 py-3 min-w-[140px] flex-1 text-slate-500">
+                  <div className="truncate min-w-0">{item.note || '—'}</div>
                 </TableCell>
-                <TableCell className="px-4 py-3 text-center">
+                <TableCell className="flex items-center px-4 py-3 text-center w-20 shrink-0 justify-center">
                   {item.picUrl ? (
                     <div className="relative inline-block h-8 w-8 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                       <Image
@@ -107,7 +107,7 @@ export function ConsumableTable({
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </table>
       </div>
 
       {/* Pagination Bar */}

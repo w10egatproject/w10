@@ -150,7 +150,7 @@ export function ConsumableSummaryComponent({
       </div>
 
       {/* Receiver Ranking Panel (Expanded to show 6-7 names) */}
-      <Card className="shadow-sm h-[295px] flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm flex-1 min-h-[295px] flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-3 pb-0 mb-1 flex flex-row items-center justify-between shrink-0">
           <div>
             <CardTitle className="text-sm font-bold text-slate-900">
@@ -257,7 +257,7 @@ export function ConsumableSummaryComponent({
       </Card>
 
       {/* 3D Highcharts Donut Panel (Compact with 2-column Legend) */}
-      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0 mt-auto">
+      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0">
         <CardContent className="p-4">
           <h3 className="mb-2 text-xs font-bold text-slate-200">
             สรุปการเบิก (3D Chart)
