@@ -106,7 +106,7 @@ export function ConsumableDashboard() {
     topReceivers: periodSummary.topReceivers,
   }), [filteredSummary, periodSummary]);
 
-  const pagination = useMemo(() => paginateConsumables(filtered, page, 12), [filtered, page]);
+  const pagination = useMemo(() => paginateConsumables(filtered, page, 15), [filtered, page]);
 
   const years = useMemo(() => {
     const yearSet = new Set<string>();
