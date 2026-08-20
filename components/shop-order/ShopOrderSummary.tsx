@@ -191,12 +191,12 @@ export function ShopOrderSummary({
       </div>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm flex-1 min-h-0 flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm h-[340px] flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-4 pb-0 mb-2 flex flex-col gap-2 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-bold text-slate-900">
-                {rankingTab === 'unit' ? 'หน่วยงานยอดนิยม' : 'ผู้รับยอดนิยม'}
+                {rankingTab === 'unit' ? 'หน่วยงาน' : 'ผู้รับ'}
               </CardTitle>
             </div>
             {selectedQuery && onQuerySelect && (
@@ -333,7 +333,7 @@ export function ShopOrderSummary({
       {/* 3D Highcharts Status Chart (Bottom Panel) */}
       <Card
         data-testid="status-summary"
-        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0 mt-auto"
+        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0"
       >
         <CardContent className="p-4">
           <h3 className="mb-2 text-xs font-bold text-slate-200">
