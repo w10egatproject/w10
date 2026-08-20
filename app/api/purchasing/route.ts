@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDashboardData, updateDashboardFilters } from '@/lib/googleSheet';
+import { getDashboardData, getEcmHyperlinkMaps, updateDashboardFilters } from '@/lib/googleSheet';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -32,11 +32,17 @@ export async function GET(request: Request) {
       await new Promise(resolve => setTimeout(resolve, 4000));
     }
 
-    const data = await getDashboardData();
+    const [data, ecmHyperlinks] = await Promise.all([
+      getDashboardData(),
+      getEcmHyperlinkMaps(),
+    ]);
 
     if (!data) {
       throw new Error('No data retrieved from sheet');
     }
+
+    const buyLinks = ecmHyperlinks?.buyLinks || {};
+    const ecmLinkMap = ecmHyperlinks?.ecmLinks || {};
 
     // Dashboard W10 All
     const rawData = data.dashboard;
@@ -138,6 +144,8 @@ export async function GET(request: Request) {
 
           ecm_buy: row[5] || '',
           ecm: row[6] || '',
+          ecm_buy_url: buyLinks[(row[5] || '').trim()] || '',
+          ecm_url: ecmLinkMap[(row[6] || '').trim()] || '',
           wo: row[7] || '',
           item: row[8] || '',
           equip: row[9] || '',

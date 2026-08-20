@@ -154,6 +154,55 @@ export async function getPurchasingAllSheetData() {
   };
 }
 
+const PURCHASING_ECM_LINKS_SHEET_ID = '1gAFNW67DyQjzPUBRLclT3fG-QvMVop-msOguZCEw-JY';
+const PURCHASING_ECM_LINKS_TAB = 'data';
+
+export type EcmHyperlinkMaps = {
+  buyLinks: Record<string, string>;
+  ecmLinks: Record<string, string>;
+};
+
+export async function getEcmHyperlinkMaps(): Promise<EcmHyperlinkMaps | null> {
+  const client = getSheetsClientForSheet(PURCHASING_ECM_LINKS_SHEET_ID);
+  if (!client) return null;
+
+  try {
+    const response = await client.sheets.spreadsheets.get({
+      spreadsheetId: client.sheetId,
+      ranges: [`'${PURCHASING_ECM_LINKS_TAB}'!A1:B1000`],
+      includeGridData: true,
+      fields: 'sheets.data.rowData.values(hyperlink,userEnteredValue)',
+    });
+
+    const buyLinks: Record<string, string> = {};
+    const ecmLinks: Record<string, string> = {};
+
+    const rowData = response.data.sheets?.[0]?.data?.[0]?.rowData || [];
+
+    const getText = (cell: { userEnteredValue?: { stringValue?: string | null; numberValue?: number | null } } | undefined) => {
+      const u = cell?.userEnteredValue;
+      if (u?.stringValue !== undefined && u?.stringValue !== null) return String(u.stringValue);
+      if (u?.numberValue !== undefined && u?.numberValue !== null) return String(u.numberValue);
+      return '';
+    };
+
+    rowData.forEach((row) => {
+      const cells = row.values || [];
+      const buyCell = cells[0] ?? {};
+      const ecmCell = cells[1] ?? {};
+      const buyText = getText(buyCell).trim();
+      const ecmText = getText(ecmCell).trim();
+      if (buyText && typeof buyCell.hyperlink === 'string') buyLinks[buyText] = buyCell.hyperlink;
+      if (ecmText && typeof ecmCell.hyperlink === 'string') ecmLinks[ecmText] = ecmCell.hyperlink;
+    });
+
+    return { buyLinks, ecmLinks };
+  } catch (error: unknown) {
+    console.error('Google Sheets ECM links API error:', getErrorMessage(error));
+    return null;
+  }
+}
+
 export async function getDashboardData() {
   const client = getSheetsClient();
 

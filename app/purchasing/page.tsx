@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 type GaugeData = { empNorm?: number; empOT?: number; w11_1?: number; };
 type NameValue = { name: string; value: number; };
 type PairRow = { col1: string; col2: string | number; };
-type PurchaseRow = { ecm_buy: string; ecm: string; wo: string; item: string; equip: string; date_in: string; date_start: string; date_out: string; status: string; action: string; };
+type PurchaseRow = { ecm_buy: string; ecm: string; wo: string; item: string; equip: string; date_in: string; date_start: string; date_out: string; status: string; action: string; ecm_buy_url?: string; ecm_url?: string; };
 type PurchasingData = { gauges?: GaugeData; chartData?: NameValue[]; summaryTableData?: PairRow[]; secondChartData?: NameValue[]; secondTableData?: PairRow[]; purchaseList?: PurchaseRow[]; currentYear?: string; currentMonth?: string; error?: string; };
 type ChartPointContext = {
   category?: string;
@@ -298,6 +298,8 @@ type PurchasingPageContentProps = {
   showSummaryPanel?: boolean;
   tableColumnCount?: 9 | 10;
   colorTheme?: ColorTheme;
+  dateStartLabel?: string;
+  showEcmLinks?: boolean;
 };
 
 export function PurchasingPageContent({
@@ -309,6 +311,8 @@ export function PurchasingPageContent({
   showSummaryPanel = true,
   tableColumnCount = 10,
   colorTheme = 'gold',
+  dateStartLabel = 'Date เริ่มงาน',
+  showEcmLinks = false,
 }: PurchasingPageContentProps = {}) {
   const t = themeTokens[colorTheme];
 
@@ -474,6 +478,25 @@ export function PurchasingPageContent({
     if (statusName) togglePurchaseStatusFilter(statusName);
   };
   
+  const renderEcmLink = useCallback((value: string, url?: string) => {
+    const trimmed = value.trim();
+    const linkUrl = (url || trimmed).trim();
+    const isUrl = /^https?:\/\//i.test(linkUrl);
+    if (showEcmLinks && isUrl) {
+      return (
+        <a
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-all font-bold text-blue-600 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 hover:decoration-blue-500"
+        >
+          {trimmed || linkUrl}
+        </a>
+      );
+    }
+    return trimmed || '-';
+  }, [showEcmLinks]);
+
   const getStatusStyle = (status: string) => {
     if (!status) return 'bg-slate-100 text-slate-400';
     const s = status.trim();
@@ -550,8 +573,8 @@ export function PurchasingPageContent({
 
   const totalSummary = useMemo(() => summaryTableData.reduce((sum, row) => sum + (parseFloat(row.col2?.toString().replace(/[^0-9.-]/g, '')) || 0), 0), [summaryTableData]);
   const tableHeaders = tableColumnCount === 9
-    ? ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ']
-    : ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ', 'การดำเนินการ'];
+    ? ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', dateStartLabel, 'Date ออกงาน', 'สถานะ']
+    : ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', dateStartLabel, 'Date ออกงาน', 'สถานะ', 'การดำเนินการ'];
   const overviewGridClass = showGaugePanel
     ? (showSummaryPanel ? 'xl:grid-cols-[280px_minmax(0,1fr)_minmax(0,1fr)]' : 'xl:grid-cols-[280px_minmax(0,1fr)]')
     : (showSummaryPanel ? 'xl:grid-cols-2' : 'xl:grid-cols-1');
@@ -803,8 +826,8 @@ export function PurchasingPageContent({
                           transition={{ delay: index * 0.005 }}
                           className={`${t.dtTblRowBg} ${t.dtTblRowHover} transition-colors`}
                         >
-                          <td className={`px-6 py-5 font-black text-[#4A4A49] border ${t.dtTblBorder}`}>{row.ecm_buy || '-'}</td>
-                          <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.ecm || '-'}</td>
+<td className={`px-6 py-5 font-black text-[#4A4A49] border ${t.dtTblBorder}`}>{renderEcmLink(row.ecm_buy, row.ecm_buy_url)}</td>
+<td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{renderEcmLink(row.ecm, row.ecm_url)}</td>
                           <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.wo || '-'}</td>
                           <td className={`max-w-[400px] px-6 py-5 font-bold text-[#4A4A49] leading-relaxed border ${t.dtTblBorder}`}>{row.item || '-'}</td>
                           <td className={`px-6 py-5 font-black text-slate-600 border ${t.dtTblBorder}`}>{row.equip || '-'}</td>
@@ -834,5 +857,5 @@ export function PurchasingPageContent({
 }
 
 export default function PurchasingPage() {
-  return <PurchasingPageContent />;
+  return <PurchasingPageContent dateStartLabel="คาดว่าจะเสร็จ" showEcmLinks />;
 }
