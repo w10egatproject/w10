@@ -159,7 +159,7 @@ export function ShopOrderSummary({
 
   return (
     <aside
-      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full"
+      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full justify-between"
       aria-label="สรุปรายการ"
     >
       {/* KPI Mini Cards */}
@@ -333,7 +333,7 @@ export function ShopOrderSummary({
       {/* 3D Highcharts Status Chart (Bottom Panel) */}
       <Card
         data-testid="status-summary"
-        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0"
+        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0 mt-auto"
       >
         <CardContent className="p-4">
           <h3 className="mb-2 text-xs font-bold text-slate-200">
