@@ -49,7 +49,7 @@ export function ConsumableSummaryComponent({
         beta: 0,
       },
       backgroundColor: 'transparent',
-      height: 180,
+      height: 140,
       margin: [0, 0, 0, 0],
       spacing: [0, 0, 0, 0],
     },
@@ -67,8 +67,8 @@ export function ConsumableSummaryComponent({
     },
     plotOptions: {
       pie: {
-        innerSize: '55%',
-        depth: 35,
+        innerSize: '52%',
+        depth: 26,
         dataLabels: { enabled: false },
         showInLegend: false,
         borderWidth: 0,
@@ -111,8 +111,8 @@ export function ConsumableSummaryComponent({
         </Card>
       </div>
 
-      {/* Receiver Ranking Panel (Compact with Scrollbar) */}
-      <Card className="shadow-sm flex flex-col transition-all">
+      {/* Receiver Ranking Panel (Expanded to show 7-8 names) */}
+      <Card className="shadow-sm flex-1 flex flex-col transition-all">
         <CardHeader className="p-4 pb-0 mb-2 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm font-bold text-slate-900">
@@ -136,7 +136,7 @@ export function ConsumableSummaryComponent({
         {summary.topReceivers.length === 0 ? (
           <div className="text-xs text-slate-400 py-2">ไม่มีข้อมูล</div>
         ) : (
-          <ol className="max-h-[220px] overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+          <ol className="max-h-[360px] overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
             {summary.topReceivers.map((rec, idx) => {
               const isSelected =
                 selectedReceiver?.trim().toLowerCase() === rec.name.trim().toLowerCase();
@@ -218,54 +218,52 @@ export function ConsumableSummaryComponent({
         </CardContent>
       </Card>
 
-      {/* 3D Highcharts Donut Panel (Fills remaining height to match table bottom) */}
-      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl flex-1 flex flex-col justify-between">
-        <CardContent className="p-5 flex-1 flex flex-col justify-between">
-          <div>
-            <h3 className="mb-3 text-sm font-bold text-slate-200">
-              สรุปการเบิก (3D Chart)
-            </h3>
+      {/* 3D Highcharts Donut Panel (Compact with 2-column Legend) */}
+      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl">
+        <CardContent className="p-4">
+          <h3 className="mb-2 text-xs font-bold text-slate-200">
+            สรุปการเบิก (3D Chart)
+          </h3>
 
-            <div className="relative mb-3 h-44 w-full">
-              {summary.topItems.length > 0 ? (
-                <HighchartsClient options={chartOptions} />
-              ) : (
-                <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                  ไม่มีข้อมูล
-                </div>
-              )}
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <NumberTicker value={summary.totalQuantity} className="text-xl font-black text-white tracking-tight" />
-                <span className="text-[10px] font-bold text-slate-400">
-                  ชิ้นรวม
-                </span>
+          <div className="relative mb-2 h-36 w-full">
+            {summary.topItems.length > 0 ? (
+              <HighchartsClient options={chartOptions} />
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                ไม่มีข้อมูล
               </div>
+            )}
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <NumberTicker value={summary.totalQuantity} className="text-lg font-black text-white tracking-tight" />
+              <span className="text-[9px] font-bold text-slate-400">
+                ชิ้นรวม
+              </span>
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="flex flex-col gap-2 border-t border-slate-800 pt-3">
+          {/* 2-Column Legend */}
+          <div className="grid grid-cols-2 gap-x-2.5 gap-y-1.5 border-t border-slate-800 pt-2.5">
             {summary.topItems.length === 0 ? (
-              <div className="text-center text-xs text-slate-400">ไม่มีข้อมูล</div>
+              <div className="col-span-2 text-center text-xs text-slate-400">ไม่มีข้อมูล</div>
             ) : (
               summary.topItems.map((item, idx) => (
                 <div
                   key={item.name}
-                  className="flex items-center justify-between text-xs"
+                  className="flex items-center justify-between gap-1 text-[11px] min-w-0"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0 truncate">
                     <span
-                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      className="h-2 w-2 rounded-full shrink-0"
                       style={{
                         backgroundColor: DONUT_COLORS[idx % DONUT_COLORS.length],
                       }}
                     />
-                    <span className="font-semibold text-slate-300 truncate max-w-[140px]">
+                    <span className="font-semibold text-slate-300 truncate" title={item.name}>
                       {item.name}
                     </span>
                   </div>
-                  <span className="font-bold text-white">
-                    {item.quantity.toLocaleString()} ชิ้น
+                  <span className="font-bold text-white shrink-0">
+                    {item.quantity}
                   </span>
                 </div>
               ))

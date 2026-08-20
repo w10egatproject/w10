@@ -185,8 +185,8 @@ export function summarizeConsumables(items: ConsumableItem[]): ConsumableSummary
   });
 
   const itemEntries = Object.entries(qtyByItem).sort((a, b) => b[1] - a[1]);
-  const topItems = itemEntries.slice(0, 5).map(([name, quantity]) => ({ name, quantity }));
-  const restQty = itemEntries.slice(5).reduce((sum, [, q]) => sum + q, 0);
+  const topItems = itemEntries.slice(0, 4).map(([name, quantity]) => ({ name, quantity }));
+  const restQty = itemEntries.slice(4).reduce((sum, [, q]) => sum + q, 0);
   if (restQty > 0) {
     topItems.push({ name: 'อื่นๆ', quantity: restQty });
   }
@@ -199,7 +199,7 @@ export function summarizeConsumables(items: ConsumableItem[]): ConsumableSummary
 
   const topReceivers = Object.entries(qtyByReceiver)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, 10)
     .map(([name, quantity]) => ({ name, quantity }));
 
   return {
