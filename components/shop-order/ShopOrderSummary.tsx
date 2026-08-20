@@ -190,8 +190,58 @@ export function ShopOrderSummary({
         })}
       </div>
 
+      {/* 3D Highcharts Status Chart (Top Panel) */}
+      <Card
+        data-testid="status-summary"
+        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0"
+      >
+        <CardContent className="p-4">
+          <h3 className="mb-2 text-xs font-bold text-slate-200">
+            สรุปสถานะ (3D Chart)
+          </h3>
+
+          <div className="relative mb-2 h-36 w-full">
+            <HighchartsClient options={chartOptions} />
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <strong className="text-lg font-black text-white tracking-tight">
+                {donePercent}%
+              </strong>
+              <span className="text-[9px] font-bold text-slate-400">
+                เสร็จสิ้น
+              </span>
+            </div>
+          </div>
+
+          {/* 2-Column Legend */}
+          <div className="grid grid-cols-2 gap-x-2.5 gap-y-1.5 border-t border-slate-800 pt-2.5 text-[11px]">
+            <div className="flex items-center justify-between gap-1 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                <span className="h-2 w-2 rounded-full shrink-0 bg-amber-500" />
+                <span className="font-semibold text-slate-300 truncate">
+                  รอดำเนินการ
+                </span>
+              </div>
+              <span className="font-bold text-white shrink-0">
+                {summary.wait}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-1 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                <span className="h-2 w-2 rounded-full shrink-0 bg-emerald-500" />
+                <span className="font-semibold text-slate-300 truncate">
+                  เสร็จสิ้น
+                </span>
+              </div>
+              <span className="font-bold text-white shrink-0">
+                {summary.done}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm h-[295px] flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm flex-1 min-h-[295px] mt-auto flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-3 pb-0 mb-1 flex flex-col gap-1.5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -327,56 +377,6 @@ export function ShopOrderSummary({
               })}
             </ol>
           )}
-        </CardContent>
-      </Card>
-
-      {/* 3D Highcharts Status Chart (Bottom Panel) */}
-      <Card
-        data-testid="status-summary"
-        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0 mt-auto"
-      >
-        <CardContent className="p-4">
-          <h3 className="mb-2 text-xs font-bold text-slate-200">
-            สรุปสถานะ (3D Chart)
-          </h3>
-
-          <div className="relative mb-2 h-36 w-full">
-            <HighchartsClient options={chartOptions} />
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <strong className="text-lg font-black text-white tracking-tight">
-                {donePercent}%
-              </strong>
-              <span className="text-[9px] font-bold text-slate-400">
-                เสร็จสิ้น
-              </span>
-            </div>
-          </div>
-
-          {/* 2-Column Legend */}
-          <div className="grid grid-cols-2 gap-x-2.5 gap-y-1.5 border-t border-slate-800 pt-2.5 text-[11px]">
-            <div className="flex items-center justify-between gap-1 min-w-0">
-              <div className="flex items-center gap-1.5 min-w-0 truncate">
-                <span className="h-2 w-2 rounded-full shrink-0 bg-amber-500" />
-                <span className="font-semibold text-slate-300 truncate">
-                  รอดำเนินการ
-                </span>
-              </div>
-              <span className="font-bold text-white shrink-0">
-                {summary.wait}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-1 min-w-0">
-              <div className="flex items-center gap-1.5 min-w-0 truncate">
-                <span className="h-2 w-2 rounded-full shrink-0 bg-emerald-500" />
-                <span className="font-semibold text-slate-300 truncate">
-                  เสร็จสิ้น
-                </span>
-              </div>
-              <span className="font-bold text-white shrink-0">
-                {summary.done}
-              </span>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </aside>
