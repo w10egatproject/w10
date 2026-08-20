@@ -191,7 +191,7 @@ export function ShopOrderSummary({
       </div>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm flex-1 flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-4 pb-0 mb-2 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -242,7 +242,7 @@ export function ShopOrderSummary({
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 pt-1 flex-1 flex flex-col">
+        <CardContent className="p-4 pt-1 flex flex-col">
           {rankingList.length === 0 ? (
             <div className="text-xs text-slate-400 py-3 text-center">
               ไม่มีข้อมูล
