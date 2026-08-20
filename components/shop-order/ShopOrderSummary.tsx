@@ -241,7 +241,7 @@ export function ShopOrderSummary({
       </Card>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm flex-1 min-h-[295px] mt-auto flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm flex-1 min-h-[295px] flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-3 pb-0 mb-1 flex flex-col gap-1.5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
