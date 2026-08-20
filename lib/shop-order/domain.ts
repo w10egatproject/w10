@@ -312,7 +312,7 @@ export function summarizeOrders(
       (left, right) =>
         right.count - left.count || left.name.localeCompare(right.name, 'th'),
     )
-    .slice(0, 10);
+    .slice(0, 20);
 
   const popularReceivers = Array.from(receiverCounts, ([name, count]) => ({
     name,
@@ -322,7 +322,7 @@ export function summarizeOrders(
       (left, right) =>
         right.count - left.count || left.name.localeCompare(right.name, 'th'),
     )
-    .slice(0, 10);
+    .slice(0, 20);
 
   return {
     total: orders.length,

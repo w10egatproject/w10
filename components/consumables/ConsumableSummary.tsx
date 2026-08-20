@@ -150,8 +150,8 @@ export function ConsumableSummaryComponent({
       </div>
 
       {/* Receiver Ranking Panel (Expanded to show 7-8 names) */}
-      <Card className="shadow-sm flex flex-col transition-all">
-        <CardHeader className="p-4 pb-0 mb-2 flex flex-row items-center justify-between">
+      <Card className="shadow-sm flex-1 min-h-0 flex flex-col transition-all">
+        <CardHeader className="p-4 pb-0 mb-2 flex flex-row items-center justify-between shrink-0">
           <div>
             <CardTitle className="text-sm font-bold text-slate-900">
               ผู้เบิกของมากที่สุด
@@ -170,11 +170,11 @@ export function ConsumableSummaryComponent({
             </button>
           )}
         </CardHeader>
-        <CardContent className="p-4 pt-0 flex flex-col">
+        <CardContent className="p-4 pt-0 flex-1 min-h-0 flex flex-col overflow-hidden">
         {summary.topReceivers.length === 0 ? (
           <div className="text-xs text-slate-400 py-2">ไม่มีข้อมูล</div>
         ) : (
-          <ol className="max-h-[360px] overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+          <ol className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
             {summary.topReceivers.map((rec, idx) => {
               const isSelected =
                 selectedReceiver?.trim().toLowerCase() === rec.name.trim().toLowerCase();
@@ -257,7 +257,7 @@ export function ConsumableSummaryComponent({
       </Card>
 
       {/* 3D Highcharts Donut Panel (Compact with 2-column Legend) */}
-      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl">
+      <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0 mt-auto">
         <CardContent className="p-4">
           <h3 className="mb-2 text-xs font-bold text-slate-200">
             สรุปการเบิก (3D Chart)

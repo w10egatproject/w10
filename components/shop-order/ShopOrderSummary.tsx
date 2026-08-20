@@ -191,8 +191,8 @@ export function ShopOrderSummary({
       </div>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm flex flex-col transition-all border border-slate-200">
-        <CardHeader className="p-4 pb-0 mb-2 flex flex-col gap-2">
+      <Card className="shadow-sm flex-1 min-h-0 flex flex-col transition-all border border-slate-200">
+        <CardHeader className="p-4 pb-0 mb-2 flex flex-col gap-2 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-bold text-slate-900">
@@ -242,13 +242,13 @@ export function ShopOrderSummary({
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 pt-1 flex flex-col">
+        <CardContent className="p-4 pt-1 flex-1 min-h-0 flex flex-col overflow-hidden">
           {rankingList.length === 0 ? (
             <div className="text-xs text-slate-400 py-3 text-center">
               ไม่มีข้อมูล
             </div>
           ) : (
-            <ol className="max-h-[360px] overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+            <ol className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
               {rankingList.map((item, idx) => {
                 const isSelected =
                   selectedQuery?.trim().toLowerCase() === item.name.trim().toLowerCase();
@@ -333,7 +333,7 @@ export function ShopOrderSummary({
       {/* 3D Highcharts Status Chart (Bottom Panel) */}
       <Card
         data-testid="status-summary"
-        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl"
+        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl shrink-0 mt-auto"
       >
         <CardContent className="p-4">
           <h3 className="mb-2 text-xs font-bold text-slate-200">
