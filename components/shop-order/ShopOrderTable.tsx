@@ -3,7 +3,7 @@
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
 import { Card } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -40,24 +40,24 @@ export function ShopOrderTable({
   }
 
   return (
-    <Card className="overflow-hidden border border-slate-200 shadow-sm flex-1 h-full flex flex-col justify-between">
-      <div className="overflow-x-auto flex-1">
-        <Table className="min-w-[1100px] text-sm">
+    <Card className="overflow-hidden border border-slate-200 shadow-sm h-full flex flex-col">
+      <div className="flex flex-col flex-1 min-h-0 overflow-x-auto">
+        <table className="min-w-[1100px] w-full text-sm flex-1 min-h-0 flex flex-col">
           <TableHeader className="bg-slate-50">
-            <TableRow className="border-b border-slate-200">
-              <TableHead className="px-4 py-3 text-center w-16 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
-              <TableHead className="px-4 py-3 w-20 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จาก</TableHead>
-              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เลขที่</TableHead>
-              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่รับ</TableHead>
-              <TableHead className="px-4 py-3 min-w-[200px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เรื่อง</TableHead>
-              <TableHead className="px-4 py-3 w-32 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หน่วยงานรับ</TableHead>
-              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
-              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่ออก</TableHead>
-              <TableHead className="px-4 py-3 min-w-[140px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
-              <TableHead className="px-4 py-3 text-center w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">สถานะ</TableHead>
+            <TableRow className="flex border-b border-slate-200">
+              <TableHead className="flex items-center px-4 py-3 text-center w-16 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-20 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จาก</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-28 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เลขที่</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-28 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่รับ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 min-w-[200px] flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เรื่อง</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-32 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หน่วยงานรับ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-28 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 w-28 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่ออก</TableHead>
+              <TableHead className="flex items-center px-4 py-3 min-w-[140px] flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
+              <TableHead className="flex items-center px-4 py-3 text-center w-28 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">สถานะ</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="text-slate-800">
+          <TableBody className="flex flex-1 flex-col text-slate-800">
             {orders.map((order, index) => {
               const done = getOrderStatus(order) === 'done';
               return (
@@ -73,30 +73,30 @@ export function ShopOrderTable({
                   }}
                   className={
                     onSelect
-                      ? 'cursor-pointer hover:bg-indigo-50/60 transition-colors focus:bg-indigo-50/60 focus:outline-none'
-                      : 'hover:bg-slate-50 transition-colors'
+                      ? 'flex flex-1 cursor-pointer hover:bg-indigo-50/60 transition-colors focus:bg-indigo-50/60 focus:outline-none'
+                      : 'flex flex-1 hover:bg-slate-50 transition-colors'
                   }
                 >
-                  <TableCell className="px-4 py-3 text-center font-bold text-slate-500">{order.no}</TableCell>
-                  <TableCell className="px-4 py-3 truncate font-medium text-slate-700">{order.from || '—'}</TableCell>
-                  <TableCell className="px-4 py-3 font-mono font-bold text-slate-900 truncate">{order.number || '—'}</TableCell>
-                  <TableCell className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">{formatThaiDate(order.dateIn) || '—'}</TableCell>
-                  <TableCell className="px-4 py-3 font-semibold text-slate-900 max-w-[280px]" title={order.subject}>
-                    <div className="truncate">{order.subject || '—'}</div>
+                  <TableCell className="flex items-center px-4 py-3 text-center w-16 shrink-0 justify-center font-bold text-slate-500">{order.no}</TableCell>
+                  <TableCell className="flex items-center px-4 py-3 w-20 shrink-0 font-medium text-slate-700">{order.from || '—'}</TableCell>
+                  <TableCell className="flex items-center px-4 py-3 w-28 shrink-0 font-mono font-bold text-slate-900">{order.number || '—'}</TableCell>
+                  <TableCell className="flex items-center px-4 py-3 w-28 shrink-0 whitespace-nowrap font-medium text-slate-700">{formatThaiDate(order.dateIn) || '—'}</TableCell>
+                  <TableCell className="flex items-center px-4 py-3 min-w-[200px] flex-1 font-semibold text-slate-900" title={order.subject}>
+                    <span className="truncate min-w-0">{order.subject || '—'}</span>
                   </TableCell>
-                  <TableCell className="px-4 py-3 font-medium text-slate-700 truncate" title={order.receivingUnit || '—'}>
+                  <TableCell className="flex items-center px-4 py-3 w-32 shrink-0 font-medium text-slate-700 truncate" title={order.receivingUnit || '—'}>
                     {order.receivingUnit || '—'}
                   </TableCell>
-                  <TableCell className="px-4 py-3 font-medium text-slate-700 truncate" title={order.receiverName || '—'}>
+                  <TableCell className="flex items-center px-4 py-3 w-28 shrink-0 font-medium text-slate-700 truncate" title={order.receiverName || '—'}>
                     {order.receiverName || '—'}
                   </TableCell>
-                  <TableCell className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
+                  <TableCell className="flex items-center px-4 py-3 w-28 shrink-0 whitespace-nowrap font-medium text-slate-700">
                     {formatThaiDate(order.dateOut) || '—'}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-slate-500">
-                    <div className="truncate max-w-[160px]">{order.note || '—'}</div>
+                  <TableCell className="flex items-center px-4 py-3 min-w-[140px] flex-1 text-slate-500">
+                    <span className="truncate min-w-0 max-w-[160px]">{order.note || '—'}</span>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-center">
+                  <TableCell className="flex items-center px-4 py-3 text-center w-28 shrink-0 justify-center">
                     {done ? (
                       <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none font-bold px-2.5 py-0.5 rounded-md">
                         เสร็จสิ้น
@@ -111,7 +111,7 @@ export function ShopOrderTable({
               );
             })}
           </TableBody>
-        </Table>
+        </table>
       </div>
 
       {/* Pagination Bar */}
