@@ -233,9 +233,9 @@ export function ConsumableDashboard() {
           </Alert>
         )}
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-stretch">
           {/* Main Table Panel */}
-          <section className="flex-1 min-w-0 flex flex-col">
+          <section className="min-w-0 flex flex-col h-full">
             <ConsumableTable
               items={pagination.items}
               totalItems={pagination.totalItems}
