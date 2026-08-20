@@ -22,7 +22,7 @@ export function ShopOrderTable({
   page,
   totalPages,
   total,
-  pageSize = 10,
+  pageSize = 12,
   onPage,
   onSelect,
 }: Props) {

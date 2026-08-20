@@ -191,8 +191,8 @@ export function ShopOrderSummary({
       </div>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm h-[340px] flex flex-col transition-all border border-slate-200">
-        <CardHeader className="p-4 pb-0 mb-2 flex flex-col gap-2 shrink-0">
+      <Card className="shadow-sm h-[295px] flex flex-col transition-all border border-slate-200">
+        <CardHeader className="p-3 pb-0 mb-1 flex flex-col gap-1.5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-bold text-slate-900">
@@ -216,7 +216,7 @@ export function ShopOrderSummary({
               <button
                 type="button"
                 onClick={() => setRankingTab('unit')}
-                className={`rounded-md px-2.5 py-1 text-xs font-bold transition-all ${
+                className={`rounded-md px-2 py-0.5 text-xs font-bold transition-all ${
                   rankingTab === 'unit'
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -227,7 +227,7 @@ export function ShopOrderSummary({
               <button
                 type="button"
                 onClick={() => setRankingTab('receiver')}
-                className={`rounded-md px-2.5 py-1 text-xs font-bold transition-all ${
+                className={`rounded-md px-2 py-0.5 text-xs font-bold transition-all ${
                   rankingTab === 'receiver'
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -242,13 +242,13 @@ export function ShopOrderSummary({
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 pt-1 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <CardContent className="p-3 pt-0.5 flex-1 min-h-0 flex flex-col overflow-hidden">
           {rankingList.length === 0 ? (
             <div className="text-xs text-slate-400 py-3 text-center">
               ไม่มีข้อมูล
             </div>
           ) : (
-            <ol className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+            <ol className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1 scrollbar-thin">
               {rankingList.map((item, idx) => {
                 const isSelected =
                   selectedQuery?.trim().toLowerCase() === item.name.trim().toLowerCase();
