@@ -80,7 +80,7 @@ describe('ShopOrderDashboard', () => {
     render(<ShopOrderDashboard />);
     await screen.findByText('งานเสร็จ');
     expect(screen.getByTestId('shop-order-layout').className)
-      .toContain('lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]');
+      .toContain('lg:grid-cols-[1fr_320px]');
     expect(screen.queryByText('แนวโน้มออเดอร์ — 30 วันล่าสุด')).toBeNull();
   });
 

@@ -54,8 +54,24 @@ export function ShopOrderDashboard() {
     const timer = window.setTimeout(() => void loadData(), 0);
     return () => window.clearTimeout(timer);
   }, [loadData]);
+  const periodFiltered = useMemo(() => {
+    return (data?.orders ?? []).filter((o) => {
+      if (filters.year !== 'all' && o.dateIn && String(Number(o.dateIn.slice(0, 4)) + 543) !== filters.year) return false;
+      if (filters.month !== 'all' && o.dateIn && String(Number(o.dateIn.slice(5, 7))) !== filters.month) return false;
+      return true;
+    });
+  }, [data, filters.year, filters.month]);
+
+  const periodSummary = useMemo(() => summarizeOrders(periodFiltered), [periodFiltered]);
   const baseFiltered = useMemo(() => filterAndSortOrders(data?.orders ?? [], { ...filters, status: 'all' }), [data, filters]);
-  const summary = useMemo(() => summarizeOrders(baseFiltered), [baseFiltered]);
+  const filteredSummary = useMemo(() => summarizeOrders(baseFiltered), [baseFiltered]);
+
+  const summary = useMemo(() => ({
+    ...filteredSummary,
+    popularUnits: periodSummary.popularUnits,
+    popularReceivers: periodSummary.popularReceivers,
+  }), [filteredSummary, periodSummary]);
+
   const filtered = useMemo(() => filters.status === 'all' ? baseFiltered : baseFiltered.filter((o) => getOrderStatus(o) === filters.status), [baseFiltered, filters.status]);
   const pagination = useMemo(() => paginateOrders(filtered, page, 20), [filtered, page]);
   const years = useMemo(() => Array.from(new Set((data?.orders ?? []).flatMap((o) => o.dateIn ? [String(Number(o.dateIn.slice(0, 4)) + 543)] : []))).sort().reverse(), [data]);
@@ -188,18 +204,35 @@ export function ShopOrderDashboard() {
         <span>{attachmentWarning.message}</span>
         <button type="button" onClick={() => { setSelected(attachmentWarning.order); setFormMode('edit'); setAttachmentWarning(null); }} className="rounded-lg border border-amber-400 bg-white px-3 py-1.5">เพิ่มไฟล์อีกครั้ง</button>
       </div>}
-      {loading && !data ? <div aria-label="กำลังโหลดข้อมูล" className="grid animate-pulse gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
-        <div className="h-96 rounded-2xl bg-white/70" /><div className="h-72 rounded-2xl bg-white/70" />
-      </div> : <div data-testid="shop-order-layout" className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
-        <div className="order-2 min-w-0 lg:order-1"><ShopOrderTable orders={pagination.items} page={pagination.page} totalPages={pagination.totalPages} total={pagination.total} onPage={setPage} onSelect={setSelected} /></div>
-        <div className="order-1 lg:order-2">
-          <ShopOrderSummary
-            summary={summary}
-            activeStatus={filters.status}
-            onStatusSelect={(status) => updateFilters({ ...filters, status })}
+      <div data-testid="shop-order-layout" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-stretch">
+        <section className="min-w-0 flex flex-col h-full">
+          <ShopOrderTable
+            orders={pagination.items}
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            total={pagination.total}
+            onPage={setPage}
+            onSelect={setSelected}
           />
-        </div>
-      </div>}
+        </section>
+        <ShopOrderSummary
+          summary={summary}
+          loading={loading}
+          activeStatus={filters.status}
+          onStatusSelect={(status) => updateFilters({ ...filters, status })}
+          selectedQuery={filters.query}
+          onQuerySelect={(query) => {
+            if (
+              filters.query &&
+              filters.query.trim().toLowerCase() === query.trim().toLowerCase()
+            ) {
+              updateFilters({ ...filters, query: '' });
+            } else {
+              updateFilters({ ...filters, query });
+            }
+          }}
+        />
+      </div>
       {data && <p className="mt-4 text-right text-xs text-slate-500">อัปเดตล่าสุด {new Date(data.generatedAt).toLocaleString('th-TH')}</p>}
       {selected && !formMode && <OrderDetailDialog order={selected} pending={mutationPending} onClose={() => setSelected(null)} onEdit={() => setFormMode('edit')} onDelete={() => void deleteOrder()} />}
       {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} error={error} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}

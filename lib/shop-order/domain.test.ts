@@ -149,10 +149,11 @@ describe('Shop Order domain', () => {
         { name: 'W11', count: 1 },
         { name: 'W12', count: 1 },
       ],
+      popularReceivers: [],
     });
   });
 
-  it('keeps a 10,000-row result but returns a bounded page and six ranks', () => {
+  it('keeps a 10,000-row result but returns a bounded page and ten ranks', () => {
     const orders = Array.from({ length: 10_000 }, (_, index) =>
       makeOrder({
         no: index + 1,
@@ -175,7 +176,7 @@ describe('Shop Order domain', () => {
       totalPages: 500,
     });
     expect(paginateOrders(filtered, 1, 20).items).toHaveLength(20);
-    expect(summarizeOrders(filtered).popularUnits).toHaveLength(6);
+    expect(summarizeOrders(filtered).popularUnits).toHaveLength(10);
   });
 
   it('normalizes invalid pagination requests and handles empty results', () => {
@@ -197,6 +198,7 @@ describe('Shop Order domain', () => {
       wait: 0,
       done: 0,
       popularUnits: [],
+      popularReceivers: [],
     });
   });
 });

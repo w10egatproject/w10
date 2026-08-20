@@ -1,15 +1,18 @@
+'use client';
+
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
-import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   orders: ShopOrder[];
   page: number;
   totalPages: number;
   total: number;
+  pageSize?: number;
   onPage: (page: number) => void;
   onSelect?: (order: ShopOrder) => void;
 }
@@ -19,41 +22,47 @@ export function ShopOrderTable({
   page,
   totalPages,
   total,
+  pageSize = 20,
   onPage,
   onSelect,
 }: Props) {
+  const startIdx = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endIdx = Math.min(page * pageSize, total);
+
+  if (orders.length === 0) {
+    return (
+      <Card className="flex flex-1 min-h-[400px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
+        <span className="text-4xl">📋</span>
+        <p className="mt-2 text-sm font-bold text-slate-600">ไม่พบข้อมูล Shop Order ตามเงื่อนไขที่เลือก</p>
+        <p className="text-xs text-slate-400 mt-0.5">ลองปรับหรือล้างตัวกรองเพื่อค้นหาใหม่</p>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="min-w-0 shadow-sm border-none overflow-hidden h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div>
-          <h2 className="font-bold">ตารางรายการ Shop Order</h2>
-          <p className="text-xs text-slate-500">
-            พบ {total.toLocaleString('th-TH')} รายการ
-          </p>
-        </div>
-      </div>
-      <div className="max-h-[68vh] overflow-auto flex-1">
-        <Table className="min-w-[1100px] table-fixed text-xs">
-          <TableHeader className="sticky top-0 z-10 bg-slate-100">
-            <TableRow>
-              <TableHead className="w-14 whitespace-nowrap font-bold text-slate-900">ลำดับ</TableHead>
-              <TableHead className="w-20 whitespace-nowrap font-bold text-slate-900">จาก</TableHead>
-              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">เลขที่</TableHead>
-              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">วันที่รับ</TableHead>
-              <TableHead className="whitespace-nowrap font-bold text-slate-900">เรื่อง</TableHead>
-              <TableHead className="w-28 whitespace-nowrap font-bold text-slate-900">หน่วยงานรับ</TableHead>
-              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">ผู้รับ</TableHead>
-              <TableHead className="w-24 whitespace-nowrap font-bold text-slate-900">วันที่ออก</TableHead>
-              <TableHead className="w-36 whitespace-nowrap font-bold text-slate-900">หมายเหตุ</TableHead>
-              <TableHead className="w-28 whitespace-nowrap font-bold text-slate-900">สถานะ</TableHead>
+    <Card className="overflow-hidden border border-slate-200 shadow-sm flex-1 h-full flex flex-col justify-between">
+      <div className="overflow-x-auto flex-1">
+        <Table className="min-w-[1100px] text-sm">
+          <TableHeader className="bg-slate-50">
+            <TableRow className="border-b border-slate-200">
+              <TableHead className="px-4 py-3 text-center w-16 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
+              <TableHead className="px-4 py-3 w-20 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จาก</TableHead>
+              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เลขที่</TableHead>
+              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่รับ</TableHead>
+              <TableHead className="px-4 py-3 min-w-[200px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เรื่อง</TableHead>
+              <TableHead className="px-4 py-3 w-32 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หน่วยงานรับ</TableHead>
+              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
+              <TableHead className="px-4 py-3 w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่ออก</TableHead>
+              <TableHead className="px-4 py-3 min-w-[140px] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
+              <TableHead className="px-4 py-3 text-center w-28 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">สถานะ</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {orders.map((order) => {
+          <TableBody className="text-slate-800">
+            {orders.map((order, index) => {
               const done = getOrderStatus(order) === 'done';
               return (
                 <TableRow
-                  key={order.no}
+                  key={`${order.no}-${order.number}-${order.dateIn || ''}-${index}`}
                   tabIndex={onSelect ? 0 : undefined}
                   onClick={() => onSelect?.(order)}
                   onKeyDown={(e) => {
@@ -64,32 +73,36 @@ export function ShopOrderTable({
                   }}
                   className={
                     onSelect
-                      ? 'cursor-pointer hover:bg-indigo-50/50 focus:bg-indigo-50 focus:outline-none'
-                      : 'hover:bg-slate-50'
+                      ? 'cursor-pointer hover:bg-indigo-50/60 transition-colors focus:bg-indigo-50/60 focus:outline-none'
+                      : 'hover:bg-slate-50 transition-colors'
                   }
                 >
-                  <TableCell className="font-bold">{order.no}</TableCell>
-                  <TableCell className="truncate">{order.from}</TableCell>
-                  <TableCell className="font-mono truncate">{order.number}</TableCell>
-                  <TableCell className="whitespace-nowrap">{formatThaiDate(order.dateIn)}</TableCell>
-                  <TableCell className="truncate font-medium" title={order.subject}>
-                    {order.subject}
+                  <TableCell className="px-4 py-3 text-center font-bold text-slate-500">{order.no}</TableCell>
+                  <TableCell className="px-4 py-3 truncate font-medium text-slate-700">{order.from || '—'}</TableCell>
+                  <TableCell className="px-4 py-3 font-mono font-bold text-slate-900 truncate">{order.number || '—'}</TableCell>
+                  <TableCell className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">{formatThaiDate(order.dateIn) || '—'}</TableCell>
+                  <TableCell className="px-4 py-3 font-semibold text-slate-900 max-w-[280px]" title={order.subject}>
+                    <div className="truncate">{order.subject || '—'}</div>
                   </TableCell>
-                  <TableCell className="truncate" title={order.receivingUnit || '—'}>{order.receivingUnit || '—'}</TableCell>
-                  <TableCell className="truncate" title={order.receiverName || '—'}>{order.receiverName || '—'}</TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="px-4 py-3 font-medium text-slate-700 truncate" title={order.receivingUnit || '—'}>
+                    {order.receivingUnit || '—'}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 font-medium text-slate-700 truncate" title={order.receiverName || '—'}>
+                    {order.receiverName || '—'}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
                     {formatThaiDate(order.dateOut) || '—'}
                   </TableCell>
-                  <TableCell className="truncate" title={order.note || '—'}>
-                    {order.note || '—'}
+                  <TableCell className="px-4 py-3 text-slate-500">
+                    <div className="truncate max-w-[160px]">{order.note || '—'}</div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-3 text-center">
                     {done ? (
-                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none font-bold">
+                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none font-bold px-2.5 py-0.5 rounded-md">
                         เสร็จสิ้น
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none font-bold">
+                      <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none font-bold px-2.5 py-0.5 rounded-md">
                         รอดำเนินการ
                       </Badge>
                     )}
@@ -99,37 +112,38 @@ export function ShopOrderTable({
             })}
           </TableBody>
         </Table>
-        {!orders.length && (
-          <div className="p-12 text-center">
-            <p className="font-bold">ไม่พบรายการ</p>
-            <p className="mt-1 text-sm text-slate-500">
-              ลองปรับหรือล้างตัวกรอง
-            </p>
-          </div>
-        )}
       </div>
-      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-sm">
-        <span>
-          หน้า {page} / {totalPages}
-        </span>
-        <div className="flex gap-2">
+
+      {/* Pagination Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 mt-auto bg-white">
+        <div>
+          แสดง {startIdx}-{endIdx} จาก {total.toLocaleString('th-TH')} รายการ
+        </div>
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             disabled={page <= 1}
             onClick={() => onPage(page - 1)}
-            className="rounded-lg"
+            className="h-8 w-8 rounded-lg"
+            aria-label="Previous page"
           >
-            ก่อนหน้า
+            &lt;
           </Button>
+          <span className="grid h-8 min-w-[32px] place-items-center rounded-lg bg-indigo-600 px-2 font-black text-white">
+            {page}
+          </span>
+          <span className="text-slate-400">/</span>
+          <span className="font-bold text-slate-700">{totalPages || 1}</span>
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             disabled={page >= totalPages}
             onClick={() => onPage(page + 1)}
-            className="rounded-lg"
+            className="h-8 w-8 rounded-lg"
+            aria-label="Next page"
           >
-            ถัดไป
+            &gt;
           </Button>
         </div>
       </div>
