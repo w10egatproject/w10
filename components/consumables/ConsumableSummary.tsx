@@ -126,7 +126,7 @@ export function ConsumableSummaryComponent({
 
   return (
     <aside
-      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full"
+      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full justify-between"
       aria-label="สรุปรายการ Consumables"
     >
       {/* KPI Mini Cards */}
@@ -149,9 +149,9 @@ export function ConsumableSummaryComponent({
         </Card>
       </div>
 
-      {/* Receiver Ranking Panel (Expanded to show 7-8 names) */}
-      <Card className="shadow-sm flex-1 min-h-0 flex flex-col transition-all">
-        <CardHeader className="p-4 pb-0 mb-2 flex flex-row items-center justify-between shrink-0">
+      {/* Receiver Ranking Panel (Expanded to show 6-7 names) */}
+      <Card className="shadow-sm h-[295px] flex flex-col transition-all border border-slate-200">
+        <CardHeader className="p-3 pb-0 mb-1 flex flex-row items-center justify-between shrink-0">
           <div>
             <CardTitle className="text-sm font-bold text-slate-900">
               ผู้เบิกของมากที่สุด
@@ -170,11 +170,11 @@ export function ConsumableSummaryComponent({
             </button>
           )}
         </CardHeader>
-        <CardContent className="p-4 pt-0 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <CardContent className="p-3 pt-0.5 flex-1 min-h-0 flex flex-col overflow-hidden">
         {summary.topReceivers.length === 0 ? (
           <div className="text-xs text-slate-400 py-2">ไม่มีข้อมูล</div>
         ) : (
-          <ol className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin">
+          <ol className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1 scrollbar-thin">
             {summary.topReceivers.map((rec, idx) => {
               const isSelected =
                 selectedReceiver?.trim().toLowerCase() === rec.name.trim().toLowerCase();
@@ -194,7 +194,7 @@ export function ConsumableSummaryComponent({
                       onSelectReceiver?.(rec.name);
                     }
                   }}
-                  className={`group relative rounded-xl p-2 transition-all cursor-pointer ${
+                  className={`group relative rounded-xl p-1.5 px-2 transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-emerald-50 border border-emerald-500 shadow-sm'
                       : 'hover:bg-slate-50 border border-transparent'
