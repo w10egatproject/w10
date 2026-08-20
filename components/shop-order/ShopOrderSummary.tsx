@@ -159,7 +159,7 @@ export function ShopOrderSummary({
 
   return (
     <aside
-      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full justify-between"
+      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full"
       aria-label="สรุปรายการ"
     >
       {/* KPI Mini Cards */}
