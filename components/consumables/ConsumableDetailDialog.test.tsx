@@ -5,12 +5,15 @@ import type { ConsumableItem } from '@/lib/consumables/types';
 
 const item: ConsumableItem = {
   no: 17,
+  date: '2026-08-19',
+  dateDisplay: '19/08/2569',
+  year: 2569,
+  month: 8,
   item: 'ปากกาเขียนเหล็ก',
   quantity: 2,
   receiver: 'วิชาญชัย',
   note: 'ใช้งานประจำแผนก',
   picUrl: 'https://drive.google.com/file/d/sample-file-id/view',
-  dateDisplay: '2026-08-19',
 };
 
 afterEach(cleanup);

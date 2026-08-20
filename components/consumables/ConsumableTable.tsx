@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { ConsumableItem } from '@/lib/consumables/types';
 import { getDriveImageThumbnailUrl } from '@/lib/utils/drive-images';
 
@@ -31,7 +30,7 @@ export function ConsumableTable({
 }: Props) {
   if (loading) {
     return (
-      <Card className="flex flex-col items-center justify-center p-16 text-slate-400">
+      <Card className="flex h-full flex-col items-center justify-center p-16 text-slate-400">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
         <p className="mt-3 text-sm font-medium">กำลังโหลดข้อมูล Consumables...</p>
       </Card>
@@ -40,7 +39,7 @@ export function ConsumableTable({
 
   if (items.length === 0) {
     return (
-      <Card className="flex flex-col items-center justify-center p-16 text-slate-400">
+      <Card className="flex h-full flex-col items-center justify-center p-16 text-slate-400">
         <span className="text-4xl">📦</span>
         <p className="mt-2 text-sm font-medium">ไม่พบข้อมูล Consumable ตามเงื่อนไขที่เลือก</p>
       </Card>
@@ -52,7 +51,7 @@ export function ConsumableTable({
 
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm h-full flex flex-col justify-between">
-      <div className="overflow-x-auto flex-1">
+      <div className="overflow-x-auto flex-1 min-h-0">
         <Table className="min-w-full text-sm">
           <TableHeader className="bg-slate-50">
             <TableRow className="border-b border-slate-200">
