@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { AlertCircle, Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, UserRound } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Check, Clock, ExternalLink, FileSpreadsheet, Filter, RefreshCw, Search, UserRound, X } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -490,33 +490,60 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
     loadData();
   };
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('ALL');
+
+  const filterRow = useCallback((row: { name?: string; employeeId?: string; position?: string; group?: string }) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase().trim();
+    const nameMatch = row.name?.toLowerCase().includes(term);
+    const idMatch = row.employeeId?.toLowerCase().includes(term);
+    const posMatch = row.position ? row.position.toLowerCase().includes(term) : false;
+    const groupMatch = row.group?.toLowerCase().includes(term);
+    return Boolean(nameMatch || idMatch || posMatch || groupMatch);
+  }, [searchTerm]);
+
   const employees = data?.employees || [];
   const contractors = data?.contractors || [];
   const employeeEtas = data?.employeeEtas || [];
   const contractorEtas = data?.contractorEtas || [];
   const employeeErrors = data?.employeeErrors || [];
   const contractorErrors = data?.contractorErrors || [];
-  const allContractorTotals = getContractorTotals(contractors);
-  const allEmployeeEtasTotals = getEtasTotals(employeeEtas);
-  const allContractorEtasTotals = getEtasTotals(contractorEtas);
-  
-  const employeeSections = otGroups.map((group) => {
-    const rows = employees.filter((employee) => employee.group === group);
-    const errors = employeeErrors.filter((err) => err.group === group);
-    const totals = getEmployeeTotals(rows);
-    const employeeEtasRows = employeeEtas.filter((row) => row.group === group);
-    const employeeEtasTotals = getEtasTotals(employeeEtasRows);
-    return { group, rows, errors, totals, employeeEtasRows, employeeEtasTotals };
-  });
 
-  const contractorSections = otGroups.map((group) => {
-    const rows = contractors.filter((contractor) => contractor.group === group);
-    const errors = contractorErrors.filter((err) => err.group === group);
-    const totals = getContractorTotals(rows);
-    const etasRows = contractorEtas.filter((row) => row.group === group);
-    const etasTotals = getEtasTotals(etasRows);
-    return { group, rows, errors, totals, etasRows, etasTotals };
-  });
+  const filteredEmployees = useMemo(() => employees.filter(filterRow), [employees, filterRow]);
+  const filteredContractors = useMemo(() => contractors.filter(filterRow), [contractors, filterRow]);
+  const filteredEmployeeEtas = useMemo(() => employeeEtas.filter(filterRow), [employeeEtas, filterRow]);
+  const filteredContractorEtas = useMemo(() => contractorEtas.filter(filterRow), [contractorEtas, filterRow]);
+
+  const allContractorTotals = useMemo(() => getContractorTotals(filteredContractors), [filteredContractors]);
+  const allEmployeeEtasTotals = useMemo(() => getEtasTotals(filteredEmployeeEtas), [filteredEmployeeEtas]);
+  const allContractorEtasTotals = useMemo(() => getEtasTotals(filteredContractorEtas), [filteredContractorEtas]);
+
+  const employeeSections = useMemo(() => {
+    return otGroups
+      .filter((group) => selectedGroup === 'ALL' || selectedGroup === group)
+      .map((group) => {
+        const rows = filteredEmployees.filter((employee) => employee.group === group);
+        const errors = employeeErrors.filter((err) => err.group === group && filterRow(err));
+        const totals = getEmployeeTotals(rows);
+        const employeeEtasRows = filteredEmployeeEtas.filter((row) => row.group === group);
+        const employeeEtasTotals = getEtasTotals(employeeEtasRows);
+        return { group, rows, errors, totals, employeeEtasRows, employeeEtasTotals };
+      });
+  }, [filteredEmployees, employeeErrors, filteredEmployeeEtas, selectedGroup, filterRow]);
+
+  const contractorSections = useMemo(() => {
+    return otGroups
+      .filter((group) => selectedGroup === 'ALL' || selectedGroup === group)
+      .map((group) => {
+        const rows = filteredContractors.filter((contractor) => contractor.group === group);
+        const errors = contractorErrors.filter((err) => err.group === group && filterRow(err));
+        const totals = getContractorTotals(rows);
+        const etasRows = filteredContractorEtas.filter((row) => row.group === group);
+        const etasTotals = getEtasTotals(etasRows);
+        return { group, rows, errors, totals, etasRows, etasTotals };
+      });
+  }, [filteredContractors, contractorErrors, filteredContractorEtas, selectedGroup, filterRow]);
 
   return (
     <div className={`min-h-screen text-slate-900 font-sans ${chrome === 'console' ? 'bg-[var(--surface-mist)] p-3 sm:p-4 md:p-6 lg:p-8' : 'bg-[#dedede] p-4 md:p-8'}`}>
@@ -525,26 +552,26 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
         legacy={
           <>
                 <motion.header
-                  className="sticky top-0 z-50 mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-2xl md:rounded-3xl border-b-4 border-[#ffd56d] shadow-md shadow-slate-200/70"
+                  className="sticky top-0 z-50 mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white/90 backdrop-blur-sm p-4 md:p-6 rounded-2xl md:rounded-3xl border-b-4 border-[#ffd56d] shadow-sm"
                   initial={{ y: -50, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                 >
                   <div className="flex items-center gap-4">
                     <motion.div
-                      className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#5c607f] text-[#ffef9a] shadow-lg"
+                      className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-[#5c607f] text-[#ffef9a] shadow-md"
                       whileHover={{ rotate: 10, scale: 1.1 }}
                     >
                       <HeaderIcon size={28} strokeWidth={2.5} />
                     </motion.div>
                     <div>
-                      <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49]">
+                      <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-[#4A4A49]">
                         <SplitText text={pageTitle} className="inline-block" />
                       </h1>
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle} · {rangeLabel}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <AnimatePresence>
                       {isLoading && (
                         <motion.span
@@ -557,19 +584,6 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                         </motion.span>
                       )}
                     </AnimatePresence>
-                    <div className="flex h-12 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-4 text-sm font-black text-[#4A4A49] shadow-inner">
-                      <Filter size={16} className="text-slate-400" />
-                      {rangeLabel}
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      className="rounded-xl md:rounded-2xl text-xs md:text-sm font-black border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 h-10 md:h-12"
-                    >
-                      <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-                      <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
-                    </Button>
                     <NavigationMenu
                       buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
                       accentClassName="text-[#d4a300]"
@@ -577,28 +591,80 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                   </div>
                 </motion.header>
 
-                {/* Source-sheet quick action: keep the original Google Sheet one click below the OT navbar. */}
-                <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[#4A4A49] shadow-sm md:flex-row md:items-center md:justify-between md:px-5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f5ff] text-[#0284c7]">
-                      <FileSpreadsheet size={20} strokeWidth={2.5} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-black text-[#061b3d]">{isEmployeePage ? 'ชีท OT พนักงาน' : 'ชีท OT ลูกจ้าง'}</p>
-                      <p className="truncate text-xs font-bold text-slate-600">เปิดแท็บต้นทางใน Google Sheet</p>
-                    </div>
+                {/* Unified Toolbar Panel (Image 1 Style + Image 2 Layout) */}
+                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col xl:flex-row gap-3 justify-between items-stretch xl:items-center mb-6">
+                  {/* Left: Search Bar */}
+                  <div className="relative flex-1 min-w-[220px]">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder={isEmployeePage ? "ค้นหาชื่อ, เลขประจำตัว, ตำแหน่งพนักงาน..." : "ค้นหาชื่อ, เลขประจำตัวลูกจ้าง..."}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full h-10 pl-10 pr-9 border border-slate-200 rounded-xl outline-none focus:border-[#d4a300] focus:ring-1 focus:ring-[#ffd56d] text-sm text-slate-800 transition-all shadow-sm"
+                    />
+                    {searchTerm && (
+                      <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+
+                  {/* Middle: Group Filter Tabs */}
+                  <div className="flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-none pb-1 xl:pb-0">
+                    <button
+                      onClick={() => setSelectedGroup('ALL')}
+                      className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${selectedGroup === 'ALL'
+                        ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+                        }`}
+                    >
+                      ทั้งหมด
+                    </button>
+                    {otGroups.map((group) => (
+                      <button
+                        key={group}
+                        onClick={() => setSelectedGroup(group)}
+                        className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${selectedGroup === group
+                          ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
+                          : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+                          }`}
+                      >
+                        {group}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setSelectedGroup('TOTAL')}
+                      className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${selectedGroup === 'TOTAL'
+                        ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
+                        }`}
+                    >
+                      รวมทั้งหมด
+                    </button>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-amber-700 shadow-sm transition-all whitespace-nowrap"
+                    >
+                      <RefreshCw size={15} strokeWidth={2.5} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
+                      <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+                    </Button>
                     <a
                       href="https://ot-plus.vercel.app/"
                       target="_blank"
                       rel="noreferrer"
                       title="เข้าสู่ระบบลงเวลา OT (OT Plus)"
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-4 text-sm font-black text-white shadow-sm hover:from-sky-700 hover:to-indigo-700 transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                      className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-3.5 text-xs sm:text-sm font-black text-white shadow-sm hover:from-sky-700 hover:to-indigo-700 transition-all whitespace-nowrap"
                     >
-                      <Clock size={16} strokeWidth={2.5} />
-                      ระบบลงเวลา OT (OT+)
-                      <ExternalLink size={14} />
+                      <Clock size={15} strokeWidth={2.5} />
+                      OT+ ↗
                     </a>
                     {sourceSheetLinks.map((sourceSheet) => (
                       <a
@@ -607,10 +673,10 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                         target="_blank"
                         rel="noreferrer"
                         title={sourceSheet.description}
-                        className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${sourceSheet.buttonClass}`}
+                        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
                       >
-                        <ExternalLink size={16} strokeWidth={2.5} />
-                        เปิด Google Sheet {sourceSheet.label}
+                        <FileSpreadsheet size={15} strokeWidth={2.5} />
+                        เปิด Google Sheet ↗
                       </a>
                     ))}
                   </div>
@@ -748,7 +814,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
               </motion.section>
             ))}
 
-            {!isEmployeePage && (
+            {!isEmployeePage && (selectedGroup === 'ALL' || selectedGroup === 'TOTAL') && (
             <motion.section 
               variants={itemVariants}
               className="overflow-hidden rounded-3xl border border-[#f4bfd2] border-b-[5px] border-b-[#f1a9c4] bg-[#fff0f6] shadow-[0_8px_18px_rgba(244,114,182,0.12)]"
@@ -758,20 +824,20 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                   <div className="h-8 w-3 rounded-full bg-[#f9a8d4] md:h-11"></div>
                   รายละเอียด OT ลูกจ้าง รวมทั้งหมด
                 </h2>
-                <p className="mt-2 text-sm font-extrabold text-slate-600">{data.contractorTitle || 'สรุป OT ลูกจ้าง'} · ตารางรวมหลัง W14</p>
+                <p className="mt-2 text-sm font-extrabold text-slate-600">{data?.contractorTitle || 'สรุป OT ลูกจ้าง'} · ตารางรวมหลัง W14</p>
               </div>
               <div className="p-4 md:p-8">
                 <h3 className="text-xl font-black text-emerald-800 mb-4 flex items-center gap-2">
                   <div className="w-2 h-6 bg-emerald-600 rounded-full"></div>
                   ข้อมูลการขอล่วงเวลาของหัวหน้าหมวด
                 </h3>
-                {renderContractorTable(contractors, data.officialContractorTotals || allContractorTotals, 'ALL-CONTRACTORS', data.contractorTitle)}
+                {renderContractorTable(filteredContractors, data?.officialContractorTotals || allContractorTotals, 'ALL-CONTRACTORS', data?.contractorTitle)}
                 <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
                     <div className="w-2 h-6 bg-[#38bdf8] rounded-full"></div>
                     ข้อมูลสแกนลายนิ้วมือลูกจ้าง (ทั้งหมด)
                   </h3>
-                  {renderEtasTable(contractorEtas, allContractorEtasTotals, 'ALL-CONTRACTOR-ETAS', { title: 'ข้อมูลสแกนลายนิ้วมือลูกจ้าง (ทั้งหมด)' })}
+                  {renderEtasTable(filteredContractorEtas, allContractorEtasTotals, 'ALL-CONTRACTOR-ETAS', { title: 'ข้อมูลสแกนลายนิ้วมือลูกจ้าง (ทั้งหมด)' })}
                 </motion.div>
                 {contractorErrors.length > 0 && (
                   <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -779,7 +845,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                       <div className="w-2 h-6 bg-red-500 rounded-full"></div>
                       ตรวจสอบข้อผิดพลาด OT ลูกจ้าง (ทั้งหมด)
                     </h3>
-                    {renderOtErrorTable(contractorErrors, 'contractor')}
+                    {renderOtErrorTable(contractorErrors.filter(filterRow), 'contractor')}
                   </motion.div>
                 )}
               </div>
@@ -841,7 +907,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
               </motion.section>
             ))}
 
-            {isEmployeePage && (
+            {isEmployeePage && (selectedGroup === 'ALL' || selectedGroup === 'TOTAL') && (
             <motion.section 
               variants={itemVariants}
               className="overflow-hidden rounded-3xl border border-[#efd58d] border-b-[5px] border-b-[#eecb70] bg-[#fff8da] shadow-[0_8px_18px_rgba(234,179,8,0.12)]"
@@ -851,20 +917,20 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                   <div className="h-8 w-3 rounded-full bg-[#f9a66c] md:h-11"></div>
                   รายละเอียด OT พนักงาน รวมทั้งหมด
                 </h2>
-                <p className="mt-2 text-sm font-extrabold text-slate-600">{data.employeeTitle || 'สรุป OT พนักงาน'} · ตารางรวมหลัง W14</p>
+                <p className="mt-2 text-sm font-extrabold text-slate-600">{data?.employeeTitle || 'สรุป OT พนักงาน'} · ตารางรวมหลัง W14</p>
               </div>
               <div className="p-4 md:p-8">
                 <h3 className="text-xl font-black text-emerald-800 mb-4 flex items-center gap-2">
                   <div className="w-2 h-6 bg-emerald-600 rounded-full"></div>
                   ข้อมูลการขอล่วงเวลาของหัวหน้าหมวด
                 </h3>
-                {renderEmployeeTable(employees, 'ALL-EMPLOYEES', data.employeeTitle)}
+                {renderEmployeeTable(filteredEmployees, 'ALL-EMPLOYEES', data?.employeeTitle)}
                 <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
                     <div className="w-2 h-6 bg-[#38bdf8] rounded-full"></div>
                     ข้อมูลสแกนลายนิ้วมือพนักงาน (ทั้งหมด)
                   </h3>
-                  {renderEtasTable(employeeEtas, allEmployeeEtasTotals, 'ALL-EMPLOYEE-ETAS', { title: 'ข้อมูลสแกนลายนิ้วมือพนักงาน (ทั้งหมด)', showPosition: true })}
+                  {renderEtasTable(filteredEmployeeEtas, allEmployeeEtasTotals, 'ALL-EMPLOYEE-ETAS', { title: 'ข้อมูลสแกนลายนิ้วมือพนักงาน (ทั้งหมด)', showPosition: true })}
                 </motion.div>
                 {employeeErrors.length > 0 && (
                   <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -872,7 +938,7 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                       <div className="w-2 h-6 bg-red-500 rounded-full"></div>
                       ตรวจสอบข้อผิดพลาด OT พนักงาน (ทั้งหมด)
                     </h3>
-                    {renderOtErrorTable(employeeErrors, 'employee')}
+                    {renderOtErrorTable(employeeErrors.filter(filterRow), 'employee')}
                   </motion.div>
                 )}
               </div>

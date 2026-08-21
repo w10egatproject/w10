@@ -35,59 +35,57 @@ export function ConsumableToolbar({
     onChange({ ...filters, ...patch });
 
   return (
-    <Card className="mb-5 rounded-2xl border border-slate-200/90 bg-white shadow-sm">
-      <CardContent className="p-4 sm:p-5">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_140px_140px_auto]">
-          <label className="relative">
-            <span className="mb-1 block text-xs font-bold text-slate-600">
-              ค้นหา
-            </span>
+    <Card className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+          {/* Search Bar */}
+          <div className="relative flex-1 min-w-[220px]">
             <Search
               aria-hidden
-              className="absolute bottom-3 left-3 h-4 w-4 text-slate-400 z-10"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
             />
             <Input
+              aria-label="ค้นหา"
               value={filters.query}
               onChange={(e) => set({ query: e.target.value })}
-              placeholder="ค้นหา รายการ ผู้รับ หมายเหตุ..."
-              className="h-10 pl-9 rounded-xl border-slate-200 bg-white font-medium text-slate-800 shadow-sm focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+              placeholder="ค้นหารายการ, ผู้รับ, หมายเหตุ..."
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm font-medium text-slate-800 shadow-sm focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
             />
-          </label>
-          <label>
-            <span className="mb-1 block text-xs font-bold text-slate-600">
-              ปี
-            </span>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
             <select
+              aria-label="ปี"
               value={filters.year}
               onChange={(e) => set({ year: e.target.value })}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
             >
-              <option value="all">ทุกปี</option>
+              <option value="all">ปี (ทุกปี)</option>
               {years.map((year) => (
                 <option key={year} value={year}>
                   ปี {year}
                 </option>
               ))}
             </select>
-          </label>
-          <label>
-            <span className="mb-1 block text-xs font-bold text-slate-600">
-              เดือน
-            </span>
+
             <select
+              aria-label="เดือน"
               value={filters.month}
               onChange={(e) => set({ month: e.target.value })}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
             >
-              <option value="all">ทุกเดือน</option>
+              <option value="all">เดือน (ทุกเดือน)</option>
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={String(i + 1)}>
                   {getMonthThaiLabel(i + 1)}
                 </option>
               ))}
             </select>
-          </label>
-          <div className="flex flex-wrap items-end gap-2">
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -100,7 +98,7 @@ export function ConsumableToolbar({
                   loading ? 'animate-spin' : ''
                 }`}
               />
-              รีเฟรชข้อมูล
+              <span>รีเฟรชข้อมูล</span>
             </Button>
             <Button
               variant="outline"
@@ -114,16 +112,17 @@ export function ConsumableToolbar({
               href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 text-sm font-bold text-emerald-800 hover:bg-emerald-100 shadow-sm transition-colors"
+              aria-label="เปิด Google Sheet"
+              className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
             >
               <FileSpreadsheet aria-hidden className="mr-1.5 h-4 w-4" />
-              เปิด Google Sheet
+              เปิด Google Sheet ↗
             </a>
             {onAdd && (
               <Button
                 size="sm"
                 onClick={onAdd}
-                className="h-10 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-sm transition-all"
+                className="h-10 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-sm transition-all whitespace-nowrap"
               >
                 <Plus className="mr-1.5 h-4 w-4" /> เพิ่ม
               </Button>
