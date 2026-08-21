@@ -169,17 +169,19 @@ const THAI_MONTHS = [
   { value: '12', label: 'ธ.ค.' }
 ];
 
-export interface WorkOrderRow {
-  ecm_buy: string;
+export interface StatusDetailRow {
+  no: string;
   ecm: string;
   wo: string;
-  item: string;
-  equip: string;
-  date_in: string;
-  date_start: string;
-  date_out: string;
+  description: string;
+  equipment: string;
+  date: string;
+  contact: string;
+  dept: string;
+  ecm_url: string;
+  notify: string;
   status: string;
-  action: string;
+  groups: string;
 }
 
 interface DashboardData {
@@ -190,24 +192,16 @@ interface DashboardData {
   w_all?: { entrance?: number };
   statusData?: { total?: number; sap?: number; pending?: number; finish?: number };
   equipmentData?: { name: string; values: number[]; total: number }[];
-  workOrders?: WorkOrderRow[];
+  statusDetails?: StatusDetailRow[];
   error?: string;
 }
 
 const getStatusStyle = (status: string) => {
   if (!status) return 'bg-slate-100 text-slate-400';
-  const s = status.trim();
-  if (s.includes('รอซื้อจ้าง')) return 'bg-[#8B4513] text-white';
-  if (s.includes('กบย-ช')) return 'bg-slate-400 text-white';
-  if (s.includes('หซ') || s.includes('หจ')) return 'bg-orange-200 text-orange-800';
-  if (s.includes('เสนอราคา')) return 'bg-pink-300 text-pink-900';
-  if (s.includes('ติดตามPO')) return 'bg-emerald-100 text-emerald-800';
-  if (s.includes('ส่งของ')) return 'bg-green-600 text-white';
-  if (s.includes('งานเข้า')) return 'bg-yellow-100 text-yellow-800';
-  if (s.includes('ดำเนินการ') && !s.includes('รอ')) return 'bg-green-200 text-green-900';
-  if (s.includes('รอดำเนินการ')) return 'bg-red-200 text-red-900';
-  if (s.includes('เสร็จ')) return 'bg-yellow-400 text-slate-900';
-  if (s.includes('ยกเลิก') || s.toLowerCase().includes('help me')) return 'bg-white text-slate-400 border border-slate-200';
+  const s = status.trim().toLowerCase();
+  if (s === 'pending') return 'bg-rose-100 text-rose-700 border border-rose-200';
+  if (s === 'finish') return 'bg-amber-100 text-amber-800 border border-amber-200';
+  if (s.includes('sap')) return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
   return 'bg-[#FFD100] text-[#4A4A49]';
 };
 
@@ -222,25 +216,32 @@ export default function DashboardPage() {
   const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | null>(null);
   const [tableSearchQuery, setTableSearchQuery] = useState('');
 
-  const activeWorkOrders = useMemo(() => {
-    if (!selectedStatusTab || !data?.workOrders) return [];
+  const activeStatusRows = useMemo(() => {
+    if (!selectedStatusTab || !data?.statusDetails) return [];
     
-    return data.workOrders.filter((row) => {
-      const s = (row.status || '').trim();
-      let matchesStatus = false;
-      if (selectedStatusTab === 'finish') {
-        matchesStatus = s.includes('เสร็จ') || s.includes('ส่งของ');
-      } else if (selectedStatusTab === 'pending') {
-        matchesStatus = !s.includes('เสร็จ') && !s.includes('ยกเลิก') && !s.toLowerCase().includes('help me');
-      }
+    return data.statusDetails.filter((row) => {
+      const s = (row.status || '').trim().toLowerCase();
+      const target = selectedStatusTab.toLowerCase();
+      const matchesStatus = s === target;
       
       if (!matchesStatus) return false;
       
       if (!tableSearchQuery.trim()) return true;
       const q = tableSearchQuery.toLowerCase().trim();
-      return Object.values(row).some((val) => val?.toString().toLowerCase().includes(q));
+      return (
+        row.no.toLowerCase().includes(q) ||
+        row.ecm.toLowerCase().includes(q) ||
+        row.wo.toLowerCase().includes(q) ||
+        row.description.toLowerCase().includes(q) ||
+        row.equipment.toLowerCase().includes(q) ||
+        row.date.toLowerCase().includes(q) ||
+        row.dept.toLowerCase().includes(q) ||
+        row.contact.toLowerCase().includes(q) ||
+        row.groups.toLowerCase().includes(q) ||
+        row.notify.toLowerCase().includes(q)
+      );
     });
-  }, [selectedStatusTab, data?.workOrders, tableSearchQuery]);
+  }, [selectedStatusTab, data?.statusDetails, tableSearchQuery]);
 
   const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
@@ -631,7 +632,7 @@ export default function DashboardPage() {
                               </span>
                             </h4>
                             <p className="text-xs font-bold text-slate-400 mt-0.5">
-                              แสดง {activeWorkOrders.length} รายการ {tableSearchQuery ? `(กรองจากคำค้นหา)` : ''}
+                              แสดง {activeStatusRows.length} รายการ {tableSearchQuery ? `(กรองจากคำค้นหา)` : ''}
                             </p>
                           </div>
                         </div>
@@ -673,42 +674,59 @@ export default function DashboardPage() {
                         <table className="w-full text-left text-xs border-collapse">
                           <thead className="sticky top-0 z-10 bg-[#eef6ff] text-[#4A4A49] font-black border-b border-slate-200 shadow-sm">
                             <tr>
-                              <th className="p-3 whitespace-nowrap">ECM ซื้อจ้าง</th>
+                              <th className="p-3 whitespace-nowrap text-center">ลำดับ</th>
                               <th className="p-3 whitespace-nowrap">ECM</th>
                               <th className="p-3 whitespace-nowrap">W/O</th>
                               <th className="p-3 min-w-[240px]">รายการ</th>
-                              <th className="p-3 min-w-[160px]">Equip</th>
+                              <th className="p-3 min-w-[160px]">Equipment</th>
                               <th className="p-3 whitespace-nowrap">Date เข้า</th>
-                              <th className="p-3 whitespace-nowrap">คาดว่าจะเสร็จ</th>
-                              <th className="p-3 whitespace-nowrap">Date งานออก</th>
+                              <th className="p-3 whitespace-nowrap">แผนก</th>
+                              <th className="p-3 min-w-[140px]">ติดต่อประสานงาน</th>
+                              <th className="p-3 whitespace-nowrap text-center">หมวด</th>
                               <th className="p-3 text-center whitespace-nowrap">สถานะ</th>
-                              <th className="p-3 min-w-[160px]">การดำเนินการ</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
-                            {activeWorkOrders.length === 0 ? (
+                            {activeStatusRows.length === 0 ? (
                               <tr>
                                 <td colSpan={10} className="p-10 text-center text-slate-400 font-bold">
                                   {tableSearchQuery ? 'ไม่พบรายการที่ตรงกับคำค้นหา' : 'ไม่พบข้อมูลรายการในสถานะนี้'}
                                 </td>
                               </tr>
                             ) : (
-                              activeWorkOrders.map((row, idx) => (
+                              activeStatusRows.map((row, idx) => (
                                 <tr key={idx} className="hover:bg-amber-50/40 transition-colors">
-                                  <td className="p-3 font-semibold text-slate-700 whitespace-nowrap">{row.ecm_buy || '-'}</td>
-                                  <td className="p-3 font-semibold text-slate-700 whitespace-nowrap">{row.ecm || '-'}</td>
+                                  <td className="p-3 font-semibold text-slate-500 text-center whitespace-nowrap">{row.no || idx + 1}</td>
+                                  <td className="p-3 font-semibold text-slate-700 whitespace-nowrap">
+                                    {row.ecm_url ? (
+                                      <a
+                                        href={row.ecm_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-bold text-blue-600 hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-500 inline-flex items-center gap-1"
+                                      >
+                                        {row.ecm || 'เปิด ECM'} ↗
+                                      </a>
+                                    ) : (
+                                      row.ecm || '-'
+                                    )}
+                                  </td>
                                   <td className="p-3 font-bold text-slate-800 whitespace-nowrap">{row.wo || '-'}</td>
-                                  <td className="p-3 font-medium text-slate-800">{row.item || '-'}</td>
-                                  <td className="p-3 font-medium text-slate-600">{row.equip || '-'}</td>
-                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.date_in || '-'}</td>
-                                  <td className="p-3 text-slate-600 font-bold whitespace-nowrap">{row.date_start || '-'}</td>
-                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.date_out || '-'}</td>
+                                  <td className="p-3 font-medium text-slate-800">{row.description || '-'}</td>
+                                  <td className="p-3 font-medium text-slate-600">{row.equipment || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.date || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.dept || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium">{row.contact || '-'}</td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px]">
+                                      {row.groups || '-'}
+                                    </span>
+                                  </td>
                                   <td className="p-3 text-center whitespace-nowrap">
                                     <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold shadow-xs ${getStatusStyle(row.status)}`}>
                                       {row.status || '-'}
                                     </span>
                                   </td>
-                                  <td className="p-3 text-slate-600 font-medium">{row.action || '-'}</td>
                                 </tr>
                               ))
                             )}

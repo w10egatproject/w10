@@ -135,24 +135,33 @@ export async function GET(request: Request) {
       total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
     };
 
-    // Parse work orders from 'Dashboard W10 All'
-    const dashboardRows = data.dashboard || [];
-    const workOrders = [];
+    // Parse status details from 'Dashboard W10 All info' (Row 11 downwards, Col L = Status)
+    const infoRows = data.info || [];
+    const statusDetails = [];
 
-    for (let r = 31; r < dashboardRows.length; r++) {
-      const row = dashboardRows[r] || [];
-      if (row[6] || row[7] || row[8]) {
-        workOrders.push({
-          ecm_buy: row[5] || '',
-          ecm: row[6] || '',
-          wo: row[7] || '',
-          item: row[8] || '',
-          equip: row[9] || '',
-          date_in: row[10] || '',
-          date_start: row[11] || '',
-          date_out: row[12] || '',
-          status: row[13] || '',
-          action: row[14] || '',
+    for (let r = 11; r < infoRows.length; r++) {
+      const row = infoRows[r] || [];
+      if (row[2] || row[3] || row[4] || row[11]) {
+        const groups = [
+          row[12] === 'TRUE' && 'W11',
+          row[13] === 'TRUE' && 'W12',
+          row[14] === 'TRUE' && 'W13',
+          row[15] === 'TRUE' && 'W14',
+        ].filter(Boolean).join(', ');
+
+        statusDetails.push({
+          no: row[1] || row[0] || String(r - 10),
+          ecm: row[2] || '',
+          wo: row[3] || '',
+          description: row[4] || '',
+          equipment: row[5] || '',
+          date: row[6] || '',
+          contact: row[7] || '',
+          dept: row[8] || '',
+          ecm_url: row[9] || '',
+          notify: row[10] || '',
+          status: (row[11] || '').trim(),
+          groups: groups || '-',
         });
       }
     }
@@ -164,7 +173,7 @@ export async function GET(request: Request) {
       w_all,
       statusData,
       equipmentData,
-      workOrders,
+      statusDetails,
       currentYear,
       currentMonth,
       debugInfo: rawData.slice(0, 10), // Expose first 10 rows
