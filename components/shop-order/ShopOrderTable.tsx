@@ -9,29 +9,21 @@ import { Button } from '@/components/ui/button';
 
 interface Props {
   orders: ShopOrder[];
-  page: number;
-  totalPages: number;
-  total: number;
+  page?: number;
+  totalPages?: number;
+  total?: number;
   pageSize?: number;
-  onPage: (page: number) => void;
+  onPage?: (page: number) => void;
   onSelect?: (order: ShopOrder) => void;
 }
 
 export function ShopOrderTable({
   orders,
-  page,
-  totalPages,
-  total,
-  pageSize = 12,
-  onPage,
   onSelect,
 }: Props) {
-  const startIdx = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endIdx = Math.min(page * pageSize, total);
-
   if (orders.length === 0) {
     return (
-      <Card className="flex flex-1 min-h-[617px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
+      <Card className="flex flex-1 h-[617px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
         <span className="text-4xl">📋</span>
         <p className="mt-2 text-sm font-bold text-slate-600">ไม่พบข้อมูล Shop Order ตามเงื่อนไขที่เลือก</p>
         <p className="text-xs text-slate-400 mt-0.5">ลองปรับหรือล้างตัวกรองเพื่อค้นหาใหม่</p>
@@ -40,10 +32,10 @@ export function ShopOrderTable({
   }
 
   return (
-    <Card className="overflow-hidden border border-slate-200 shadow-sm h-full min-h-[617px] flex flex-col">
-      <div className="flex flex-col flex-1 min-h-0 overflow-x-auto">
+    <Card className="overflow-hidden border border-slate-200 shadow-sm h-[617px] flex flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
         <table className="w-full text-sm">
-          <TableHeader className="bg-slate-50">
+          <TableHeader className="sticky top-0 z-10 bg-slate-50 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
             <TableRow className="flex border-b border-slate-200">
               <TableHead className="flex items-center px-2 py-2.5 text-center w-12 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
               <TableHead className="flex items-center px-2 py-2.5 w-16 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จาก</TableHead>
@@ -53,11 +45,11 @@ export function ShopOrderTable({
               <TableHead className="flex items-center px-2 py-2.5 w-24 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หน่วยงานรับ</TableHead>
               <TableHead className="flex items-center px-2 py-2.5 w-20 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
               <TableHead className="flex items-center px-2 py-2.5 w-24 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่ออก</TableHead>
-              <TableHead className="flex items-center px-2 py-2.5 min-w-0 flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
+              <TableHead className="flex items-center px-2.5 py-2.5 min-w-0 flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
               <TableHead className="flex items-center px-2 py-2.5 text-center w-24 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">สถานะ</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="flex flex-col text-slate-800">
+          <TableBody className="flex flex-col text-slate-800 divide-y divide-slate-100">
             {orders.map((order, index) => {
               const done = getOrderStatus(order) === 'done';
               return (
@@ -93,7 +85,7 @@ export function ShopOrderTable({
                   <TableCell className="flex items-center px-2 py-2.5 w-24 shrink-0 whitespace-nowrap font-medium text-slate-700">
                     {formatThaiDate(order.dateOut) || '—'}
                   </TableCell>
-                  <TableCell className="flex items-center px-2 py-2.5 min-w-0 flex-1 text-slate-500" title={order.note || '—'}>
+                  <TableCell className="flex items-center px-2.5 py-2.5 min-w-0 flex-1 text-slate-500" title={order.note || '—'}>
                     <span className="truncate min-w-0">{order.note || '—'}</span>
                   </TableCell>
                   <TableCell className="flex items-center px-2 py-2.5 text-center w-24 shrink-0 justify-center">
@@ -114,37 +106,13 @@ export function ShopOrderTable({
         </table>
       </div>
 
-      {/* Pagination Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 mt-auto bg-white">
+      {/* Footer Info Bar */}
+      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 text-xs text-slate-500 bg-white shrink-0">
         <div>
-          แสดง {startIdx}-{endIdx} จาก {total.toLocaleString('th-TH')} รายการ
+          ทั้งหมด <span className="font-bold text-slate-800">{orders.length.toLocaleString('th-TH')}</span> รายการ
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            disabled={page <= 1}
-            onClick={() => onPage(page - 1)}
-            className="h-8 w-8 rounded-lg"
-            aria-label="Previous page"
-          >
-            &lt;
-          </Button>
-          <span className="grid h-8 min-w-[32px] place-items-center rounded-lg bg-indigo-600 px-2 font-black text-white">
-            {page}
-          </span>
-          <span className="text-slate-400">/</span>
-          <span className="font-bold text-slate-700">{totalPages || 1}</span>
-          <Button
-            variant="outline"
-            size="icon"
-            disabled={page >= totalPages}
-            onClick={() => onPage(page + 1)}
-            className="h-8 w-8 rounded-lg"
-            aria-label="Next page"
-          >
-            &gt;
-          </Button>
+        <div className="text-[11px] text-slate-400">
+          เลื่อนลงเพื่อดูรายการเพิ่มเติม
         </div>
       </div>
     </Card>

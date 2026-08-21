@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { CheckCircle, ClipboardList, RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
-import { filterAndSortOrders, getOrderStatus, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
+import { filterAndSortOrders, getOrderStatus, summarizeOrders } from '@/lib/shop-order/domain';
 import { inspectLocalFile } from '@/lib/shop-order/file-rules';
 import { uploadToDriveSession } from '@/lib/shop-order/upload-client';
 import type { ApiResult, ShopOrder, ShopOrderBootstrap, ShopOrderFilters, ShopOrderInput, ShopOrderMutationResult, UploadSession } from '@/lib/shop-order/types';
@@ -22,7 +22,6 @@ const EMPTY_FILTERS: ShopOrderFilters = { query: '', year: 'all', month: 'all', 
 export function ShopOrderDashboard() {
   const [data, setData] = useState<ShopOrderBootstrap | null>(null);
   const [filters, setFilters] = useState<ShopOrderFilters>(EMPTY_FILTERS);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<ShopOrder | null>(null);
@@ -73,10 +72,9 @@ export function ShopOrderDashboard() {
   }), [filteredSummary, periodSummary]);
 
   const filtered = useMemo(() => filters.status === 'all' ? baseFiltered : baseFiltered.filter((o) => getOrderStatus(o) === filters.status), [baseFiltered, filters.status]);
-  const pagination = useMemo(() => paginateOrders(filtered, page, 12), [filtered, page]);
   const years = useMemo(() => Array.from(new Set((data?.orders ?? []).flatMap((o) => o.dateIn ? [String(Number(o.dateIn.slice(0, 4)) + 543)] : []))).sort().reverse(), [data]);
 
-  const updateFilters = (next: ShopOrderFilters) => { setFilters(next); setPage(1); };
+  const updateFilters = (next: ShopOrderFilters) => { setFilters(next); };
 
   const requestJson = async <T,>(url: string, init: RequestInit): Promise<T> => {
     const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init.headers } });
@@ -207,12 +205,7 @@ export function ShopOrderDashboard() {
       <div data-testid="shop-order-layout" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-stretch">
         <section className="min-w-0 flex flex-col h-full">
           <ShopOrderTable
-            orders={pagination.items}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            totalPages={pagination.totalPages}
-            total={pagination.total}
-            onPage={setPage}
+            orders={filtered}
             onSelect={setSelected}
           />
         </section>
