@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ClipboardList, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle } from 'lucide-react';
+import { CalendarDays, ClipboardList, FileSpreadsheet, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -300,6 +300,8 @@ type PurchasingPageContentProps = {
   colorTheme?: ColorTheme;
   dateStartLabel?: string;
   showEcmLinks?: boolean;
+  sheetUrl?: string;
+  sheetName?: string;
 };
 
 export function PurchasingPageContent({
@@ -313,6 +315,8 @@ export function PurchasingPageContent({
   colorTheme = 'gold',
   dateStartLabel = 'Date เริ่มงาน',
   showEcmLinks = false,
+  sheetUrl = 'https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit',
+  sheetName = 'จัดซื้อจัดจ้าง',
 }: PurchasingPageContentProps = {}) {
   const t = themeTokens[colorTheme];
 
@@ -659,6 +663,17 @@ export function PurchasingPageContent({
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? `animate-spin ${t.accent}` : 'text-slate-500'} />
             <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
           </Button>
+          <a
+            href={sheetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`เปิดชีท ${sheetName}`}
+            className="inline-flex h-10 md:h-12 items-center gap-1.5 rounded-xl md:rounded-2xl border border-sky-200 bg-sky-50 px-3 md:px-3.5 text-xs md:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
+          >
+            <FileSpreadsheet size={16} />
+            <span className="hidden sm:inline">เปิดชีท {sheetName}</span>
+            <span className="sm:hidden">เปิดชีท</span> ↗
+          </a>
           <NavigationMenu
             buttonClassName={t.menuBtn}
             accentClassName={t.accent}

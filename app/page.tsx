@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CheckCircle2, Clock, Factory, HardHat, Info, LayoutDashboard, RefreshCw, Shield, Zap } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle2, Clock, Factory, FileSpreadsheet, HardHat, Info, LayoutDashboard, RefreshCw, Shield, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -361,9 +361,21 @@ export default function DashboardPage() {
               onClick={handleRefresh}
               disabled={isLoading}
               className="rounded-xl md:rounded-2xl border-slate-200 shadow-sm transition-all h-10 w-10 shrink-0"
+              aria-label="รีเฟรชข้อมูล"
             >
               <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
             </Button>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="เปิดชีท Dashboard"
+              className="inline-flex h-10 md:h-12 items-center gap-1.5 rounded-xl md:rounded-2xl border border-sky-200 bg-sky-50 px-3 md:px-3.5 text-xs md:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span className="hidden sm:inline">เปิดชีท Dashboard</span>
+              <span className="sm:hidden">เปิดชีท</span> ↗
+            </a>
             <NavigationMenu
               buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
               accentClassName="text-[#d4a300]"
