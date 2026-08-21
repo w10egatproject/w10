@@ -46,7 +46,7 @@ export function SourceSheetCard({ title, description, links }: SourceSheetCardPr
             className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-center text-sm font-bold shadow-sm transition-colors focus-visible:outline-none ${link.buttonClass}`}
           >
             <ExternalLink size={16} strokeWidth={2.5} aria-hidden="true" />
-            <span className="truncate">เปิด Google Sheet {link.description}</span>
+            <span className="truncate">เปิดชีท {link.description}</span>
           </a>
         ))}
       </div>

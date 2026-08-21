@@ -89,7 +89,7 @@ describe('ShopOrderDashboard', () => {
     await screen.findByText('งานเสร็จ');
 
     const sourceSheetLink = screen.getByRole('link', {
-      name: 'เปิด Google Sheet',
+      name: /เปิดชีท|เปิด Google Sheet/,
     });
 
     expect(sourceSheetLink.getAttribute('href')).toBe(

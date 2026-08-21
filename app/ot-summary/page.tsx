@@ -107,7 +107,7 @@ const sheetLinks = {
   employee: [
     {
       href: 'https://docs.google.com/spreadsheets/d/1__JtmwYd3xmL6XL-VkEU1E53NyaySwcT7dQY3OQ4aCA/edit?gid=1501422016#gid=1501422016',
-      label: 'สรุปOTประจำเดือนปี2569_กบย-ช._หสบ-ช.',
+      label: 'สรุปOT',
       description: 'สรุป OT พนักงาน',
       buttonClass: 'bg-[#d4a300] text-[#061b3d] hover:bg-[#eecb70] focus:ring-[#d4a300]',
     },
@@ -673,10 +673,11 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                         target="_blank"
                         rel="noreferrer"
                         title={sourceSheet.description}
+                        aria-label={`เปิดชีท ${sourceSheet.label}`}
                         className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
                       >
                         <FileSpreadsheet size={15} strokeWidth={2.5} />
-                        เปิด Google Sheet ↗
+                        เปิดชีท {sourceSheet.label} ↗
                       </a>
                     ))}
                   </div>

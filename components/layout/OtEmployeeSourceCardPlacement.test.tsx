@@ -56,7 +56,7 @@ describe('/ot-employee source card placement', () => {
     });
     const header = heading.closest('header');
     const sourceLinks = screen.getAllByRole('link', {
-      name: /\u0e40\u0e1b\u0e34\u0e14 Google Sheet/,
+      name: /\u0e40\u0e1b\u0e34\u0e14\u0e0a\u0e35\u0e17|\u0e40\u0e1b\u0e34\u0e14 Google Sheet/,
     });
 
     expect(header).not.toBeNull();

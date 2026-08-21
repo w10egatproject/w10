@@ -112,11 +112,11 @@ export function ConsumableToolbar({
               href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="เปิด Google Sheet"
+              aria-label="เปิดชีท Consumables"
               className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
             >
               <FileSpreadsheet aria-hidden className="mr-1.5 h-4 w-4" />
-              เปิด Google Sheet ↗
+              เปิดชีท Consumables ↗
             </a>
             {onAdd && (
               <Button

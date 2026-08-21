@@ -356,9 +356,10 @@ export default function ShopOrderPage() {
             href="https://docs.google.com/spreadsheets/d/1BPCzp167Dno6ekJ7nhJds4o_N8xu3Z6kJDqxYb0Ptzc/edit"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="เปิดชีท BEML"
             className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
           >
-            <FileSpreadsheet className="w-4 h-4" /> เปิดชีท ↗
+            <FileSpreadsheet className="w-4 h-4" /> เปิดชีท BEML ↗
           </a>
         </div>
       </div>
