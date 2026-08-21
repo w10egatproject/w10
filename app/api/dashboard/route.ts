@@ -135,6 +135,28 @@ export async function GET(request: Request) {
       total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
     };
 
+    // Parse work orders from 'Dashboard W10 All'
+    const dashboardRows = data.dashboard || [];
+    const workOrders = [];
+
+    for (let r = 31; r < dashboardRows.length; r++) {
+      const row = dashboardRows[r] || [];
+      if (row[6] || row[7] || row[8]) {
+        workOrders.push({
+          ecm_buy: row[5] || '',
+          ecm: row[6] || '',
+          wo: row[7] || '',
+          item: row[8] || '',
+          equip: row[9] || '',
+          date_in: row[10] || '',
+          date_start: row[11] || '',
+          date_out: row[12] || '',
+          status: row[13] || '',
+          action: row[14] || '',
+        });
+      }
+    }
+
     return NextResponse.json({
       statusSummary: { total: w_all },
       wGauges,
@@ -142,6 +164,7 @@ export async function GET(request: Request) {
       w_all,
       statusData,
       equipmentData,
+      workOrders,
       currentYear,
       currentMonth,
       debugInfo: rawData.slice(0, 10), // Expose first 10 rows

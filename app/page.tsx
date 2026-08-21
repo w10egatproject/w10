@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CheckCircle2, Clock, Factory, FileSpreadsheet, HardHat, Info, LayoutDashboard, RefreshCw, Shield, Zap } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle2, Clock, Factory, FileSpreadsheet, HardHat, Info, LayoutDashboard, RefreshCw, Search, Shield, X, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -169,6 +169,19 @@ const THAI_MONTHS = [
   { value: '12', label: 'ธ.ค.' }
 ];
 
+export interface WorkOrderRow {
+  ecm_buy: string;
+  ecm: string;
+  wo: string;
+  item: string;
+  equip: string;
+  date_in: string;
+  date_start: string;
+  date_out: string;
+  status: string;
+  action: string;
+}
+
 interface DashboardData {
   currentYear?: string;
   currentMonth?: string;
@@ -177,8 +190,26 @@ interface DashboardData {
   w_all?: { entrance?: number };
   statusData?: { total?: number; sap?: number; pending?: number; finish?: number };
   equipmentData?: { name: string; values: number[]; total: number }[];
+  workOrders?: WorkOrderRow[];
   error?: string;
 }
+
+const getStatusStyle = (status: string) => {
+  if (!status) return 'bg-slate-100 text-slate-400';
+  const s = status.trim();
+  if (s.includes('รอซื้อจ้าง')) return 'bg-[#8B4513] text-white';
+  if (s.includes('กบย-ช')) return 'bg-slate-400 text-white';
+  if (s.includes('หซ') || s.includes('หจ')) return 'bg-orange-200 text-orange-800';
+  if (s.includes('เสนอราคา')) return 'bg-pink-300 text-pink-900';
+  if (s.includes('ติดตามPO')) return 'bg-emerald-100 text-emerald-800';
+  if (s.includes('ส่งของ')) return 'bg-green-600 text-white';
+  if (s.includes('งานเข้า')) return 'bg-yellow-100 text-yellow-800';
+  if (s.includes('ดำเนินการ') && !s.includes('รอ')) return 'bg-green-200 text-green-900';
+  if (s.includes('รอดำเนินการ')) return 'bg-red-200 text-red-900';
+  if (s.includes('เสร็จ')) return 'bg-yellow-400 text-slate-900';
+  if (s.includes('ยกเลิก') || s.toLowerCase().includes('help me')) return 'bg-white text-slate-400 border border-slate-200';
+  return 'bg-[#FFD100] text-[#4A4A49]';
+};
 
 const DEFAULT_YEAR = "2025";
 
@@ -188,6 +219,28 @@ export default function DashboardPage() {
   const [month, setMonth] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | null>(null);
+  const [tableSearchQuery, setTableSearchQuery] = useState('');
+
+  const activeWorkOrders = useMemo(() => {
+    if (!selectedStatusTab || !data?.workOrders) return [];
+    
+    return data.workOrders.filter((row) => {
+      const s = (row.status || '').trim();
+      let matchesStatus = false;
+      if (selectedStatusTab === 'finish') {
+        matchesStatus = s.includes('เสร็จ') || s.includes('ส่งของ');
+      } else if (selectedStatusTab === 'pending') {
+        matchesStatus = !s.includes('เสร็จ') && !s.includes('ยกเลิก') && !s.toLowerCase().includes('help me');
+      }
+      
+      if (!matchesStatus) return false;
+      
+      if (!tableSearchQuery.trim()) return true;
+      const q = tableSearchQuery.toLowerCase().trim();
+      return Object.values(row).some((val) => val?.toString().toLowerCase().includes(q));
+    });
+  }, [selectedStatusTab, data?.workOrders, tableSearchQuery]);
 
   const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
@@ -366,7 +419,7 @@ export default function DashboardPage() {
               <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
             </Button>
             <a
-              href="https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit"
+              href="https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit?gid=917518166#gid=917518166"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="เปิดชีท Dashboard"
@@ -439,10 +492,40 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Block 2: Pending */}
-                    <motion.div whileHover={{ y: -5 }} className="flex flex-col rounded-3xl p-6 bg-white border-2 border-rose-100 shadow-sm relative overflow-hidden h-full group">
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'pending' ? null : 'pending');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'pending'}
+                      aria-label="ดูตารางรายการ Pending"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'pending' ? null : 'pending');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'pending'
+                          ? 'border-rose-500 ring-4 ring-rose-200/80 shadow-md'
+                          : 'border-rose-100 hover:border-rose-300'
+                      }`}
+                    >
                       <div className="flex items-center justify-between mb-4 z-10">
-                        <div className="text-xl md:text-2xl font-black text-rose-700 uppercase tracking-tighter">Pending</div>
-                        <div className="p-2.5 bg-rose-100 rounded-2xl text-rose-600 group-hover:scale-110 transition-transform">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-rose-700 uppercase tracking-tighter">Pending</div>
+                          <div className="text-[10px] font-bold text-rose-400">
+                            {selectedStatusTab === 'pending' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'pending' ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-600'
+                        }`}>
                           <Clock size={32} />
                         </div>
                       </div>
@@ -458,10 +541,40 @@ export default function DashboardPage() {
                     </motion.div>
 
                     {/* Block 3: Finish */}
-                    <motion.div whileHover={{ y: -5 }} className="flex flex-col rounded-3xl p-6 bg-white border-2 border-amber-100 shadow-sm relative overflow-hidden h-full group">
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'finish' ? null : 'finish');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'finish'}
+                      aria-label="ดูตารางรายการ Finish"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'finish' ? null : 'finish');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'finish'
+                          ? 'border-amber-500 ring-4 ring-amber-200/80 shadow-md'
+                          : 'border-amber-100 hover:border-amber-300'
+                      }`}
+                    >
                       <div className="flex items-center justify-between mb-4 z-10">
-                        <div className="text-xl md:text-2xl font-black text-amber-700 uppercase tracking-tighter">Finish</div>
-                        <div className="p-2.5 bg-amber-100 rounded-2xl text-amber-600 group-hover:scale-110 transition-transform">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-amber-700 uppercase tracking-tighter">Finish</div>
+                          <div className="text-[10px] font-bold text-amber-400">
+                            {selectedStatusTab === 'finish' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'finish' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-600'
+                        }`}>
                           <AlertCircle size={32} />
                         </div>
                       </div>
@@ -495,6 +608,116 @@ export default function DashboardPage() {
                       </div>
                     </motion.div>
                 </div>
+
+                {/* Expandable Table for PENDING / FINISH */}
+                <AnimatePresence>
+                  {selectedStatusTab && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, y: -10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                      className="mt-6 overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-md"
+                    >
+                      {/* Table Header Bar */}
+                      <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center bg-slate-50/90">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-8 rounded-full ${selectedStatusTab === 'pending' ? 'bg-rose-500' : 'bg-amber-500'}`}></div>
+                          <div>
+                            <h4 className="text-base sm:text-lg font-black text-[#4A4A49] uppercase flex items-center gap-2">
+                              รายการ W/O สถานะ: 
+                              <span className={`px-2.5 py-0.5 rounded-lg text-white font-bold text-xs ${selectedStatusTab === 'pending' ? 'bg-rose-600' : 'bg-amber-500'}`}>
+                                {selectedStatusTab.toUpperCase()}
+                              </span>
+                            </h4>
+                            <p className="text-xs font-bold text-slate-400 mt-0.5">
+                              แสดง {activeWorkOrders.length} รายการ {tableSearchQuery ? `(กรองจากคำค้นหา)` : ''}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="relative min-w-[220px] flex-1 sm:flex-initial">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                              type="text"
+                              value={tableSearchQuery}
+                              onChange={(e) => setTableSearchQuery(e.target.value)}
+                              placeholder="ค้นหาในตาราง..."
+                              className="w-full h-10 pl-9 pr-8 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 bg-white"
+                            />
+                            {tableSearchQuery && (
+                              <button
+                                onClick={() => setTableSearchQuery('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                aria-label="ล้างคำค้นหาในตาราง"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedStatusTab(null)}
+                            className="h-10 px-3.5 rounded-xl border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-rose-600 shadow-sm shrink-0"
+                            aria-label="ปิดตาราง"
+                          >
+                            <X className="w-4 h-4 mr-1.5 text-slate-500" /> ปิดตาราง
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Table Content */}
+                      <div className="overflow-x-auto max-h-[500px]">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead className="sticky top-0 z-10 bg-[#eef6ff] text-[#4A4A49] font-black border-b border-slate-200 shadow-sm">
+                            <tr>
+                              <th className="p-3 whitespace-nowrap">ECM ซื้อจ้าง</th>
+                              <th className="p-3 whitespace-nowrap">ECM</th>
+                              <th className="p-3 whitespace-nowrap">W/O</th>
+                              <th className="p-3 min-w-[240px]">รายการ</th>
+                              <th className="p-3 min-w-[160px]">Equip</th>
+                              <th className="p-3 whitespace-nowrap">Date เข้า</th>
+                              <th className="p-3 whitespace-nowrap">คาดว่าจะเสร็จ</th>
+                              <th className="p-3 whitespace-nowrap">Date งานออก</th>
+                              <th className="p-3 text-center whitespace-nowrap">สถานะ</th>
+                              <th className="p-3 min-w-[160px]">การดำเนินการ</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {activeWorkOrders.length === 0 ? (
+                              <tr>
+                                <td colSpan={10} className="p-10 text-center text-slate-400 font-bold">
+                                  {tableSearchQuery ? 'ไม่พบรายการที่ตรงกับคำค้นหา' : 'ไม่พบข้อมูลรายการในสถานะนี้'}
+                                </td>
+                              </tr>
+                            ) : (
+                              activeWorkOrders.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-amber-50/40 transition-colors">
+                                  <td className="p-3 font-semibold text-slate-700 whitespace-nowrap">{row.ecm_buy || '-'}</td>
+                                  <td className="p-3 font-semibold text-slate-700 whitespace-nowrap">{row.ecm || '-'}</td>
+                                  <td className="p-3 font-bold text-slate-800 whitespace-nowrap">{row.wo || '-'}</td>
+                                  <td className="p-3 font-medium text-slate-800">{row.item || '-'}</td>
+                                  <td className="p-3 font-medium text-slate-600">{row.equip || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.date_in || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-bold whitespace-nowrap">{row.date_start || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.date_out || '-'}</td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold shadow-xs ${getStatusStyle(row.status)}`}>
+                                      {row.status || '-'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-slate-600 font-medium">{row.action || '-'}</td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
             </motion.div>
 
             {/* Section 2: W Group Blocks */}

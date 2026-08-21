@@ -9,10 +9,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ConsumableFilters } from '@/lib/consumables/types';
-import { getMonthThaiLabel } from '@/lib/consumables/domain';
 
 interface Props {
   filters: ConsumableFilters;
@@ -53,36 +51,7 @@ export function ConsumableToolbar({
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
-            <select
-              aria-label="ปี"
-              value={filters.year}
-              onChange={(e) => set({ year: e.target.value })}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-            >
-              <option value="all">ปี (ทุกปี)</option>
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  ปี {year}
-                </option>
-              ))}
-            </select>
 
-            <select
-              aria-label="เดือน"
-              value={filters.month}
-              onChange={(e) => set({ month: e.target.value })}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-            >
-              <option value="all">เดือน (ทุกเดือน)</option>
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={String(i + 1)}>
-                  {getMonthThaiLabel(i + 1)}
-                </option>
-              ))}
-            </select>
-          </div>
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2">

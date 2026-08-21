@@ -8,7 +8,6 @@ import {
 import type { ShopOrderFilters } from '@/lib/shop-order/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -51,32 +50,6 @@ export function ShopOrderToolbar({
 
           {/* Filters */}
           <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
-            <select
-              aria-label="ปี"
-              value={filters.year}
-              onChange={(e) => set({ year: e.target.value })}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
-            >
-              <option value="all">ปี (ทุกปี)</option>
-              {years.map((year) => (
-                <option key={year} value={year}>ปี {year}</option>
-              ))}
-            </select>
-
-            <select
-              aria-label="เดือน"
-              value={filters.month}
-              onChange={(e) => set({ month: e.target.value })}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
-            >
-              <option value="all">เดือน (ทุกเดือน)</option>
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={String(i + 1)}>
-                  เดือน {i + 1}
-                </option>
-              ))}
-            </select>
-
             <select
               aria-label="สถานะ"
               value={filters.status}

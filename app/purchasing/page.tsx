@@ -315,7 +315,7 @@ export function PurchasingPageContent({
   colorTheme = 'gold',
   dateStartLabel = 'Date เริ่มงาน',
   showEcmLinks = false,
-  sheetUrl = 'https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit',
+  sheetUrl = 'https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit?gid=917518166#gid=917518166',
   sheetName = 'จัดซื้อจัดจ้าง',
 }: PurchasingPageContentProps = {}) {
   const t = themeTokens[colorTheme];
