@@ -137,7 +137,7 @@ export function ShopOrderSummary({
             </Card>
           ))}
         </div>
-        <Card className="shadow-sm flex-1 p-4 flex flex-col gap-3 border-slate-200">
+        <Card className="shadow-sm h-[295px] p-4 flex flex-col gap-3 border-slate-200">
           <div className="h-4 w-36 bg-slate-200 animate-pulse rounded" />
           <div className="space-y-2 mt-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -191,7 +191,7 @@ export function ShopOrderSummary({
       </div>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm flex-1 min-h-[295px] flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm h-[295px] flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-3 pb-0 mb-1 flex flex-col gap-1.5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

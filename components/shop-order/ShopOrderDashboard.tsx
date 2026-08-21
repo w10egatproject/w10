@@ -73,7 +73,7 @@ export function ShopOrderDashboard() {
   }), [filteredSummary, periodSummary]);
 
   const filtered = useMemo(() => filters.status === 'all' ? baseFiltered : baseFiltered.filter((o) => getOrderStatus(o) === filters.status), [baseFiltered, filters.status]);
-  const pagination = useMemo(() => paginateOrders(filtered, page, 18), [filtered, page]);
+  const pagination = useMemo(() => paginateOrders(filtered, page, 12), [filtered, page]);
   const years = useMemo(() => Array.from(new Set((data?.orders ?? []).flatMap((o) => o.dateIn ? [String(Number(o.dateIn.slice(0, 4)) + 543)] : []))).sort().reverse(), [data]);
 
   const updateFilters = (next: ShopOrderFilters) => { setFilters(next); setPage(1); };

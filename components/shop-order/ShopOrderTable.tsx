@@ -31,7 +31,7 @@ export function ShopOrderTable({
 
   if (orders.length === 0) {
     return (
-      <Card className="flex flex-1 min-h-[400px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
+      <Card className="flex flex-1 min-h-[617px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
         <span className="text-4xl">📋</span>
         <p className="mt-2 text-sm font-bold text-slate-600">ไม่พบข้อมูล Shop Order ตามเงื่อนไขที่เลือก</p>
         <p className="text-xs text-slate-400 mt-0.5">ลองปรับหรือล้างตัวกรองเพื่อค้นหาใหม่</p>
@@ -40,9 +40,9 @@ export function ShopOrderTable({
   }
 
   return (
-    <Card className="overflow-hidden border border-slate-200 shadow-sm h-full flex flex-col">
+    <Card className="overflow-hidden border border-slate-200 shadow-sm h-full min-h-[617px] flex flex-col">
       <div className="flex flex-col flex-1 min-h-0 overflow-x-auto">
-        <table className="min-w-[1100px] w-full text-sm flex-1 min-h-0 flex flex-col">
+        <table className="min-w-[1100px] w-full text-sm">
           <TableHeader className="bg-slate-50">
             <TableRow className="flex border-b border-slate-200">
               <TableHead className="flex items-center px-4 py-3 text-center w-16 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
@@ -57,7 +57,7 @@ export function ShopOrderTable({
               <TableHead className="flex items-center px-4 py-3 text-center w-28 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">สถานะ</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="flex flex-1 flex-col text-slate-800">
+          <TableBody className="flex flex-col text-slate-800">
             {orders.map((order, index) => {
               const done = getOrderStatus(order) === 'done';
               return (
@@ -73,8 +73,8 @@ export function ShopOrderTable({
                   }}
                   className={
                     onSelect
-                      ? 'flex flex-1 cursor-pointer hover:bg-indigo-50/60 transition-colors focus:bg-indigo-50/60 focus:outline-none'
-                      : 'flex flex-1 hover:bg-slate-50 transition-colors'
+                      ? 'flex cursor-pointer hover:bg-indigo-50/60 transition-colors focus:bg-indigo-50/60 focus:outline-none'
+                      : 'flex hover:bg-slate-50 transition-colors'
                   }
                 >
                   <TableCell className="flex items-center px-4 py-3 text-center w-16 shrink-0 justify-center font-bold text-slate-500">{order.no}</TableCell>
