@@ -202,8 +202,8 @@ export function ShopOrderDashboard() {
         <span>{attachmentWarning.message}</span>
         <button type="button" onClick={() => { setSelected(attachmentWarning.order); setFormMode('edit'); setAttachmentWarning(null); }} className="rounded-lg border border-amber-400 bg-white px-3 py-1.5">เพิ่มไฟล์อีกครั้ง</button>
       </div>}
-      <div data-testid="shop-order-layout" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-stretch">
-        <section className="min-w-0 flex flex-col h-full">
+      <div data-testid="shop-order-layout" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+        <section className="min-w-0 flex flex-col h-[640px]">
           <ShopOrderTable
             orders={filtered}
             onSelect={setSelected}

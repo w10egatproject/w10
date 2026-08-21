@@ -23,7 +23,7 @@ export function ShopOrderTable({
 }: Props) {
   if (orders.length === 0) {
     return (
-      <Card className="flex flex-1 h-full min-h-[400px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
+      <Card className="flex flex-1 h-[640px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
         <span className="text-4xl">📋</span>
         <p className="mt-2 text-sm font-bold text-slate-600">ไม่พบข้อมูล Shop Order ตามเงื่อนไขที่เลือก</p>
         <p className="text-xs text-slate-400 mt-0.5">ลองปรับหรือล้างตัวกรองเพื่อค้นหาใหม่</p>
@@ -32,7 +32,7 @@ export function ShopOrderTable({
   }
 
   return (
-    <Card className="overflow-hidden border border-slate-200 shadow-sm h-full flex flex-col">
+    <Card className="overflow-hidden border border-slate-200 shadow-sm h-[640px] flex flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
         <table className="w-full text-sm">
           <TableHeader className="sticky top-0 z-10 bg-slate-50 shadow-[0_1px_0_0_rgba(226,232,240,1)]">

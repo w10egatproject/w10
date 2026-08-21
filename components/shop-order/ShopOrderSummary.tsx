@@ -126,10 +126,10 @@ export function ShopOrderSummary({
   if (loading && !summary.total) {
     return (
       <aside
-        className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full"
+        className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-[640px]"
         aria-label="สรุปรายการ"
       >
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5 shrink-0">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="p-3 text-center border-slate-200">
               <div className="h-7 w-12 bg-slate-200 animate-pulse rounded-lg mx-auto mb-1.5" />
@@ -137,7 +137,7 @@ export function ShopOrderSummary({
             </Card>
           ))}
         </div>
-        <Card className="shadow-sm h-[295px] p-4 flex flex-col gap-3 border-slate-200">
+        <Card className="shadow-sm flex-1 min-h-0 p-4 flex flex-col gap-3 border-slate-200">
           <div className="h-4 w-36 bg-slate-200 animate-pulse rounded" />
           <div className="space-y-2 mt-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -159,11 +159,11 @@ export function ShopOrderSummary({
 
   return (
     <aside
-      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-full"
+      className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0 h-[640px]"
       aria-label="สรุปรายการ"
     >
       {/* KPI Mini Cards */}
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-3 gap-2.5 shrink-0">
         {kpis.map(({ label, value, color, testId, status }) => {
           const isActive = activeStatus === status;
           return (
@@ -191,7 +191,7 @@ export function ShopOrderSummary({
       </div>
 
       {/* Popular Ranking Panel (Units / Receivers toggle with Click-to-filter) */}
-      <Card className="shadow-sm h-[295px] flex flex-col transition-all border border-slate-200">
+      <Card className="shadow-sm flex-1 min-h-0 flex flex-col transition-all border border-slate-200">
         <CardHeader className="p-3 pb-0 mb-1 flex flex-col gap-1.5 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
