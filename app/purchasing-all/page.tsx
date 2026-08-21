@@ -12,7 +12,6 @@ export default function PurchasingAllPage() {
       colorTheme="teal"
       dateStartLabel="คาดว่าจะเสร็จ"
       showEcmLinks
-      colorDueDate
     />
   );
 }
