@@ -420,7 +420,7 @@ export default function DashboardPage() {
               <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
             </Button>
             <a
-              href="https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit?gid=917518166#gid=917518166"
+              href="https://docs.google.com/spreadsheets/d/1gAFNW67DyQjzPUBRLclT3fG-QvMVop-msOguZCEw-JY/edit?gid=0#gid=0"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="เปิดชีท Dashboard"
