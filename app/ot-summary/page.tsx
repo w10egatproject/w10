@@ -722,6 +722,10 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     </dl>
                   </aside>
                   <div className="min-w-0">
+                    <h3 className="text-lg font-black text-emerald-800 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-5 bg-emerald-600 rounded-full"></div>
+                      ข้อมูลการขอล่วงเวลาของหัวหน้าหมวด
+                    </h3>
                     {renderContractorTable(rows, totals, group, data.contractorTitle)}
                     <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <h3 className="text-lg font-black text-[#0284c7] mb-3 flex items-center gap-2">
@@ -757,6 +761,10 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                 <p className="mt-2 text-sm font-extrabold text-slate-600">{data.contractorTitle || 'สรุป OT ลูกจ้าง'} · ตารางรวมหลัง W14</p>
               </div>
               <div className="p-4 md:p-8">
+                <h3 className="text-xl font-black text-emerald-800 mb-4 flex items-center gap-2">
+                  <div className="w-2 h-6 bg-emerald-600 rounded-full"></div>
+                  ข้อมูลการขอล่วงเวลาของหัวหน้าหมวด
+                </h3>
                 {renderContractorTable(contractors, data.officialContractorTotals || allContractorTotals, 'ALL-CONTRACTORS', data.contractorTitle)}
                 <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
@@ -807,6 +815,10 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                     </dl>
                   </aside>
                   <div className="min-w-0">
+                    <h3 className="text-lg font-black text-emerald-800 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-5 bg-emerald-600 rounded-full"></div>
+                      ข้อมูลการขอล่วงเวลาของหัวหน้าหมวด
+                    </h3>
                     {renderEmployeeTable(rows, group, data.employeeTitle)}
                     <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <h3 className="text-lg font-black text-[#0284c7] mb-3 flex items-center gap-2">
@@ -842,6 +854,10 @@ export function OtSummaryContent({ workerType = 'contractor', chrome = 'legacy' 
                 <p className="mt-2 text-sm font-extrabold text-slate-600">{data.employeeTitle || 'สรุป OT พนักงาน'} · ตารางรวมหลัง W14</p>
               </div>
               <div className="p-4 md:p-8">
+                <h3 className="text-xl font-black text-emerald-800 mb-4 flex items-center gap-2">
+                  <div className="w-2 h-6 bg-emerald-600 rounded-full"></div>
+                  ข้อมูลการขอล่วงเวลาของหัวหน้าหมวด
+                </h3>
                 {renderEmployeeTable(employees, 'ALL-EMPLOYEES', data.employeeTitle)}
                 <motion.div className="mt-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-xl font-black text-[#0284c7] mb-4 flex items-center gap-2">
