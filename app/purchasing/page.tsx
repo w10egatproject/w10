@@ -518,6 +518,87 @@ export function PurchasingPageContent({
     return 'bg-[#FFD100] text-[#4A4A49]'; // default
   };
 
+  const getDueDateBadgeStyle = (dateStr?: string, status?: string): { className: string; text: string } => {
+    const trimmed = (dateStr || '').trim();
+    if (!trimmed || trimmed === '-') {
+      return {
+        className: 'bg-slate-100 text-slate-500 border border-slate-200',
+        text: '-',
+      };
+    }
+
+    // If status is completed/delivered, show neutral/green
+    const isCompleted = (status || '').includes('เสร็จ') || (status || '').includes('ส่งของ');
+    if (isCompleted) {
+      return {
+        className: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+        text: trimmed,
+      };
+    }
+
+    // Parse date (supports D/M/YYYY, D/M/BBBB, YYYY-MM-DD, DD-MM-YYYY)
+    let targetDate: Date | null = null;
+    if (trimmed.includes('/')) {
+      const parts = trimmed.split('/').map((p) => parseInt(p.trim(), 10));
+      if (parts.length === 3 && !parts.some(isNaN)) {
+        let [d, m, y] = parts;
+        if (y > 2400) y -= 543; // Convert Thai Buddhist Year to AD
+        targetDate = new Date(y, m - 1, d);
+      }
+    } else if (trimmed.includes('-')) {
+      const parts = trimmed.split('-').map((p) => parseInt(p.trim(), 10));
+      if (parts.length === 3 && !parts.some(isNaN)) {
+        if (parts[0] > 1000) {
+          let [y, m, d] = parts;
+          if (y > 2400) y -= 543;
+          targetDate = new Date(y, m - 1, d);
+        } else {
+          let [d, m, y] = parts;
+          if (y > 2400) y -= 543;
+          targetDate = new Date(y, m - 1, d);
+        }
+      }
+    }
+
+    if (!targetDate || isNaN(targetDate.getTime())) {
+      return {
+        className: 'bg-slate-100 text-slate-600 border border-slate-200',
+        text: trimmed,
+      };
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const daysUntil = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysUntil <= 0) {
+      // วันนี้จนถึงไปเรื่อยๆ สีแดงเข้ม
+      return {
+        className: 'bg-red-800 text-white shadow-sm font-black',
+        text: trimmed,
+      };
+    } else if (daysUntil <= 3) {
+      // 3 วัน แดงอ่อน
+      return {
+        className: 'bg-red-200 text-red-900 border border-red-300 font-black',
+        text: trimmed,
+      };
+    } else if (daysUntil <= 7) {
+      // เมื่อใกล้จะถึงใน 7 วัน สีแดง
+      return {
+        className: 'bg-red-600 text-white shadow-sm font-black',
+        text: trimmed,
+      };
+    } else {
+      // นอกนั้น สีเขียว
+      return {
+        className: 'bg-emerald-600 text-white shadow-sm font-black',
+        text: trimmed,
+      };
+    }
+  };
+
   const chartOptions = useMemo(() => ({ chart: { type: 'pie', backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 }, height: 300 }, colors: chartColors, credits: { enabled: false }, title: { text: '' }, plotOptions: { pie: { innerSize: '58%', depth: 38, colorByPoint: true, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.0f}%', style: { fontWeight: '800', textOutline: 'none', color: '#4b5563' } } } }, series: [{ name: 'Purchasing', data: primaryChartData }] }), [primaryChartData]);
   
   const equipChartOptions = useMemo(() => ({
@@ -847,7 +928,16 @@ export function PurchasingPageContent({
                           <td className={`max-w-[400px] px-6 py-5 font-bold text-[#4A4A49] leading-relaxed border ${t.dtTblBorder}`}>{row.item || '-'}</td>
                           <td className={`px-6 py-5 font-black text-slate-600 border ${t.dtTblBorder}`}>{row.equip || '-'}</td>
                           <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_in || '-'}</td>
-                          <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_start || '-'}</td>
+                          <td className={`px-6 py-5 whitespace-nowrap border ${t.dtTblBorder}`}>
+                            {(() => {
+                              const badge = getDueDateBadgeStyle(row.date_start, row.status);
+                              return (
+                                <span className={`inline-flex rounded-lg px-3 py-1.5 text-[12px] font-black uppercase tracking-wide shadow-sm ${badge.className}`}>
+                                  {badge.text}
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_out || '-'}</td>
                           <td className={`px-6 py-5 border ${t.dtTblBorder}`}>
                             <span className={`inline-flex rounded-lg px-3 py-1.5 text-[12px] font-black uppercase tracking-wide shadow-sm ${getStatusStyle(row.status)}`}>{row.status || '-'}</span>
