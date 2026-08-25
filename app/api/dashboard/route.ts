@@ -126,22 +126,19 @@ export async function GET(request: Request) {
       entrance: groupStats.W_all.entrance,
     };
 
-    // Pull status data from 'Dashboard W10 All info'!I6:L8 (Rows 5-7, Cols 8-11)
-    // Labels are in Col 8 (Index 8), Values are in Col 11 (Index 11)
-    const statusData = {
-      sap: getNum(5, 11),
-      pending: getNum(6, 11),
-      finish: getNum(7, 11),
-      total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
-    };
-
-    // Parse status details from 'Dashboard W10 All info' (Row 11 downwards, Col L = Status)
+    // Parse status details from 'Dashboard W10 All info' (Row 11 downwards, Col L = Status, Col Q = Check)
     const infoRows = data.info || [];
     const statusDetails = [];
+    let checkCount = 0;
 
     for (let r = 11; r < infoRows.length; r++) {
       const row = infoRows[r] || [];
       if (row[2] || row[3] || row[4] || row[11]) {
+        const checkVal = (row[16] || '').trim();
+        if (checkVal.toUpperCase() === 'TRUE') {
+          checkCount++;
+        }
+
         const groups = [
           row[12] === 'TRUE' && 'W11',
           row[13] === 'TRUE' && 'W12',
@@ -161,10 +158,21 @@ export async function GET(request: Request) {
           ecm_url: row[9] || '',
           notify: row[10] || '',
           status: (row[11] || '').trim(),
+          check: checkVal || '-',
           groups: groups || '-',
         });
       }
     }
+
+    // Pull status data from 'Dashboard W10 All info'!I6:L8 (Rows 5-7, Cols 8-11)
+    // Labels are in Col 8 (Index 8), Values are in Col 11 (Index 11)
+    const statusData = {
+      sap: getNum(5, 11),
+      pending: getNum(6, 11),
+      finish: getNum(7, 11),
+      check: checkCount,
+      total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
+    };
 
     return NextResponse.json({
       statusSummary: { total: w_all },

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CheckCircle2, Clock, Factory, FileSpreadsheet, HardHat, Info, LayoutDashboard, RefreshCw, Search, Shield, X, Zap } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle2, ClipboardCheck, Clock, Factory, FileSpreadsheet, HardHat, Info, LayoutDashboard, RefreshCw, Search, Shield, X, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -181,6 +181,7 @@ export interface StatusDetailRow {
   ecm_url: string;
   notify: string;
   status: string;
+  check?: string;
   groups: string;
 }
 
@@ -190,7 +191,7 @@ interface DashboardData {
   wGauges?: Record<string, { empNorm?: number; conNorm?: number; empOT?: number; conOT?: number }>;
   groupStats?: Record<string, any>;
   w_all?: { entrance?: number };
-  statusData?: { total?: number; sap?: number; pending?: number; finish?: number };
+  statusData?: { total?: number; sap?: number; pending?: number; finish?: number; check?: number };
   equipmentData?: { name: string; values: number[]; total: number }[];
   statusDetails?: StatusDetailRow[];
   error?: string;
@@ -213,7 +214,7 @@ export default function DashboardPage() {
   const [month, setMonth] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | 'sap' | null>(null);
+  const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | 'sap' | 'check' | null>(null);
   const [tableSearchQuery, setTableSearchQuery] = useState('');
 
   const statusDetails = data?.statusDetails;
@@ -223,7 +224,14 @@ export default function DashboardPage() {
     return statusDetails.filter((row) => {
       const s = (row.status || '').trim().toLowerCase();
       const target = selectedStatusTab.toLowerCase();
-      const matchesStatus = target === 'sap' ? s.includes('sap') : s === target;
+      const checkVal = (row.check || '').trim().toUpperCase();
+      
+      const matchesStatus =
+        target === 'check'
+          ? checkVal === 'TRUE'
+          : target === 'sap'
+          ? s.includes('sap')
+          : s === target;
       
       if (!matchesStatus) return false;
       
@@ -239,6 +247,7 @@ export default function DashboardPage() {
         row.dept.toLowerCase().includes(q) ||
         row.contact.toLowerCase().includes(q) ||
         row.groups.toLowerCase().includes(q) ||
+        (row.check || '').toLowerCase().includes(q) ||
         row.notify.toLowerCase().includes(q)
       );
     });
@@ -345,6 +354,7 @@ export default function DashboardPage() {
   const sapPct = Math.round(((statusData?.sap || 0) / totalWO) * 100);
   const pendingPct = Math.round(((statusData?.pending || 0) / totalWO) * 100);
   const finishPct = Math.round(((statusData?.finish || 0) / totalWO) * 100);
+  const checkPct = Math.round(((statusData?.check || 0) / totalWO) * 100);
 
   if (error) return (
     <div className="p-10 text-center min-h-screen flex flex-col items-center justify-center bg-[#e2e2e2]">
@@ -468,7 +478,7 @@ export default function DashboardPage() {
                   </h3>
                   <Info className="text-slate-300 w-4 h-4 md:w-5 h-5 cursor-help" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 items-stretch">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 items-stretch">
                     {/* Block 1: Chart & Total */}
                     <div className="flex flex-col rounded-2xl p-5 bg-[#5c607f] border-2 border-[#858bb5] shadow-md relative overflow-hidden transition-all hover:shadow-lg h-full">
                       <Activity className="absolute -right-4 -bottom-4 w-32 h-32 text-white/5 pointer-events-none" />
@@ -639,9 +649,58 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </motion.div>
+
+                    {/* Block 5: CHECK */}
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'check' ? null : 'check');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'check'}
+                      aria-label="ดูตารางรายการ CHECK"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'check' ? null : 'check');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'check'
+                          ? 'border-indigo-500 ring-4 ring-indigo-200/80 shadow-md'
+                          : 'border-indigo-100 hover:border-indigo-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-4 z-10">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-indigo-700 uppercase tracking-tighter">CHECK</div>
+                          <div className="text-[10px] font-bold text-indigo-600">
+                            {selectedStatusTab === 'check' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'check' ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'
+                        }`}>
+                          <ClipboardCheck size={32} />
+                        </div>
+                      </div>
+                      <div className="mt-auto z-10">
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.check || 0} /></div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${checkPct}%` }} transition={{ duration: 1 }} className="h-full bg-indigo-500 rounded-full"></motion.div>
+                          </div>
+                          <span className="text-[12px] font-black text-indigo-600">{checkPct}%</span>
+                        </div>
+                      </div>
+                    </motion.div>
                 </div>
 
-                {/* Expandable Table for PENDING / FINISH / SAP */}
+                {/* Expandable Table for PENDING / FINISH / SAP / CHECK */}
                 <AnimatePresence>
                   {selectedStatusTab && (
                     <motion.div
@@ -659,7 +718,9 @@ export default function DashboardPage() {
                               ? 'bg-rose-500'
                               : selectedStatusTab === 'finish'
                               ? 'bg-amber-500'
-                              : 'bg-emerald-500'
+                              : selectedStatusTab === 'sap'
+                              ? 'bg-emerald-500'
+                              : 'bg-indigo-500'
                           }`}></div>
                           <div>
                             <h4 className="text-base sm:text-lg font-black text-[#4A4A49] uppercase flex items-center gap-2">
@@ -669,7 +730,9 @@ export default function DashboardPage() {
                                   ? 'bg-rose-600'
                                   : selectedStatusTab === 'finish'
                                   ? 'bg-amber-500'
-                                  : 'bg-emerald-600'
+                                  : selectedStatusTab === 'sap'
+                                  ? 'bg-emerald-600'
+                                  : 'bg-indigo-600'
                               }`}>
                                 {selectedStatusTab.toUpperCase()}
                               </span>
@@ -727,12 +790,13 @@ export default function DashboardPage() {
                               <th className="p-3 min-w-[140px]">ติดต่อประสานงาน</th>
                               <th className="p-3 whitespace-nowrap text-center">หมวด</th>
                               <th className="p-3 text-center whitespace-nowrap">สถานะ</th>
+                              <th className="p-3 text-center whitespace-nowrap">Check</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {activeStatusRows.length === 0 ? (
                               <tr>
-                                <td colSpan={10} className="p-10 text-center text-slate-400 font-bold">
+                                <td colSpan={11} className="p-10 text-center text-slate-400 font-bold">
                                   {tableSearchQuery ? 'ไม่พบรายการที่ตรงกับคำค้นหา' : 'ไม่พบข้อมูลรายการในสถานะนี้'}
                                 </td>
                               </tr>
@@ -768,6 +832,15 @@ export default function DashboardPage() {
                                   <td className="p-3 text-center whitespace-nowrap">
                                     <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold shadow-xs ${getStatusStyle(row.status)}`}>
                                       {row.status || '-'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                      (row.check || '').toUpperCase() === 'TRUE'
+                                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                        : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                    }`}>
+                                      {row.check || '-'}
                                     </span>
                                   </td>
                                 </tr>

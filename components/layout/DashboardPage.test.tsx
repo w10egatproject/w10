@@ -26,7 +26,7 @@ vi.mock('@/components/magicui/blur-fade', () => ({
 const mockDashboardData = {
   currentYear: '2025',
   currentMonth: 'all',
-  statusData: { total: 10, sap: 5, pending: 2, finish: 1 },
+  statusData: { total: 10, sap: 5, pending: 2, finish: 1, check: 4 },
   groupStats: {
     W11: { entrance: 2, left: 1, finish: 1, otherFinish: 0, out: 1 },
     W12: { entrance: 3, left: 1, finish: 2, otherFinish: 0, out: 2 },
@@ -49,6 +49,7 @@ const mockDashboardData = {
       ecm_url: 'https://ecmcommon.egat.co.th/InternalDoc/MemoForm?id=1946370',
       notify: 'งานเข้า',
       status: 'Pending',
+      check: 'TRUE',
       groups: 'W12, W14',
     },
     {
@@ -63,6 +64,7 @@ const mockDashboardData = {
       ecm_url: '',
       notify: 'งานเข้า',
       status: 'Pending',
+      check: 'FALSE',
       groups: 'W11',
     },
     {
@@ -77,6 +79,7 @@ const mockDashboardData = {
       ecm_url: 'https://ecmcommon.egat.co.th/InternalDoc/MemoForm?id=2045485',
       notify: 'งานเข้า',
       status: 'Finish',
+      check: 'TRUE',
       groups: 'W13',
     },
     {
@@ -91,6 +94,7 @@ const mockDashboardData = {
       ecm_url: 'https://ecmcommon.egat.co.th/InternalDoc/MemoForm?id=3001',
       notify: 'งานเข้า',
       status: 'SAP Comp',
+      check: 'TRUE',
       groups: 'W13',
     },
     {
@@ -105,6 +109,7 @@ const mockDashboardData = {
       ecm_url: '',
       notify: 'งานเข้า',
       status: 'SAP',
+      check: 'TRUE',
       groups: 'W14',
     },
   ],
@@ -217,6 +222,40 @@ describe('DashboardPage - Status Cards & Table Expand', () => {
 
     // Click SAP card again -> closes table
     await user.click(sapCard);
+    await waitFor(() => {
+      expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();
+    });
+  });
+
+  it('toggles check work orders table on clicking CHECK card and filters TRUE items', async () => {
+    const user = userEvent.setup();
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /ดูตารางรายการ CHECK/i })).toBeDefined();
+    });
+
+    const checkCard = screen.getByRole('button', { name: /ดูตารางรายการ CHECK/i });
+    expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();
+
+    // Click CHECK -> opens table
+    await user.click(checkCard);
+    expect(screen.getByText(/รายการ W\/O สถานะ:/i)).toBeDefined();
+    expect(screen.getByText('ซ่อมแซมมอเตอร์ 1')).toBeDefined();
+    expect(screen.getByText('เปลี่ยนลูกปืนเสร็จแล้ว')).toBeDefined();
+    expect(screen.getByText('ทำชิ้นวางของ 10 ตัว')).toBeDefined();
+    expect(screen.getByText('ตรวจเช็คระบบไฟ')).toBeDefined();
+    // 'ซ่อมบำรุงปั๊มน้ำ' has check: 'FALSE' so it shouldn't appear
+    expect(screen.queryByText('ซ่อมบำรุงปั๊มน้ำ')).toBeNull();
+
+    // Search in CHECK table
+    const searchInput = screen.getByPlaceholderText('ค้นหาในตาราง...');
+    await user.type(searchInput, 'มอเตอร์');
+    expect(screen.getByText('ซ่อมแซมมอเตอร์ 1')).toBeDefined();
+    expect(screen.queryByText('ทำชิ้นวางของ 10 ตัว')).toBeNull();
+
+    // Click CHECK card again -> closes table
+    await user.click(checkCard);
     await waitFor(() => {
       expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();
     });
