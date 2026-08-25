@@ -1,4 +1,4 @@
-﻿import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import DashboardPage from '@/app/page';
@@ -78,6 +78,34 @@ const mockDashboardData = {
       notify: 'งานเข้า',
       status: 'Finish',
       groups: 'W13',
+    },
+    {
+      no: '4',
+      ecm: '890/2569',
+      wo: '4161546',
+      description: 'ทำชิ้นวางของ 10 ตัว',
+      equipment: 'รถขุดล้อยาง',
+      date: '18/8/2026',
+      contact: 'กฤษฏา 4082',
+      dept: 'หปนส-ช.',
+      ecm_url: 'https://ecmcommon.egat.co.th/InternalDoc/MemoForm?id=3001',
+      notify: 'งานเข้า',
+      status: 'SAP Comp',
+      groups: 'W13',
+    },
+    {
+      no: '5',
+      ecm: '891/2569',
+      wo: '4161880',
+      description: 'ตรวจเช็คระบบไฟ',
+      equipment: 'หม้อแปลง',
+      date: '20/8/2026',
+      contact: 'ชาลี 4528',
+      dept: 'หมด-ช.',
+      ecm_url: '',
+      notify: 'งานเข้า',
+      status: 'SAP',
+      groups: 'W14',
     },
   ],
 };
@@ -160,5 +188,37 @@ describe('DashboardPage - Status Cards & Table Expand', () => {
 
     expect(screen.getByText('ซ่อมบำรุงปั๊มน้ำ')).toBeDefined();
     expect(screen.queryByText('ซ่อมแซมมอเตอร์ 1')).toBeNull();
+  });
+
+  it('toggles sap work orders table on clicking SAP card and filters SAP items', async () => {
+    const user = userEvent.setup();
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /ดูตารางรายการ SAP/i })).toBeDefined();
+    });
+
+    const sapCard = screen.getByRole('button', { name: /ดูตารางรายการ SAP/i });
+    expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();
+
+    // Click SAP -> opens table
+    await user.click(sapCard);
+    expect(screen.getByText(/รายการ W\/O สถานะ:/i)).toBeDefined();
+    expect(screen.getByText('ทำชิ้นวางของ 10 ตัว')).toBeDefined();
+    expect(screen.getByText('ตรวจเช็คระบบไฟ')).toBeDefined();
+    expect(screen.queryByText('ซ่อมแซมมอเตอร์ 1')).toBeNull();
+    expect(screen.queryByText('เปลี่ยนลูกปืนเสร็จแล้ว')).toBeNull();
+
+    // Search in SAP table
+    const searchInput = screen.getByPlaceholderText('ค้นหาในตาราง...');
+    await user.type(searchInput, 'ชิ้นวางของ');
+    expect(screen.getByText('ทำชิ้นวางของ 10 ตัว')).toBeDefined();
+    expect(screen.queryByText('ตรวจเช็คระบบไฟ')).toBeNull();
+
+    // Click SAP card again -> closes table
+    await user.click(sapCard);
+    await waitFor(() => {
+      expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();
+    });
   });
 });

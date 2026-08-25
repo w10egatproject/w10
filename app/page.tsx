@@ -213,16 +213,17 @@ export default function DashboardPage() {
   const [month, setMonth] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | null>(null);
+  const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | 'sap' | null>(null);
   const [tableSearchQuery, setTableSearchQuery] = useState('');
 
+  const statusDetails = data?.statusDetails;
   const activeStatusRows = useMemo(() => {
-    if (!selectedStatusTab || !data?.statusDetails) return [];
+    if (!selectedStatusTab || !statusDetails) return [];
     
-    return data.statusDetails.filter((row) => {
+    return statusDetails.filter((row) => {
       const s = (row.status || '').trim().toLowerCase();
       const target = selectedStatusTab.toLowerCase();
-      const matchesStatus = s === target;
+      const matchesStatus = target === 'sap' ? s.includes('sap') : s === target;
       
       if (!matchesStatus) return false;
       
@@ -241,7 +242,7 @@ export default function DashboardPage() {
         row.notify.toLowerCase().includes(q)
       );
     });
-  }, [selectedStatusTab, data?.statusDetails, tableSearchQuery]);
+  }, [selectedStatusTab, statusDetails, tableSearchQuery]);
 
   const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
@@ -591,10 +592,40 @@ export default function DashboardPage() {
                     </motion.div>
 
                     {/* Block 4: SAP */}
-                    <motion.div whileHover={{ y: -5 }} className="flex flex-col rounded-3xl p-6 bg-white border-2 border-emerald-100 shadow-sm relative overflow-hidden h-full group">
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'sap' ? null : 'sap');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'sap'}
+                      aria-label="ดูตารางรายการ SAP"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'sap' ? null : 'sap');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'sap'
+                          ? 'border-emerald-500 ring-4 ring-emerald-200/80 shadow-md'
+                          : 'border-emerald-100 hover:border-emerald-300'
+                      }`}
+                    >
                       <div className="flex items-center justify-between mb-4 z-10">
-                        <div className="text-xl md:text-2xl font-black text-emerald-700 uppercase tracking-tighter">SAP</div>
-                        <div className="p-2.5 bg-emerald-100 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-emerald-700 uppercase tracking-tighter">SAP</div>
+                          <div className="text-[10px] font-bold text-emerald-600">
+                            {selectedStatusTab === 'sap' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'sap' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'
+                        }`}>
                           <CheckCircle2 size={32} />
                         </div>
                       </div>
@@ -610,7 +641,7 @@ export default function DashboardPage() {
                     </motion.div>
                 </div>
 
-                {/* Expandable Table for PENDING / FINISH */}
+                {/* Expandable Table for PENDING / FINISH / SAP */}
                 <AnimatePresence>
                   {selectedStatusTab && (
                     <motion.div
@@ -623,11 +654,23 @@ export default function DashboardPage() {
                       {/* Table Header Bar */}
                       <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center bg-slate-50/90">
                         <div className="flex items-center gap-3">
-                          <div className={`w-3 h-8 rounded-full ${selectedStatusTab === 'pending' ? 'bg-rose-500' : 'bg-amber-500'}`}></div>
+                          <div className={`w-3 h-8 rounded-full ${
+                            selectedStatusTab === 'pending'
+                              ? 'bg-rose-500'
+                              : selectedStatusTab === 'finish'
+                              ? 'bg-amber-500'
+                              : 'bg-emerald-500'
+                          }`}></div>
                           <div>
                             <h4 className="text-base sm:text-lg font-black text-[#4A4A49] uppercase flex items-center gap-2">
                               รายการ W/O สถานะ: 
-                              <span className={`px-2.5 py-0.5 rounded-lg text-white font-bold text-xs ${selectedStatusTab === 'pending' ? 'bg-rose-600' : 'bg-amber-500'}`}>
+                              <span className={`px-2.5 py-0.5 rounded-lg text-white font-bold text-xs ${
+                                selectedStatusTab === 'pending'
+                                  ? 'bg-rose-600'
+                                  : selectedStatusTab === 'finish'
+                                  ? 'bg-amber-500'
+                                  : 'bg-emerald-600'
+                              }`}>
                                 {selectedStatusTab.toUpperCase()}
                               </span>
                             </h4>
