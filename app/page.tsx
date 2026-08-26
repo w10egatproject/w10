@@ -200,10 +200,10 @@ interface DashboardData {
 const getStatusStyle = (status: string) => {
   if (!status) return 'bg-slate-100 text-slate-400';
   const s = status.trim().toLowerCase();
-  if (s === 'pending') return 'bg-rose-100 text-rose-700 border border-rose-200';
-  if (s === 'finish') return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-  if (s.includes('sap')) return 'bg-teal-100 text-teal-800 border border-teal-200';
-  return 'bg-[#FFD100] text-[#4A4A49]';
+  if (s === 'pending') return 'bg-red-500 text-white font-bold border border-red-600 shadow-xs';
+  if (s === 'finish') return 'bg-emerald-500 text-white font-bold border border-emerald-600 shadow-xs';
+  if (s.includes('sap')) return 'bg-[#658354] text-white font-bold border border-[#536d44] shadow-xs';
+  return 'bg-[#FFD100] text-[#4A4A49] font-bold';
 };
 
 const DEFAULT_YEAR = "2025";
@@ -317,9 +317,9 @@ export default function DashboardPage() {
     accessibility: { enabled: false },
     plotOptions: { pie: { size: '78%', innerSize: '52%', depth: 38, dataLabels: { enabled: true, distance: 28, format: '{point.name}: {point.y} ({point.percentage:.0f}%)', style: { color: '#4b5563', fontWeight: 'bold' } } } },
     series: [{ name: 'Status', data: [
-        { name: 'SAP', y: statusData?.sap || 0, color: '#86efac' },
-        { name: 'Pending', y: statusData?.pending || 0, color: '#fca5a5' },
-        { name: 'Finish', y: statusData?.finish || 0, color: '#4ade80' }
+        { name: 'SAP', y: statusData?.sap || 0, color: '#658354' },
+        { name: 'Pending', y: statusData?.pending || 0, color: '#ef4444' },
+        { name: 'Finish', y: statusData?.finish || 0, color: '#22c55e' }
     ] }]
   }), [statusData]);
 
@@ -622,19 +622,19 @@ export default function DashboardPage() {
                       }}
                       className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
                         selectedStatusTab === 'sap'
-                          ? 'border-emerald-500 ring-4 ring-emerald-200/80 shadow-md'
-                          : 'border-emerald-100 hover:border-emerald-300'
+                          ? 'border-[#658354] ring-4 ring-[#658354]/25 shadow-md'
+                          : 'border-[#e2ebd8] hover:border-[#b8d1a3]'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-4 z-10">
                         <div>
-                          <div className="text-xl md:text-2xl font-black text-emerald-700 uppercase tracking-tighter">SAP</div>
-                          <div className="text-[10px] font-bold text-emerald-600">
+                          <div className="text-xl md:text-2xl font-black text-[#48603c] uppercase tracking-tighter">SAP</div>
+                          <div className="text-[10px] font-bold text-[#658354]">
                             {selectedStatusTab === 'sap' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
                           </div>
                         </div>
                         <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
-                          selectedStatusTab === 'sap' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-600'
+                          selectedStatusTab === 'sap' ? 'bg-[#658354] text-white' : 'bg-[#eef5e8] text-[#536d44]'
                         }`}>
                           <CheckCircle2 size={32} />
                         </div>
@@ -643,9 +643,9 @@ export default function DashboardPage() {
                         <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.sap || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${sapPct}%` }} transition={{ duration: 1 }} className="h-full bg-emerald-500 rounded-full"></motion.div>
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${sapPct}%` }} transition={{ duration: 1 }} className="h-full bg-[#658354] rounded-full"></motion.div>
                           </div>
-                          <span className="text-[12px] font-black text-emerald-600">{sapPct}%</span>
+                          <span className="text-[12px] font-black text-[#536d44]">{sapPct}%</span>
                         </div>
                       </div>
                     </motion.div>
@@ -719,7 +719,7 @@ export default function DashboardPage() {
                               : selectedStatusTab === 'finish'
                               ? 'bg-emerald-500'
                               : selectedStatusTab === 'sap'
-                              ? 'bg-emerald-500'
+                              ? 'bg-[#658354]'
                               : 'bg-rose-500'
                           }`}></div>
                           <div>
@@ -731,7 +731,7 @@ export default function DashboardPage() {
                                   : selectedStatusTab === 'finish'
                                   ? 'bg-emerald-600'
                                   : selectedStatusTab === 'sap'
-                                  ? 'bg-emerald-600'
+                                  ? 'bg-[#658354]'
                                   : 'bg-rose-600'
                               }`}>
                                 {selectedStatusTab === 'check' ? 'CHECK FALSE' : selectedStatusTab.toUpperCase()}
