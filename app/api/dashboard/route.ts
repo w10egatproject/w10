@@ -129,14 +129,16 @@ export async function GET(request: Request) {
     // Parse status details from 'Dashboard W10 All info' (Row 11 downwards, Col L = Status, Col Q = Check)
     const infoRows = data.info || [];
     const statusDetails = [];
-    let checkCount = 0;
+    let checkFalseCount = 0;
 
     for (let r = 11; r < infoRows.length; r++) {
       const row = infoRows[r] || [];
       if (row[2] || row[3] || row[4] || row[11]) {
-        const checkVal = (row[16] || '').trim();
-        if (checkVal.toUpperCase() === 'TRUE') {
-          checkCount++;
+        const rawCheck = (row[16] !== undefined && row[16] !== null ? String(row[16]) : '').trim();
+        const isTrue = rawCheck.toUpperCase() === 'TRUE';
+        const checkVal = isTrue ? 'TRUE' : 'FALSE';
+        if (!isTrue) {
+          checkFalseCount++;
         }
 
         const groups = [
@@ -158,7 +160,7 @@ export async function GET(request: Request) {
           ecm_url: row[9] || '',
           notify: row[10] || '',
           status: (row[11] || '').trim(),
-          check: checkVal || '-',
+          check: checkVal,
           groups: groups || '-',
         });
       }
@@ -170,7 +172,7 @@ export async function GET(request: Request) {
       sap: getNum(5, 11),
       pending: getNum(6, 11),
       finish: getNum(7, 11),
-      check: checkCount,
+      check: checkFalseCount,
       total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
     };
 

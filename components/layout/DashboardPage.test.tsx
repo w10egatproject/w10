@@ -227,34 +227,33 @@ describe('DashboardPage - Status Cards & Table Expand', () => {
     });
   });
 
-  it('toggles check work orders table on clicking CHECK card and filters TRUE items', async () => {
+  it('toggles check work orders table on clicking Check False card and filters FALSE items', async () => {
     const user = userEvent.setup();
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /ดูตารางรายการ CHECK/i })).toBeDefined();
+      expect(screen.getByRole('button', { name: /ดูตารางรายการ Check False/i })).toBeDefined();
     });
 
-    const checkCard = screen.getByRole('button', { name: /ดูตารางรายการ CHECK/i });
+    const checkCard = screen.getByRole('button', { name: /ดูตารางรายการ Check False/i });
     expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();
 
-    // Click CHECK -> opens table
+    // Click Check False -> opens table
     await user.click(checkCard);
     expect(screen.getByText(/รายการ W\/O สถานะ:/i)).toBeDefined();
-    expect(screen.getByText('ซ่อมแซมมอเตอร์ 1')).toBeDefined();
-    expect(screen.getByText('เปลี่ยนลูกปืนเสร็จแล้ว')).toBeDefined();
-    expect(screen.getByText('ทำชิ้นวางของ 10 ตัว')).toBeDefined();
-    expect(screen.getByText('ตรวจเช็คระบบไฟ')).toBeDefined();
-    // 'ซ่อมบำรุงปั๊มน้ำ' has check: 'FALSE' so it shouldn't appear
-    expect(screen.queryByText('ซ่อมบำรุงปั๊มน้ำ')).toBeNull();
-
-    // Search in CHECK table
-    const searchInput = screen.getByPlaceholderText('ค้นหาในตาราง...');
-    await user.type(searchInput, 'มอเตอร์');
-    expect(screen.getByText('ซ่อมแซมมอเตอร์ 1')).toBeDefined();
+    expect(screen.getByText('CHECK FALSE')).toBeDefined();
+    expect(screen.getByText('ซ่อมบำรุงปั๊มน้ำ')).toBeDefined();
+    // Items with check === 'TRUE' shouldn't appear
+    expect(screen.queryByText('ซ่อมแซมมอเตอร์ 1')).toBeNull();
+    expect(screen.queryByText('เปลี่ยนลูกปืนเสร็จแล้ว')).toBeNull();
     expect(screen.queryByText('ทำชิ้นวางของ 10 ตัว')).toBeNull();
 
-    // Click CHECK card again -> closes table
+    // Search in Check False table
+    const searchInput = screen.getByPlaceholderText('ค้นหาในตาราง...');
+    await user.type(searchInput, 'ปั๊มน้ำ');
+    expect(screen.getByText('ซ่อมบำรุงปั๊มน้ำ')).toBeDefined();
+
+    // Click Check False card again -> closes table
     await user.click(checkCard);
     await waitFor(() => {
       expect(screen.queryByText(/รายการ W\/O สถานะ:/i)).toBeNull();

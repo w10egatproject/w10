@@ -228,7 +228,7 @@ export default function DashboardPage() {
       
       const matchesStatus =
         target === 'check'
-          ? checkVal === 'TRUE'
+          ? checkVal === 'FALSE'
           : target === 'sap'
           ? s.includes('sap')
           : s === target;
@@ -650,7 +650,7 @@ export default function DashboardPage() {
                       </div>
                     </motion.div>
 
-                    {/* Block 5: CHECK */}
+                    {/* Block 5: Check False */}
                     <motion.div
                       whileHover={{ y: -5 }}
                       whileTap={{ scale: 0.98 }}
@@ -661,7 +661,7 @@ export default function DashboardPage() {
                       role="button"
                       tabIndex={0}
                       aria-expanded={selectedStatusTab === 'check'}
-                      aria-label="ดูตารางรายการ CHECK"
+                      aria-label="ดูตารางรายการ Check False"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
@@ -677,7 +677,7 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center justify-between mb-4 z-10">
                         <div>
-                          <div className="text-xl md:text-2xl font-black text-indigo-700 uppercase tracking-tighter">CHECK</div>
+                          <div className="text-xl md:text-2xl font-black text-indigo-700 uppercase tracking-tighter">Check False</div>
                           <div className="text-[10px] font-bold text-indigo-600">
                             {selectedStatusTab === 'check' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
                           </div>
@@ -734,7 +734,7 @@ export default function DashboardPage() {
                                   ? 'bg-emerald-600'
                                   : 'bg-indigo-600'
                               }`}>
-                                {selectedStatusTab.toUpperCase()}
+                                {selectedStatusTab === 'check' ? 'CHECK FALSE' : selectedStatusTab.toUpperCase()}
                               </span>
                             </h4>
                             <p className="text-xs font-bold text-slate-400 mt-0.5">
@@ -837,10 +837,10 @@ export default function DashboardPage() {
                                   <td className="p-3 text-center whitespace-nowrap">
                                     <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                       (row.check || '').toUpperCase() === 'TRUE'
-                                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                                        : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                        : 'bg-rose-100 text-rose-700 border border-rose-200'
                                     }`}>
-                                      {row.check || '-'}
+                                      {(row.check || '').toUpperCase() === 'TRUE' ? 'TRUE' : 'FALSE'}
                                     </span>
                                   </td>
                                 </tr>
