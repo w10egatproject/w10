@@ -191,9 +191,10 @@ interface DashboardData {
   wGauges?: Record<string, { empNorm?: number; conNorm?: number; empOT?: number; conOT?: number }>;
   groupStats?: Record<string, any>;
   w_all?: { entrance?: number };
-  statusData?: { total?: number; sap?: number; pending?: number; finish?: number; check?: number };
+  statusData?: { total?: number; sap?: number; pending?: number; finish?: number; check?: number; allCheckTotal?: number };
   equipmentData?: { name: string; values: number[]; total: number }[];
   statusDetails?: StatusDetailRow[];
+  allCheckDetails?: StatusDetailRow[];
   error?: string;
 }
 
@@ -218,10 +219,16 @@ export default function DashboardPage() {
   const [tableSearchQuery, setTableSearchQuery] = useState('');
 
   const statusDetails = data?.statusDetails;
+  const allCheckDetails = data?.allCheckDetails;
   const activeStatusRows = useMemo(() => {
-    if (!selectedStatusTab || !statusDetails) return [];
+    if (!selectedStatusTab) return [];
     
-    return statusDetails.filter((row) => {
+    // For Check False, use allCheckDetails (all records across whole dataset) if available
+    const rowsToFilter = selectedStatusTab === 'check'
+      ? (allCheckDetails && allCheckDetails.length > 0 ? allCheckDetails : statusDetails || [])
+      : (statusDetails || []);
+    
+    return rowsToFilter.filter((row) => {
       const s = (row.status || '').trim().toLowerCase();
       const target = selectedStatusTab.toLowerCase();
       const checkVal = (row.check || '').trim().toUpperCase();
@@ -251,7 +258,7 @@ export default function DashboardPage() {
         row.notify.toLowerCase().includes(q)
       );
     });
-  }, [selectedStatusTab, statusDetails, tableSearchQuery]);
+  }, [selectedStatusTab, statusDetails, allCheckDetails, tableSearchQuery]);
 
   const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
@@ -354,7 +361,8 @@ export default function DashboardPage() {
   const sapPct = Math.round(((statusData?.sap || 0) / totalWO) * 100);
   const pendingPct = Math.round(((statusData?.pending || 0) / totalWO) * 100);
   const finishPct = Math.round(((statusData?.finish || 0) / totalWO) * 100);
-  const checkPct = Math.round(((statusData?.check || 0) / totalWO) * 100);
+  const checkTotalCount = statusData?.allCheckTotal || totalWO;
+  const checkPct = Math.round(((statusData?.check || 0) / checkTotalCount) * 100);
 
   if (error) return (
     <div className="p-10 text-center min-h-screen flex flex-col items-center justify-center bg-[#e2e2e2]">

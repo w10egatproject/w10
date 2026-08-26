@@ -166,13 +166,54 @@ export async function GET(request: Request) {
       }
     }
 
+    // Parse all check details from 'data' tab (All records across all months, not filtered by month)
+    const allDataRows = data.allData && data.allData.length > 1 ? data.allData : [];
+    const allCheckDetails = [];
+    let allCheckFalseCount = 0;
+
+    for (let r = 1; r < allDataRows.length; r++) {
+      const row = allDataRows[r] || [];
+      if (row[2] || row[3] || row[4] || row[11]) {
+        const rawCheck = (row[16] !== undefined && row[16] !== null ? String(row[16]) : '').trim();
+        const isTrue = rawCheck.toUpperCase() === 'TRUE';
+        const checkVal = isTrue ? 'TRUE' : 'FALSE';
+        if (!isTrue) {
+          allCheckFalseCount++;
+        }
+
+        const groups = [
+          row[12] === 'TRUE' && 'W11',
+          row[13] === 'TRUE' && 'W12',
+          row[14] === 'TRUE' && 'W13',
+          row[15] === 'TRUE' && 'W14',
+        ].filter(Boolean).join(', ');
+
+        allCheckDetails.push({
+          no: row[0] || row[1] || String(r),
+          ecm: row[2] || '',
+          wo: row[3] || '',
+          description: row[4] || '',
+          equipment: row[5] || '',
+          date: row[6] || '',
+          contact: row[7] || '',
+          dept: row[8] || '',
+          ecm_url: row[9] || '',
+          notify: row[10] || '',
+          status: (row[11] || '').trim(),
+          check: checkVal,
+          groups: groups || '-',
+        });
+      }
+    }
+
     // Pull status data from 'Dashboard W10 All info'!I6:L8 (Rows 5-7, Cols 8-11)
     // Labels are in Col 8 (Index 8), Values are in Col 11 (Index 11)
     const statusData = {
       sap: getNum(5, 11),
       pending: getNum(6, 11),
       finish: getNum(7, 11),
-      check: checkFalseCount,
+      check: allCheckDetails.length > 0 ? allCheckFalseCount : checkFalseCount,
+      allCheckTotal: allCheckDetails.length > 0 ? allCheckDetails.length : (getNum(5, 11) + getNum(6, 11) + getNum(7, 11)),
       total: getNum(5, 11) + getNum(6, 11) + getNum(7, 11),
     };
 
@@ -184,6 +225,7 @@ export async function GET(request: Request) {
       statusData,
       equipmentData,
       statusDetails,
+      allCheckDetails,
       currentYear,
       currentMonth,
       debugInfo: rawData.slice(0, 10), // Expose first 10 rows

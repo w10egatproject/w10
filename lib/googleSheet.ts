@@ -210,24 +210,26 @@ export async function getDashboardData() {
 
   try {
 
-    // ดึง 2 ชีทพร้อมกัน
-    const [dashboardRes, infoRes] = await Promise.all([
-
+    // ดึง 3 ชีทพร้อมกัน
+    const [dashboardRes, infoRes, dataTabRes] = await Promise.all([
       client.sheets.spreadsheets.values.get({
         spreadsheetId: client.sheetId,
         range: "'Dashboard W10 All'!A1:CZ1000",
       }),
-
       client.sheets.spreadsheets.values.get({
         spreadsheetId: client.sheetId,
         range: "'Dashboard W10 All info'!A1:CZ1000",
       }),
-
+      client.sheets.spreadsheets.values.get({
+        spreadsheetId: client.sheetId,
+        range: "'data'!A1:CZ1000",
+      }),
     ]);
 
     return {
       dashboard: dashboardRes.data.values || [],
       info: infoRes.data.values || [],
+      allData: dataTabRes.data.values || [],
     };
 
   } catch (error: unknown) {
