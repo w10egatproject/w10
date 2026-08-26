@@ -218,11 +218,11 @@ export async function getDashboardData() {
       }),
       client.sheets.spreadsheets.values.get({
         spreadsheetId: client.sheetId,
-        range: "'Dashboard W10 All info'!A1:CZ1000",
+        range: "'Dashboard W10 All info'!A:CZ",
       }),
       client.sheets.spreadsheets.values.get({
         spreadsheetId: client.sheetId,
-        range: "'data'!A1:CZ1000",
+        range: "'data'!A:V",
       }),
     ]);
 
