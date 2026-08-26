@@ -389,7 +389,7 @@ export default function DashboardPage() {
             <h1 className="text-xl md:text-3xl font-black tracking-tight text-[#4A4A49] uppercase flex items-center gap-2 md:gap-3">
               <Image src="/picture/egat.png" alt="EGAT Logo" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
               <SplitText text="W10 Dashboard" className="inline-block" />
-              <Image src="/picture/รูปภาพ14-Photoroom.png" alt="W10 Icon" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
+              <Image src="/picture/cb760a91-e445-4d0d-ab79-279f822cc6f8_0-removebg-preview.png" alt="W10 Icon" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
             </h1>
             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">หสบ-ช. maintenance dashboard</p>
           </div>
