@@ -201,8 +201,8 @@ const getStatusStyle = (status: string) => {
   if (!status) return 'bg-slate-100 text-slate-400';
   const s = status.trim().toLowerCase();
   if (s === 'pending') return 'bg-rose-100 text-rose-700 border border-rose-200';
-  if (s === 'finish') return 'bg-amber-100 text-amber-800 border border-amber-200';
-  if (s.includes('sap')) return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+  if (s === 'finish') return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+  if (s.includes('sap')) return 'bg-teal-100 text-teal-800 border border-teal-200';
   return 'bg-[#FFD100] text-[#4A4A49]';
 };
 
@@ -319,7 +319,7 @@ export default function DashboardPage() {
     series: [{ name: 'Status', data: [
         { name: 'SAP', y: statusData?.sap || 0, color: '#86efac' },
         { name: 'Pending', y: statusData?.pending || 0, color: '#fca5a5' },
-        { name: 'Finish', y: statusData?.finish || 0, color: '#fde68a' }
+        { name: 'Finish', y: statusData?.finish || 0, color: '#4ade80' }
     ] }]
   }), [statusData]);
 
@@ -573,19 +573,19 @@ export default function DashboardPage() {
                       }}
                       className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
                         selectedStatusTab === 'finish'
-                          ? 'border-amber-500 ring-4 ring-amber-200/80 shadow-md'
-                          : 'border-amber-100 hover:border-amber-300'
+                          ? 'border-emerald-500 ring-4 ring-emerald-200/80 shadow-md'
+                          : 'border-emerald-100 hover:border-emerald-300'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-4 z-10">
                         <div>
-                          <div className="text-xl md:text-2xl font-black text-amber-700 uppercase tracking-tighter">Finish</div>
-                          <div className="text-[10px] font-bold text-amber-400">
+                          <div className="text-xl md:text-2xl font-black text-emerald-700 uppercase tracking-tighter">Finish</div>
+                          <div className="text-[10px] font-bold text-emerald-500">
                             {selectedStatusTab === 'finish' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
                           </div>
                         </div>
                         <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
-                          selectedStatusTab === 'finish' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-600'
+                          selectedStatusTab === 'finish' ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-600'
                         }`}>
                           <AlertCircle size={32} />
                         </div>
@@ -594,9 +594,9 @@ export default function DashboardPage() {
                         <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.finish || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${finishPct}%` }} transition={{ duration: 1 }} className="h-full bg-amber-500 rounded-full"></motion.div>
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${finishPct}%` }} transition={{ duration: 1 }} className="h-full bg-emerald-500 rounded-full"></motion.div>
                           </div>
-                          <span className="text-[12px] font-black text-amber-600">{finishPct}%</span>
+                          <span className="text-[12px] font-black text-emerald-600">{finishPct}%</span>
                         </div>
                       </div>
                     </motion.div>
@@ -671,19 +671,19 @@ export default function DashboardPage() {
                       }}
                       className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
                         selectedStatusTab === 'check'
-                          ? 'border-indigo-500 ring-4 ring-indigo-200/80 shadow-md'
-                          : 'border-indigo-100 hover:border-indigo-300'
+                          ? 'border-rose-500 ring-4 ring-rose-200/80 shadow-md'
+                          : 'border-rose-100 hover:border-rose-300'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-4 z-10">
                         <div>
-                          <div className="text-xl md:text-2xl font-black text-indigo-700 uppercase tracking-tighter">Check False</div>
-                          <div className="text-[10px] font-bold text-indigo-600">
+                          <div className="text-xl md:text-2xl font-black text-rose-700 uppercase tracking-tighter">Check False</div>
+                          <div className="text-[10px] font-bold text-rose-500">
                             {selectedStatusTab === 'check' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
                           </div>
                         </div>
                         <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
-                          selectedStatusTab === 'check' ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-600'
+                          selectedStatusTab === 'check' ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-600'
                         }`}>
                           <ClipboardCheck size={32} />
                         </div>
@@ -692,9 +692,9 @@ export default function DashboardPage() {
                         <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.check || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${checkPct}%` }} transition={{ duration: 1 }} className="h-full bg-indigo-500 rounded-full"></motion.div>
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${checkPct}%` }} transition={{ duration: 1 }} className="h-full bg-rose-500 rounded-full"></motion.div>
                           </div>
-                          <span className="text-[12px] font-black text-indigo-600">{checkPct}%</span>
+                          <span className="text-[12px] font-black text-rose-600">{checkPct}%</span>
                         </div>
                       </div>
                     </motion.div>
@@ -717,10 +717,10 @@ export default function DashboardPage() {
                             selectedStatusTab === 'pending'
                               ? 'bg-rose-500'
                               : selectedStatusTab === 'finish'
-                              ? 'bg-amber-500'
+                              ? 'bg-emerald-500'
                               : selectedStatusTab === 'sap'
                               ? 'bg-emerald-500'
-                              : 'bg-indigo-500'
+                              : 'bg-rose-500'
                           }`}></div>
                           <div>
                             <h4 className="text-base sm:text-lg font-black text-[#4A4A49] uppercase flex items-center gap-2">
@@ -729,10 +729,10 @@ export default function DashboardPage() {
                                 selectedStatusTab === 'pending'
                                   ? 'bg-rose-600'
                                   : selectedStatusTab === 'finish'
-                                  ? 'bg-amber-500'
+                                  ? 'bg-emerald-600'
                                   : selectedStatusTab === 'sap'
                                   ? 'bg-emerald-600'
-                                  : 'bg-indigo-600'
+                                  : 'bg-rose-600'
                               }`}>
                                 {selectedStatusTab === 'check' ? 'CHECK FALSE' : selectedStatusTab.toUpperCase()}
                               </span>
