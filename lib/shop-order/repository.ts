@@ -115,7 +115,10 @@ export interface ShopOrderRepository {
     repairUploadedFileId?: string,
   ): Promise<ShopOrderMutationResult>;
   remove(no: number): Promise<void>;
-  createUploadSession(request: UploadSessionRequest): Promise<UploadSession>;
+  createUploadSession(
+    request: UploadSessionRequest,
+    targetFolderId?: string,
+  ): Promise<UploadSession>;
   getAttachmentThumbnail(
     no: number,
     slot?: 'primary' | 'repair',
@@ -830,6 +833,7 @@ export function createShopOrderRepository(
 
   async function createUploadSession(
     request: UploadSessionRequest,
+    targetFolderId?: string,
   ): Promise<UploadSession> {
     const safeMetadata = assertUploadMetadata(request);
     const sessionCreatedAt = now();
@@ -847,31 +851,38 @@ export function createShopOrderRepository(
       throw new Error('Google Drive did not return a file ID');
     }
     const accessToken = await getAccessToken();
-    const response = await authenticatedFetch(
-      `${GOOGLE_UPLOAD_ORIGIN}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json; charset=UTF-8',
-          'X-Upload-Content-Type': safeMetadata.mimeType,
-          'X-Upload-Content-Length': String(safeMetadata.size),
-        },
-        body: JSON.stringify({
-          id: fileId,
-          name: storageName,
-          parents: [config.folderId],
-          appProperties: {
-            status: 'pending',
-            pendingSince: sessionCreatedAt.toISOString(),
-            orderNumber: request.orderNumber,
-            expectedName: storageName,
-            expectedMime: safeMetadata.mimeType,
-            expectedSize: String(safeMetadata.size),
+    const effectiveFolderId = targetFolderId || config.folderId;
+    const sendSessionRequest = (folder: string) =>
+      authenticatedFetch(
+        `${GOOGLE_UPLOAD_ORIGIN}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json; charset=UTF-8',
+            'X-Upload-Content-Type': safeMetadata.mimeType,
+            'X-Upload-Content-Length': String(safeMetadata.size),
           },
-        }),
-      },
-    );
+          body: JSON.stringify({
+            id: fileId,
+            name: storageName,
+            parents: [folder],
+            appProperties: {
+              status: 'pending',
+              pendingSince: sessionCreatedAt.toISOString(),
+              orderNumber: request.orderNumber,
+              expectedName: storageName,
+              expectedMime: safeMetadata.mimeType,
+              expectedSize: String(safeMetadata.size),
+            },
+          }),
+        },
+      );
+
+    let response = await sendSessionRequest(effectiveFolderId);
+    if (!response.ok && targetFolderId && targetFolderId !== config.folderId) {
+      response = await sendSessionRequest(config.folderId);
+    }
     if (!response.ok) {
       const code = await classifyUploadResponse(response);
       throw new ShopOrderRepositoryError(

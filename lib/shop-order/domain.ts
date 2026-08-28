@@ -284,6 +284,7 @@ export function summarizeOrders(
   let wait = 0;
   let done = 0;
   const unitCounts = new Map<string, number>();
+  const receiverCounts = new Map<string, number>();
 
   for (const order of orders) {
     if (getOrderStatus(order) === 'done') {
@@ -296,6 +297,11 @@ export function summarizeOrders(
     if (unit) {
       unitCounts.set(unit, (unitCounts.get(unit) ?? 0) + 1);
     }
+
+    const receiver = order.receiverName.trim();
+    if (receiver) {
+      receiverCounts.set(receiver, (receiverCounts.get(receiver) ?? 0) + 1);
+    }
   }
 
   const popularUnits = Array.from(unitCounts, ([name, count]) => ({
@@ -306,12 +312,23 @@ export function summarizeOrders(
       (left, right) =>
         right.count - left.count || left.name.localeCompare(right.name, 'th'),
     )
-    .slice(0, 6);
+    .slice(0, 20);
+
+  const popularReceivers = Array.from(receiverCounts, ([name, count]) => ({
+    name,
+    count,
+  }))
+    .sort(
+      (left, right) =>
+        right.count - left.count || left.name.localeCompare(right.name, 'th'),
+    )
+    .slice(0, 20);
 
   return {
     total: orders.length,
     wait,
     done,
     popularUnits,
+    popularReceivers,
   };
 }

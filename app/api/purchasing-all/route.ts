@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPurchasingAllSheetData } from '@/lib/googleSheet';
+import { getEcmHyperlinkMaps, getPurchasingAllSheetData } from '@/lib/googleSheet';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -12,11 +12,17 @@ const noStoreHeaders = {
 
 export async function GET(request: Request) {
   try {
-    const data = await getPurchasingAllSheetData();
+    const [data, ecmHyperlinks] = await Promise.all([
+      getPurchasingAllSheetData(),
+      getEcmHyperlinkMaps(),
+    ]);
 
     if (!data) {
       throw new Error('No data retrieved from sheet');
     }
+
+    const buyLinks = ecmHyperlinks?.buyLinks || {};
+    const ecmLinkMap = ecmHyperlinks?.ecmLinks || {};
 
     const rawData = data.dashboard;
     const infoData = data.info;
@@ -76,6 +82,8 @@ export async function GET(request: Request) {
         purchaseList.push({
           ecm_buy: row[0] || '',
           ecm: row[1] || '',
+          ecm_buy_url: buyLinks[(row[0] || '').trim()] || '',
+          ecm_url: ecmLinkMap[(row[1] || '').trim()] || '',
           wo: row[2] || '',
           item: row[3] || '',
           equip: row[4] || '',

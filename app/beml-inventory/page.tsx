@@ -5,6 +5,11 @@ import { RefreshCw, Search, Package, AlertCircle, CheckCircle2, Info, ChevronDow
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InventoryItem {
   code: string;
@@ -204,7 +209,7 @@ export default function ShopOrderPage() {
           <div className="flex flex-col">
             <h1 className="text-xl md:text-3xl font-black tracking-tight text-[#4A4A49] uppercase flex items-center gap-2 md:gap-3">
               <Image src="/picture/egat.png" alt="EGAT Logo" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
-              คลังอะไหล่ BEML
+              <SplitText text="คลังอะไหล่ BEML" className="inline-block" />
               <Package className="w-8 h-8 md:w-10 h-10 text-[#d4a300]" />
             </h1>
             <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">BEML Inventory - PrintCheck Dashboard</p>
@@ -231,17 +236,15 @@ export default function ShopOrderPage() {
             )}
           </AnimatePresence>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
+          <Button
+            variant="outline"
             onClick={() => loadData()}
             disabled={isLoading}
-            className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 transition-all"
+            className="rounded-xl md:rounded-2xl text-xs md:text-sm font-black border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 transition-all h-10 md:h-12"
           >
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-            รีเฟรชข้อมูล
-          </motion.button>
+            <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+          </Button>
 
           {/* Navigation Dropdown Menu */}
           <NavigationMenu
@@ -259,13 +262,49 @@ export default function ShopOrderPage() {
         </div>
       )}
 
-      {/* Search and System Filters panel */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col xl:flex-row gap-4 justify-between items-center mb-6">
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 w-full xl:w-auto overflow-x-auto scrollbar-none pb-1 xl:pb-0">
+      {/* Search, Tabs, and System Filters panel */}
+      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col xl:flex-row gap-3 justify-between items-stretch xl:items-center mb-6">
+        {/* Left: Search bar */}
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="ค้นหารหัสอะไหล่, P/N, หรือชื่ออะไหล่..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (e.target.value.trim() !== '' && currentTab === 'dashboard') {
+                setCurrentTab('inventory');
+              }
+            }}
+            className="w-full h-10 pl-10 pr-9 border border-slate-200 rounded-xl outline-none focus:border-[#d4a300] focus:ring-1 focus:ring-[#ffd56d] text-sm text-slate-800 transition-all shadow-sm"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Middle: System Dropdown & Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 overflow-x-auto scrollbar-none pb-1 xl:pb-0">
+          <div className="relative min-w-[170px]">
+            <Select value={selectedSystem} onValueChange={(val) => setSelectedSystem(val ?? '')}>
+              <SelectTrigger className="w-full h-10 border-slate-200 rounded-xl text-xs sm:text-sm font-bold shadow-sm">
+                <SelectValue placeholder="ทุกระบบ (All Systems)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">ทุกระบบ (All Systems)</SelectItem>
+                {systems.map(sys => (
+                  <SelectItem key={sys} value={sys}>{sys}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <button
             onClick={() => { setCurrentTab('dashboard'); setStatusFilter(null); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'dashboard'
+            className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'dashboard'
               ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
@@ -274,7 +313,7 @@ export default function ShopOrderPage() {
           </button>
           <button
             onClick={() => { setCurrentTab('inventory'); setStatusFilter(null); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'inventory' && statusFilter === null
+            className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'inventory' && statusFilter === null
               ? 'bg-[#ffe08a] text-[#4A4A49] shadow-sm'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
@@ -283,7 +322,7 @@ export default function ShopOrderPage() {
           </button>
           <button
             onClick={() => { setCurrentTab('low-stock'); setStatusFilter('Low'); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'low-stock'
+            className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'low-stock'
               ? 'bg-amber-100 text-amber-800 border border-amber-200 shadow-sm'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
@@ -292,59 +331,36 @@ export default function ShopOrderPage() {
           </button>
           <button
             onClick={() => { setCurrentTab('out-stock'); setStatusFilter('Out'); }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'out-stock'
+            className={`px-3.5 h-10 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'out-stock'
               ? 'bg-rose-100 text-rose-800 border border-rose-200 shadow-sm'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
               }`}
           >
             <X className="w-3.5 h-3.5" /> ของหมด
           </button>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadData()}
+            disabled={isLoading}
+            className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-amber-700 shadow-sm transition-all whitespace-nowrap"
+          >
+            <RefreshCw size={15} strokeWidth={2.5} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
+            <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+          </Button>
           <a
             href="https://docs.google.com/spreadsheets/d/1BPCzp167Dno6ekJ7nhJds4o_N8xu3Z6kJDqxYb0Ptzc/edit"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-xl text-xs font-black bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 transition-all flex items-center gap-1.5 whitespace-nowrap"
+            aria-label="เปิดชีท BEML"
+            className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5" /> เปิดชีท ↗
+            <FileSpreadsheet className="w-4 h-4" /> เปิดชีท BEML ↗
           </a>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto xl:flex-1 justify-end max-w-2xl">
-          {/* Search bar */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4.5 h-4.5" />
-            <input
-              type="text"
-              placeholder="ค้นหารหัสอะไหล่, P/N, หรือชื่ออะไหล่..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (e.target.value.trim() !== '' && currentTab === 'dashboard') {
-                  setCurrentTab('inventory');
-                }
-              }}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl outline-none focus:border-[#d4a300] focus:ring-1 focus:ring-[#ffd56d] text-sm transition-all"
-            />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          {/* System Dropdown */}
-          <div className="relative min-w-[200px]">
-            <select
-              value={selectedSystem}
-              onChange={(e) => setSelectedSystem(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-[#d4a300] text-sm appearance-none cursor-pointer pr-10"
-            >
-              <option value="ALL">ทุกระบบ (All Systems)</option>
-              {systems.map(sys => (
-                <option key={sys} value={sys}>{sys}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
-          </div>
         </div>
       </div>
 
@@ -357,7 +373,7 @@ export default function ShopOrderPage() {
           </button>
         </div>
       ) : (
-        <>
+        <BlurFade delay={0.1}>
           {/* Dashboard view */}
           {currentTab === 'dashboard' && (
             <>
@@ -428,7 +444,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{stats.total}</span>
+                        <span className="text-3xl font-extrabold text-slate-900 tracking-tight"><NumberTicker value={stats.total} /></span>
                         <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-500"><Boxes className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -447,7 +463,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-emerald-600 tracking-tight">{stats.normal}</span>
+                        <span className="text-3xl font-extrabold text-emerald-600 tracking-tight"><NumberTicker value={stats.normal} /></span>
                         <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-500"><CheckCircle2 className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -466,7 +482,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-amber-600 tracking-tight">{stats.low}</span>
+                        <span className="text-3xl font-extrabold text-amber-600 tracking-tight"><NumberTicker value={stats.low} /></span>
                         <div className="p-1.5 bg-amber-50 rounded-lg text-amber-500"><AlertCircle className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -485,7 +501,7 @@ export default function ShopOrderPage() {
                         }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-3xl font-extrabold text-rose-600 tracking-tight">{stats.out}</span>
+                        <span className="text-3xl font-extrabold text-rose-600 tracking-tight"><NumberTicker value={stats.out} /></span>
                         <div className="p-1.5 bg-rose-50 rounded-lg text-rose-500"><X className="w-4 h-4" /></div>
                       </div>
                       <div className="mt-2">
@@ -554,7 +570,7 @@ export default function ShopOrderPage() {
 
                         {/* Center Text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-lg font-black leading-none">{stats.normalPct}%</span>
+                          <span className="text-lg font-black leading-none"><NumberTicker value={stats.normalPct} />%</span>
                           <span className="text-[9px] text-slate-400 mt-1">ปกติ</span>
                         </div>
 
@@ -783,7 +799,7 @@ export default function ShopOrderPage() {
               </div>
             </div>
           )}
-        </>
+        </BlurFade>
       )}
 
       {/* Item Detail Popover Overlay Modal */}

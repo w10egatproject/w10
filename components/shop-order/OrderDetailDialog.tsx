@@ -3,6 +3,11 @@ import { useState } from 'react';
 import { driveFilePreviewUrlFromCanonicalUrl } from '@/lib/shop-order/attachment-lifecycle';
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+import { ExternalLink } from 'lucide-react';
 
 function AttachmentPreview({
   order,
@@ -32,26 +37,51 @@ function AttachmentPreview({
     (slot === 'repair' ? '&slot=repair' : '');
 
   return (
-    <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-2">
-      {previewSource === 'failed' ? (
-        <div className="flex h-full w-full items-center justify-center rounded-lg bg-slate-100 text-center text-xs font-bold text-slate-500">
-          ไม่พบรูปตัวอย่าง
-        </div>
-      ) : (
-        // The authenticated, no-store proxy must be requested directly.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={previewSource === 'proxy' ? thumbnailUrl : directPreviewUrl ?? ''}
-          alt={slot === 'repair' ? 'ตัวอย่างไฟล์แนบรายการ ' + order.no + ' ' + label : 'ตัวอย่างไฟล์แนบรายการ ' + order.no}
-          className="h-full w-full rounded-lg object-contain"
-          onError={() => {
-            if (previewSource === 'proxy' && directPreviewUrl) {
-              setPreviewSource('direct');
-              return;
-            }
-            setPreviewSource('failed');
-          }}
-        />
+    <div className="flex flex-col gap-1">
+      <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 p-2">
+        {previewSource === 'failed' ? (
+          <div className="flex h-full w-full flex-col items-center justify-center rounded-lg bg-slate-100 p-2 text-center text-xs font-bold text-slate-500">
+            <span>ไม่พบรูปตัวอย่าง</span>
+            {fileUrl && (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-indigo-600 shadow-sm hover:bg-slate-50"
+              >
+                เปิดไฟล์ใน Drive <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+        ) : (
+          // The authenticated, no-store proxy must be requested directly.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewSource === 'proxy' ? thumbnailUrl : directPreviewUrl ?? ''}
+            alt={slot === 'repair' ? 'ตัวอย่างไฟล์แนบรายการ ' + order.no + ' ' + label : 'ตัวอย่างไฟล์แนบรายการ ' + order.no}
+            className="h-full w-full rounded-lg object-contain cursor-pointer hover:opacity-95"
+            onClick={() => {
+              if (fileUrl) window.open(fileUrl, '_blank');
+            }}
+            onError={() => {
+              if (previewSource === 'proxy' && directPreviewUrl) {
+                setPreviewSource('direct');
+                return;
+              }
+              setPreviewSource('failed');
+            }}
+          />
+        )}
+      </div>
+      {fileUrl && (
+        <a
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-600 hover:underline"
+        >
+          <ExternalLink size={12} /> เปิดดูไฟล์ใน Google Drive
+        </a>
       )}
     </div>
   );
@@ -84,39 +114,19 @@ export function OrderDetailDialog({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-3">
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="order-detail-title"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && !pending) onClose();
-        }}
-        className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
-      >
-        <div className="flex justify-between">
-          <div>
-            <h2 id="order-detail-title" className="text-lg font-black">
-              รายละเอียด Shop Order #{order.no}
-            </h2>
-            <span
-              className={`mt-1 inline-block rounded-full px-2 py-1 text-xs font-bold ${
-                getOrderStatus(order) === 'done'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-amber-100 text-amber-800'
-              }`}
-            >
-              {getOrderStatus(order) === 'done' ? 'เสร็จสิ้น' : 'รอดำเนินการ'}
-            </span>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="ปิด"
-            className="h-9 w-9 rounded-lg text-xl hover:bg-slate-100"
-          >
-            ×
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => !open && !pending && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-black flex items-center gap-2">
+            รายละเอียด Shop Order #{order.no}
+            {getOrderStatus(order) === 'done' ? (
+              <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none">เสร็จสิ้น</Badge>
+            ) : (
+              <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none">รอดำเนินการ</Badge>
+            )}
+          </DialogTitle>
+          <DialogDescription className="sr-only">Order details for {order.no}</DialogDescription>
+        </DialogHeader>
 
         <div className="mt-5 flex flex-col gap-6 sm:flex-row">
           <div className="w-full shrink-0 sm:w-64">
@@ -166,7 +176,7 @@ export function OrderDetailDialog({
             </dd>
           </div>
           {/* Right Side: Order Detail Fields */}
-          <dl className="grid flex-1 gap-x-4 sm:grid-cols-2">
+          <dl className="grid min-w-0 flex-1 grid-cols-1 gap-x-6 sm:grid-cols-2">
             {rows.map(([label, value]) => (
               <div key={String(label)} className="border-b border-slate-100 py-2">
                 <dt className="text-xs font-bold text-slate-500">{label}</dt>
@@ -176,22 +186,23 @@ export function OrderDetailDialog({
           </dl>
         </div>
 
-        <div className="mt-5 flex justify-end gap-2">
-          <button
+        <DialogFooter className="mt-6 flex flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100 px-2 pb-1 sm:justify-end">
+          <Button
+            variant="outline"
             disabled={pending}
             onClick={() => setConfirming(true)}
-            className="rounded-xl border border-rose-300 px-4 py-2 font-bold text-rose-700 hover:bg-rose-50"
+            className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-bold px-4"
           >
             ลบรายการ
-          </button>
-          <button
+          </Button>
+          <Button
             disabled={pending}
             onClick={onEdit}
-            className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700"
+            className="bg-indigo-600 font-bold text-white hover:bg-indigo-700 px-5 shadow-sm"
           >
             แก้ไข
-          </button>
-        </div>
+          </Button>
+        </DialogFooter>
 
         {confirming && (
           <div
@@ -208,23 +219,25 @@ export function OrderDetailDialog({
               หลัง 30 วัน ส่วนไฟล์เดิม (Legacy) จะไม่ถูกจัดการ
             </p>
             <div className="mt-3 flex justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setConfirming(false)}
-                className="rounded-lg border px-3 py-1.5"
               >
                 ยกเลิก
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 disabled={pending}
                 onClick={onDelete}
-                className="rounded-lg bg-rose-700 px-3 py-1.5 font-bold text-white"
               >
                 ยืนยันลบ
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </section>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

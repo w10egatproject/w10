@@ -4,39 +4,30 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-function getSheetsClient() {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+let cachedAuth: InstanceType<typeof google.auth.JWT> | null = null;
+let cachedAuthKey = '';
+const cachedClientsBySheetId = new Map<string, { sheetId: string; sheets: ReturnType<typeof google.sheets> }>();
 
-  if (!clientEmail || !privateKey || !sheetId) {
-    console.error('Missing Google Sheets environment variables');
-    return null;
+function getOrCreateAuth(clientEmail: string, privateKey: string) {
+  const cacheKey = `${clientEmail}:::${privateKey.slice(0, 30)}`;
+  if (cachedAuth && cachedAuthKey === cacheKey) {
+    return cachedAuth;
   }
 
   let sanitizedKey = privateKey.replace(/^"(.*)"$/, '$1');
-
   const keyStart = sanitizedKey.indexOf('-----BEGIN PRIVATE KEY-----');
-
   if (keyStart !== -1) {
     sanitizedKey = sanitizedKey.substring(keyStart);
   }
-
   sanitizedKey = sanitizedKey.replace(/\\n/g, '\n');
 
-  const auth = new google.auth.JWT({
+  cachedAuth = new google.auth.JWT({
     email: clientEmail,
     key: sanitizedKey,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
-
-  return {
-    sheetId,
-    sheets: google.sheets({
-      version: 'v4',
-      auth,
-    }),
-  };
+  cachedAuthKey = cacheKey;
+  return cachedAuth;
 }
 
 function getSheetsClientForSheet(sheetId: string) {
@@ -48,28 +39,27 @@ function getSheetsClientForSheet(sheetId: string) {
     return null;
   }
 
-  let sanitizedKey = privateKey.replace(/^"(.*)"$/, '$1');
-  const keyStart = sanitizedKey.indexOf('-----BEGIN PRIVATE KEY-----');
-
-  if (keyStart !== -1) {
-    sanitizedKey = sanitizedKey.substring(keyStart);
+  const existing = cachedClientsBySheetId.get(sheetId);
+  if (existing) {
+    return existing;
   }
 
-  sanitizedKey = sanitizedKey.replace(/\\n/g, '\n');
-
-  const auth = new google.auth.JWT({
-    email: clientEmail,
-    key: sanitizedKey,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-
-  return {
+  const auth = getOrCreateAuth(clientEmail, privateKey);
+  const client = {
     sheetId,
     sheets: google.sheets({
       version: 'v4',
       auth,
     }),
   };
+  cachedClientsBySheetId.set(sheetId, client);
+  return client;
+}
+
+function getSheetsClient() {
+  const sheetId = process.env.GOOGLE_SHEET_ID;
+  if (!sheetId) return null;
+  return getSheetsClientForSheet(sheetId);
 }
 
 export async function updateDashboardFilters(year: string, month: string) {
@@ -154,6 +144,55 @@ export async function getPurchasingAllSheetData() {
   };
 }
 
+const PURCHASING_ECM_LINKS_SHEET_ID = '1gAFNW67DyQjzPUBRLclT3fG-QvMVop-msOguZCEw-JY';
+const PURCHASING_ECM_LINKS_TAB = 'data';
+
+export type EcmHyperlinkMaps = {
+  buyLinks: Record<string, string>;
+  ecmLinks: Record<string, string>;
+};
+
+export async function getEcmHyperlinkMaps(): Promise<EcmHyperlinkMaps | null> {
+  const client = getSheetsClientForSheet(PURCHASING_ECM_LINKS_SHEET_ID);
+  if (!client) return null;
+
+  try {
+    const response = await client.sheets.spreadsheets.get({
+      spreadsheetId: client.sheetId,
+      ranges: [`'${PURCHASING_ECM_LINKS_TAB}'!A1:B1000`],
+      includeGridData: true,
+      fields: 'sheets.data.rowData.values(hyperlink,userEnteredValue)',
+    });
+
+    const buyLinks: Record<string, string> = {};
+    const ecmLinks: Record<string, string> = {};
+
+    const rowData = response.data.sheets?.[0]?.data?.[0]?.rowData || [];
+
+    const getText = (cell: { userEnteredValue?: { stringValue?: string | null; numberValue?: number | null } } | undefined) => {
+      const u = cell?.userEnteredValue;
+      if (u?.stringValue !== undefined && u?.stringValue !== null) return String(u.stringValue);
+      if (u?.numberValue !== undefined && u?.numberValue !== null) return String(u.numberValue);
+      return '';
+    };
+
+    rowData.forEach((row) => {
+      const cells = row.values || [];
+      const buyCell = cells[0] ?? {};
+      const ecmCell = cells[1] ?? {};
+      const buyText = getText(buyCell).trim();
+      const ecmText = getText(ecmCell).trim();
+      if (buyText && typeof buyCell.hyperlink === 'string') buyLinks[buyText] = buyCell.hyperlink;
+      if (ecmText && typeof ecmCell.hyperlink === 'string') ecmLinks[ecmText] = ecmCell.hyperlink;
+    });
+
+    return { buyLinks, ecmLinks };
+  } catch (error: unknown) {
+    console.error('Google Sheets ECM links API error:', getErrorMessage(error));
+    return null;
+  }
+}
+
 export async function getDashboardData() {
   const client = getSheetsClient();
 
@@ -161,24 +200,26 @@ export async function getDashboardData() {
 
   try {
 
-    // ดึง 2 ชีทพร้อมกัน
-    const [dashboardRes, infoRes] = await Promise.all([
-
+    // ดึง 3 ชีทพร้อมกัน
+    const [dashboardRes, infoRes, dataTabRes] = await Promise.all([
       client.sheets.spreadsheets.values.get({
         spreadsheetId: client.sheetId,
         range: "'Dashboard W10 All'!A1:CZ1000",
       }),
-
       client.sheets.spreadsheets.values.get({
         spreadsheetId: client.sheetId,
-        range: "'Dashboard W10 All info'!A1:CZ1000",
+        range: "'Dashboard W10 All info'!A:CZ",
       }),
-
+      client.sheets.spreadsheets.values.get({
+        spreadsheetId: client.sheetId,
+        range: "'data'!A:V",
+      }),
     ]);
 
     return {
       dashboard: dashboardRes.data.values || [],
       info: infoRes.data.values || [],
+      allData: dataTabRes.data.values || [],
     };
 
   } catch (error: unknown) {
@@ -320,7 +361,7 @@ export async function getContractorOtErrorSheetData() {
   }
 }
 
-export async function getShopOrderSheetData(): Promise<{ data: any[][] | null; error: string | null }> {
+export async function getShopOrderSheetData(): Promise<{ data: unknown[][] | null; error: string | null }> {
   const sheetId = process.env.GOOGLE_BEML_INVENTORY_SHEET_ID;
   if (!sheetId) {
     return { data: null, error: 'Missing GOOGLE_BEML_INVENTORY_SHEET_ID' };

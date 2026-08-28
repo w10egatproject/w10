@@ -5,6 +5,14 @@ import { useEffect, useRef, useState } from 'react';
 import type { ShopOrder, ShopOrderInput } from '@/lib/shop-order/types';
 import { CustomDatePicker } from './CustomDatePicker';
 import { CustomSelect } from './CustomSelect';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function getTodayIso(): string {
   const d = new Date();
@@ -21,6 +29,7 @@ interface Props {
   receivers: string[];
   pending: boolean;
   progress?: number;
+  error?: string;
   onClose: () => void;
   onSubmit: (value: { order: ShopOrderInput; file?: File; repairFile?: File }) => void;
 }
@@ -140,16 +149,18 @@ function AttachmentField({
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             disabled={pending}
             onClick={() => selectFile(undefined)}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
+            className="text-rose-700 hover:text-rose-800 hover:bg-rose-50 border-rose-200"
             aria-label={label === 'ไฟล์แนบ' ? 'ลบไฟล์' : 'ลบ' + label}
           >
-            <Trash2 className="h-4 w-4 text-rose-600" />
+            <Trash2 className="h-4 w-4 mr-1.5 text-rose-600" />
             <span>ลบไฟล์</span>
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -162,6 +173,7 @@ export function OrderFormDialog({
   receivers,
   pending,
   progress,
+  error,
   onClose,
   onSubmit,
 }: Props) {
@@ -176,7 +188,7 @@ export function OrderFormDialog({
           receivingUnit: order.receivingUnit,
           receiverName: order.receiverName,
           dateOut: order.dateOut,
-          note: order.note,
+          note: order.note ?? '',
         }
       : {
           to: '',
@@ -196,35 +208,19 @@ export function OrderFormDialog({
     setValue((current) => ({ ...current, ...patch }));
 
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-3"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !pending) onClose();
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="order-form-title"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && !pending) onClose();
-        }}
-        className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="order-form-title" className="text-lg font-black">
+    <Dialog open={true} onOpenChange={(open) => !open && !pending && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-black">
             {mode === 'create' ? 'เพิ่ม Shop Order' : `แก้ไขรายการ ${order?.no}`}
-          </h2>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={onClose}
-            aria-label="ปิด"
-            className="rounded-lg px-3 py-1 text-xl hover:bg-slate-100"
-          >
-            ×
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogDescription className="sr-only">Order form</DialogDescription>
+        </DialogHeader>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription className="font-bold">{error}</AlertDescription>
+          </Alert>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -232,7 +228,7 @@ export function OrderFormDialog({
           }}
           className="grid gap-4 sm:grid-cols-2"
         >
-          <label className="text-sm font-bold">
+          <Label className="font-bold flex flex-col gap-2">
             ถึง
             <CustomSelect
               required
@@ -243,10 +239,10 @@ export function OrderFormDialog({
               disabled={pending}
               allowCustom
             />
-          </label>
-          <label className="text-sm font-bold">
+          </Label>
+          <Label className="font-bold flex flex-col gap-2">
             เลขที่
-            <input
+            <Input
               required
               inputMode="numeric"
               pattern="\d{6}"
@@ -255,10 +251,10 @@ export function OrderFormDialog({
               onChange={(e) =>
                 set({ number: e.target.value.replace(/\D/g, '').slice(0, 6) })
               }
-              className="mt-1 h-10 w-full rounded-xl border border-slate-300 px-3 font-mono font-normal"
+              className="font-mono font-normal rounded-xl h-10"
             />
-          </label>
-          <label className="text-sm font-bold">
+          </Label>
+          <Label className="font-bold flex flex-col gap-2">
             วันที่รับ
             <CustomDatePicker
               required={mode === 'create'}
@@ -267,8 +263,8 @@ export function OrderFormDialog({
               placeholder="เลือกวันที่รับ"
               disabled={pending}
             />
-          </label>
-          <label className="text-sm font-bold">
+          </Label>
+          <Label className="font-bold flex flex-col gap-2">
             วันที่ออก
             <CustomDatePicker
               required={mode === 'create'}
@@ -277,17 +273,17 @@ export function OrderFormDialog({
               placeholder="เลือกวันที่ออก"
               disabled={pending}
             />
-          </label>
-          <label className="text-sm font-bold sm:col-span-2">
+          </Label>
+          <Label className="font-bold sm:col-span-2 flex flex-col gap-2">
             เรื่อง
-            <input
+            <Input
               required
               value={value.subject}
               onChange={(e) => set({ subject: e.target.value })}
-              className="mt-1 h-10 w-full rounded-xl border border-slate-300 px-3 font-normal"
+              className="font-normal rounded-xl h-10"
             />
-          </label>
-          <label className="text-sm font-bold">
+          </Label>
+          <Label className="font-bold flex flex-col gap-2">
             หน่วยงานรับ
             <CustomSelect
               required={mode === 'create'}
@@ -298,8 +294,8 @@ export function OrderFormDialog({
               disabled={pending}
               allowCustom
             />
-          </label>
-          <label className="text-sm font-bold">
+          </Label>
+          <Label className="font-bold flex flex-col gap-2">
             ผู้รับ
             <CustomSelect
               required={mode === 'create'}
@@ -310,16 +306,16 @@ export function OrderFormDialog({
               disabled={pending}
               allowCustom
             />
-          </label>
-          <label className="text-sm font-bold sm:col-span-2">
+          </Label>
+          <Label className="font-bold sm:col-span-2 flex flex-col gap-2">
             หมายเหตุ
-            <textarea
+            <Textarea
               rows={3}
               value={value.note}
               onChange={(e) => set({ note: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-slate-300 p-3 font-normal"
+              className="font-normal rounded-xl"
             />
-          </label>
+          </Label>
           <AttachmentField
             label="ไฟล์แนบ"
             inputLabel="ไฟล์แนบ"
@@ -336,34 +332,30 @@ export function OrderFormDialog({
           />
           {pending && progress !== undefined && (
             <div aria-live="polite" className="sm:col-span-2">
-              <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className="h-full bg-indigo-600"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              <Progress value={progress} className="h-2" />
               <p className="mt-1 text-xs">กำลังอัปโหลด {progress}%</p>
             </div>
           )}
-          <div className="flex justify-end gap-2 sm:col-span-2">
-            <button
+          <DialogFooter className="sm:col-span-2 mt-4">
+            <Button
               type="button"
+              variant="outline"
               disabled={pending}
               onClick={onClose}
-              className="rounded-xl border px-4 py-2 font-bold"
+              className="font-bold"
             >
               ยกเลิก
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={pending}
-              className="rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white disabled:opacity-50"
+              className="bg-indigo-600 font-bold text-white hover:bg-indigo-700"
             >
               {pending ? 'กำลังบันทึก...' : 'บันทึก'}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </section>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

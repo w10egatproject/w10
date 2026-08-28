@@ -10,6 +10,10 @@ export default function PurchasingAllPage() {
       showGaugePanel={false}
       tableColumnCount={10}
       colorTheme="teal"
+      dateStartLabel="คาดว่าจะเสร็จ"
+      showEcmLinks
+      sheetUrl="https://docs.google.com/spreadsheets/d/1gAFNW67DyQjzPUBRLclT3fG-QvMVop-msOguZCEw-JY/edit"
+      sheetName="จัดซื้อจัดจ้างทั้งหมด"
     />
   );
 }

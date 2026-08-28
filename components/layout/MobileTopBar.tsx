@@ -2,6 +2,7 @@
 
 import { Menu, X } from 'lucide-react';
 import type { RefObject } from 'react';
+import { Button } from "@/components/ui/button";
 
 export interface MobileTopBarProps {
   isDrawerOpen: boolean;
@@ -22,21 +23,22 @@ export function MobileTopBar({
         <p className="text-sm font-bold text-[var(--console-navy)]">EGAT</p>
         <p className="text-xs text-[var(--text-muted)]">W10 Operations</p>
       </div>
-      <button
+      <Button
         ref={triggerRef}
-        type="button"
+        variant="ghost"
+        size="icon"
         aria-label={isDrawerOpen ? 'ปิดเมนูนำทาง' : 'เปิดเมนูนำทาง'}
         aria-controls="mobile-navigation-drawer"
         aria-expanded={isDrawerOpen}
         onClick={isDrawerOpen ? onClose : onOpen}
-        className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-[var(--border-default)] text-[var(--console-navy)] transition-colors duration-150 hover:bg-[var(--surface-mist)] motion-reduce:transition-none"
+        className="text-[var(--console-navy)] border border-[var(--border-default)]"
       >
         {isDrawerOpen ? (
           <X aria-hidden="true" size={21} />
         ) : (
           <Menu aria-hidden="true" size={21} />
         )}
-      </button>
+      </Button>
     </header>
   );
 }

@@ -1,65 +1,59 @@
+'use client';
+
 import { formatThaiDate, getOrderStatus } from '@/lib/shop-order/domain';
 import type { ShopOrder } from '@/lib/shop-order/types';
+import { Card } from '@/components/ui/card';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 interface Props {
   orders: ShopOrder[];
-  page: number;
-  totalPages: number;
-  total: number;
-  onPage: (page: number) => void;
+  page?: number;
+  totalPages?: number;
+  total?: number;
+  pageSize?: number;
+  onPage?: (page: number) => void;
   onSelect?: (order: ShopOrder) => void;
 }
 
 export function ShopOrderTable({
   orders,
-  page,
-  totalPages,
-  total,
-  onPage,
   onSelect,
 }: Props) {
-  const headers = [
-    'ลำดับ',
-    'จาก',
-    'เลขที่',
-    'วันที่รับ',
-    'เรื่อง',
-    'หน่วยงานรับ',
-    'ผู้รับ',
-    'วันที่ออก',
-    'หมายเหตุ',
-    'สถานะ',
-  ];
+  if (orders.length === 0) {
+    return (
+      <Card className="flex flex-1 h-[640px] flex-col items-center justify-center p-16 text-slate-400 border border-slate-200 shadow-sm">
+        <span className="text-4xl">📋</span>
+        <p className="mt-2 text-sm font-bold text-slate-600">ไม่พบข้อมูล Shop Order ตามเงื่อนไขที่เลือก</p>
+        <p className="text-xs text-slate-400 mt-0.5">ลองปรับหรือล้างตัวกรองเพื่อค้นหาใหม่</p>
+      </Card>
+    );
+  }
+
   return (
-    <section className="min-w-0 rounded-2xl bg-white shadow-sm">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div>
-          <h2 className="font-bold">ตารางรายการ Shop Order</h2>
-          <p className="text-xs text-slate-500">
-            พบ {total.toLocaleString('th-TH')} รายการ
-          </p>
-        </div>
-      </div>
-      <div className="max-h-[68vh] overflow-auto">
-        <table className="w-full min-w-[1100px] border-collapse text-left text-xs">
-          <thead className="sticky top-0 z-10 bg-slate-100">
-            <tr>
-              {headers.map((h) => (
-                <th
-                  key={h}
-                  className="whitespace-nowrap border-b border-slate-200 px-3 py-3 font-bold"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {orders.map((order) => {
+    <Card className="overflow-hidden border border-slate-200 shadow-sm h-[640px] flex flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
+        <table className="w-full text-sm">
+          <TableHeader className="sticky top-0 z-10 bg-slate-50 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
+            <TableRow className="flex border-b border-slate-200">
+              <TableHead className="flex items-center px-2 py-2.5 text-center w-12 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ลำดับ</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 w-16 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">จาก</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 w-20 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เลขที่</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 w-24 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่รับ</TableHead>
+              <TableHead className="flex items-center px-2.5 py-2.5 min-w-0 flex-[2] text-[11px] font-extrabold uppercase tracking-wider text-slate-600">เรื่อง</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 w-24 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หน่วยงานรับ</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 w-20 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">ผู้รับ</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 w-24 shrink-0 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">วันที่ออก</TableHead>
+              <TableHead className="flex items-center px-2.5 py-2.5 min-w-0 flex-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">หมายเหตุ</TableHead>
+              <TableHead className="flex items-center px-2 py-2.5 text-center w-24 shrink-0 justify-center text-[11px] font-extrabold uppercase tracking-wider text-slate-600">สถานะ</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="flex flex-col text-slate-800 divide-y divide-slate-100">
+            {orders.map((order, index) => {
               const done = getOrderStatus(order) === 'done';
               return (
-                <tr
-                  key={order.no}
+                <TableRow
+                  key={`${order.no}-${order.number}-${order.dateIn || ''}-${index}`}
                   tabIndex={onSelect ? 0 : undefined}
                   onClick={() => onSelect?.(order)}
                   onKeyDown={(e) => {
@@ -70,71 +64,56 @@ export function ShopOrderTable({
                   }}
                   className={
                     onSelect
-                      ? 'cursor-pointer hover:bg-indigo-50/50 focus:bg-indigo-50 focus:outline-none'
-                      : 'hover:bg-slate-50'
+                      ? 'flex cursor-pointer hover:bg-indigo-50/60 transition-colors focus:bg-indigo-50/60 focus:outline-none'
+                      : 'flex hover:bg-slate-50 transition-colors'
                   }
                 >
-                  <td className="px-3 py-3 font-bold">{order.no}</td>
-                  <td className="px-3 py-3">{order.from}</td>
-                  <td className="px-3 py-3 font-mono">{order.number}</td>
-                  <td className="px-3 py-3">{formatThaiDate(order.dateIn)}</td>
-                  <td className="max-w-64 px-3 py-3 font-medium">
-                    {order.subject}
-                  </td>
-                  <td className="px-3 py-3">{order.receivingUnit || '—'}</td>
-                  <td className="px-3 py-3">{order.receiverName || '—'}</td>
-                  <td className="px-3 py-3">
+                  <TableCell className="flex items-center px-2 py-2.5 text-center w-12 shrink-0 justify-center font-bold text-slate-500">{order.no}</TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 w-16 shrink-0 font-medium text-slate-700 truncate">{order.from || '—'}</TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 w-20 shrink-0 font-mono font-bold text-slate-900 truncate">{order.number || '—'}</TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 w-24 shrink-0 whitespace-nowrap font-medium text-slate-700">{formatThaiDate(order.dateIn) || '—'}</TableCell>
+                  <TableCell className="flex items-center px-2.5 py-2.5 min-w-0 flex-[2] font-semibold text-slate-900" title={order.subject}>
+                    <span className="truncate min-w-0">{order.subject || '—'}</span>
+                  </TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 w-24 shrink-0 font-medium text-slate-700 truncate" title={order.receivingUnit || '—'}>
+                    {order.receivingUnit || '—'}
+                  </TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 w-20 shrink-0 font-medium text-slate-700 truncate" title={order.receiverName || '—'}>
+                    {order.receiverName || '—'}
+                  </TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 w-24 shrink-0 whitespace-nowrap font-medium text-slate-700">
                     {formatThaiDate(order.dateOut) || '—'}
-                  </td>
-                  <td className="max-w-52 truncate px-3 py-3">
-                    {order.note || '—'}
-                  </td>
-                  <td className="px-3 py-3">
-                    <span
-                      className={`whitespace-nowrap rounded-full px-2 py-1 font-bold ${
-                        done
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {done ? 'เสร็จสิ้น' : 'รอดำเนินการ'}
-                    </span>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="flex items-center px-2.5 py-2.5 min-w-0 flex-1 text-slate-500" title={order.note || '—'}>
+                    <span className="truncate min-w-0">{order.note || '—'}</span>
+                  </TableCell>
+                  <TableCell className="flex items-center px-2 py-2.5 text-center w-24 shrink-0 justify-center">
+                    {done ? (
+                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-none font-bold px-2 py-0.5 text-xs rounded-md">
+                        เสร็จสิ้น
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none font-bold px-2 py-0.5 text-xs rounded-md">
+                        รอดำเนินการ
+                      </Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
+          </TableBody>
         </table>
-        {!orders.length && (
-          <div className="p-12 text-center">
-            <p className="font-bold">ไม่พบรายการ</p>
-            <p className="mt-1 text-sm text-slate-500">
-              ลองปรับหรือล้างตัวกรอง
-            </p>
-          </div>
-        )}
       </div>
-      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-sm">
-        <span>
-          หน้า {page} / {totalPages}
-        </span>
-        <div className="flex gap-2">
-          <button
-            disabled={page <= 1}
-            onClick={() => onPage(page - 1)}
-            className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
-          >
-            ก่อนหน้า
-          </button>
-          <button
-            disabled={page >= totalPages}
-            onClick={() => onPage(page + 1)}
-            className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
-          >
-            ถัดไป
-          </button>
+
+      {/* Footer Info Bar */}
+      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 text-xs text-slate-500 bg-white shrink-0">
+        <div>
+          ทั้งหมด <span className="font-bold text-slate-800">{orders.length.toLocaleString('th-TH')}</span> รายการ
+        </div>
+        <div className="text-[11px] text-slate-400">
+          เลื่อนลงเพื่อดูรายการเพิ่มเติม
         </div>
       </div>
-    </section>
+    </Card>
   );
 }

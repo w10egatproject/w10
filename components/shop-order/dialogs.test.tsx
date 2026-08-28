@@ -172,7 +172,7 @@ describe('Shop Order dialogs', () => {
     fireEvent.error(proxyPreview);
     const directPreview = screen.getByRole('img');
     expect(directPreview.getAttribute('src')).toBe(
-      'https://drive.google.com/uc?export=view&id=current-file-id',
+      'https://lh3.googleusercontent.com/d/current-file-id',
     );
     fireEvent.error(directPreview);
     expect(screen.queryByRole('img')).toBeNull();

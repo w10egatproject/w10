@@ -17,7 +17,7 @@ ROOT = Path(r"D:\w10_dashboard")
 OUTPUT_DIR = ROOT / "docs" / "deliverables"
 OUTPUT_PATH = OUTPUT_DIR / "W10-Dashboard-technical-booklet.docx"
 LOGO_PATH = ROOT / "public" / "picture" / "egat.png"
-W10_ICON_PATH = ROOT / "public" / "picture" / "รูปภาพ14-Photoroom.png"
+W10_ICON_PATH = ROOT / "public" / "picture" / "cb760a91-e445-4d0d-ab79-279f822cc6f8_0-removebg-preview.png"
 
 
 COLORS = {

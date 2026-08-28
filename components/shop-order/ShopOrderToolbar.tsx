@@ -6,10 +6,13 @@ import {
   Search,
 } from 'lucide-react';
 import type { ShopOrderFilters } from '@/lib/shop-order/types';
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   filters: ShopOrderFilters;
-  years: string[];
+  years?: string[];
   loading: boolean;
   onChange: (filters: ShopOrderFilters) => void;
   onRefresh: () => void;
@@ -18,7 +21,7 @@ interface Props {
 
 export function ShopOrderToolbar({
   filters,
-  years,
+  years: _years,
   loading,
   onChange,
   onRefresh,
@@ -27,119 +30,90 @@ export function ShopOrderToolbar({
   const set = (patch: Partial<ShopOrderFilters>) =>
     onChange({ ...filters, ...patch });
   return (
-    <section
-      aria-label="ตัวกรองรายการ"
-      className="mb-5 rounded-2xl bg-white p-4 shadow-sm"
-    >
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_140px_130px_160px_auto]">
-        <label className="relative">
-          <span className="mb-1 block text-xs font-bold text-slate-600">
-            ค้นหา
-          </span>
-          <Search
-            aria-hidden
-            className="absolute bottom-3 left-3 h-4 w-4 text-slate-500"
-          />
-          <input
-            value={filters.query}
-            onChange={(e) => set({ query: e.target.value })}
-            placeholder="เลขที่ เรื่อง หน่วยงาน ผู้รับ..."
-            className="h-10 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-xs font-bold text-slate-600">
-            ปี
-          </span>
-          <select
-            value={filters.year}
-            onChange={(e) => set({ year: e.target.value })}
-            className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="all">ทุกปี</option>
-            {years.map((year) => (
-              <option key={year}>{year}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span className="mb-1 block text-xs font-bold text-slate-600">
-            เดือน
-          </span>
-          <select
-            value={filters.month}
-            onChange={(e) => set({ month: e.target.value })}
-            className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="all">ทุกเดือน</option>
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span className="mb-1 block text-xs font-bold text-slate-600">
-            สถานะ
-          </span>
-          <select
-            value={filters.status}
-            onChange={(e) =>
-              set({ status: e.target.value as ShopOrderFilters['status'] })
-            }
-            className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="all">ทั้งหมด</option>
-            <option value="wait">รอดำเนินการ</option>
-            <option value="done">เสร็จสิ้น</option>
-          </select>
-        </label>
-        <div className="flex flex-wrap items-end gap-2">
-          <button
-            type="button"
-            aria-label="รีเฟรชข้อมูล"
-            onClick={onRefresh}
-            disabled={loading}
-            className="flex h-10 items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`h-4 w-4 text-slate-600 ${
-                loading ? 'animate-spin' : ''
-              }`}
+    <Card className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+          {/* Search Bar */}
+          <div className="relative flex-1 min-w-[220px]">
+            <Search
+              aria-hidden
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
             />
-            <span>รีเฟรชข้อมูล</span>
-          </button>
-          <button
-            type="button"
-            aria-label="ล้างตัวกรอง"
-            onClick={() =>
-              onChange({ query: '', year: 'all', month: 'all', status: 'all' })
-            }
-            className="flex h-10 items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-indigo-500"
-          >
-            <RotateCcw className="h-4 w-4 text-slate-600" /> ล้าง
-          </button>
-          <a
-            href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-          >
-            <FileSpreadsheet aria-hidden className="h-4 w-4" />
-            เปิด Google Sheet
-          </a>
-          {onAdd && (
-            <button
-              type="button"
-              onClick={onAdd}
-              className="flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            <Input
+              aria-label="ค้นหา"
+              value={filters.query}
+              onChange={(e) => set({ query: e.target.value })}
+              placeholder="ค้นหาเลขที่, เรื่อง, หน่วยงาน, ผู้รับ..."
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm font-medium text-slate-800 shadow-sm focus-visible:ring-amber-400 focus-visible:border-amber-400"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+            <select
+              aria-label="สถานะ"
+              value={filters.status}
+              onChange={(e) =>
+                set({ status: e.target.value as ShopOrderFilters['status'] })
+              }
+              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-bold text-slate-700 shadow-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
             >
-              <Plus className="h-4 w-4" /> เพิ่ม
-            </button>
-          )}
+              <option value="all">สถานะ (ทั้งหมด)</option>
+              <option value="wait">รอดำเนินการ</option>
+              <option value="done">เสร็จสิ้น</option>
+            </select>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              disabled={loading}
+              className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-amber-700 shadow-sm transition-all"
+              aria-label="รีเฟรชข้อมูล"
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-1.5 text-slate-600 ${
+                  loading ? 'animate-spin' : ''
+                }`}
+              />
+              <span>รีเฟรชข้อมูล</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                onChange({ query: '', year: 'all', month: 'all', status: 'all' })
+              }
+              className="h-10 rounded-xl border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-50 hover:text-rose-600 shadow-sm transition-all"
+              aria-label="ล้างตัวกรอง"
+            >
+              <RotateCcw className="h-4 w-4 mr-1.5 text-slate-600" /> ล้าง
+            </Button>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1ZtFnQhPortoyUgKzQuruq5kU7q5V9l1GYbsSgL-9oco/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="เปิดชีท Shop Order"
+              className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
+            >
+              <FileSpreadsheet aria-hidden className="h-4 w-4 mr-1.5" />
+              เปิดชีท Shop Order ↗
+            </a>
+            {onAdd && (
+              <Button
+                size="sm"
+                onClick={onAdd}
+                className="h-10 rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-sm transition-all whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4 mr-1.5" /> เพิ่ม
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

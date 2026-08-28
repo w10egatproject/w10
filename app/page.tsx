@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, CheckCircle2, Clock, Factory, HardHat, Info, LayoutDashboard, RefreshCw, Shield, Zap } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle2, ClipboardCheck, Clock, Factory, FileSpreadsheet, HardHat, Info, LayoutDashboard, RefreshCw, Search, Shield, X, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -93,17 +99,19 @@ const GroupBlock: React.FC<GroupBlockProps> = ({ name, stats, themeColor, isSumm
           </div>
         )}
         <div className="text-sm sm:text-xl md:text-base lg:text-xl xl:text-2xl font-black text-slate-900 leading-tight">
-          {name} {isSummary ? "" : "เข้า"} {stats?.entrance || 0}
+          {name} {isSummary ? "" : "เข้า"} <NumberTicker value={stats?.entrance || 0} />
         </div>
       </div>
       
       {!isSummary && (
-        <div className="text-[13px] sm:text-[15px] font-bold text-slate-600 space-y-2 bg-white/50 backdrop-blur p-3 sm:p-4 rounded-2xl border border-white/50 z-10 mt-auto">
-          <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้ยังไม่เสร็จ</span><span className="text-slate-900">{stats?.left || 0}</span></div>
-          <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้เสร็จ</span><span className="text-slate-900">{stats?.finish || 0}</span></div>
-          <div className="flex justify-between gap-4 px-1"><span>เสร็จจากเดือนอื่น</span><span className="text-slate-900">{stats?.otherFinish || 0}</span></div>
-          <div className="flex justify-between gap-4 font-black text-slate-950 pt-2 mt-2 border-t border-slate-200/50 px-1"><span>งานออก</span><span className="text-xl">{stats?.out || 0}</span></div>
-        </div>
+        <Card className="text-[13px] sm:text-[15px] font-bold text-slate-600 bg-white/50 backdrop-blur p-3 sm:p-4 rounded-2xl border border-white/50 z-10 mt-auto">
+          <div className="space-y-2">
+            <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้ยังไม่เสร็จ</span><span className="text-slate-900"><NumberTicker value={stats?.left || 0} /></span></div>
+            <div className="flex justify-between gap-4 px-1"><span>เข้าเดือนนี้เสร็จ</span><span className="text-slate-900"><NumberTicker value={stats?.finish || 0} /></span></div>
+            <div className="flex justify-between gap-4 px-1"><span>เสร็จจากเดือนอื่น</span><span className="text-slate-900"><NumberTicker value={stats?.otherFinish || 0} /></span></div>
+            <div className="flex justify-between gap-4 font-black text-slate-950 pt-2 mt-2 border-t border-slate-200/50 px-1"><span>งานออก</span><span className="text-xl"><NumberTicker value={stats?.out || 0} /></span></div>
+          </div>
+        </Card>
       )}
     </motion.div>
   );
@@ -161,16 +169,43 @@ const THAI_MONTHS = [
   { value: '12', label: 'ธ.ค.' }
 ];
 
+export interface StatusDetailRow {
+  no: string;
+  ecm: string;
+  wo: string;
+  description: string;
+  equipment: string;
+  date: string;
+  contact: string;
+  dept: string;
+  ecm_url: string;
+  notify: string;
+  status: string;
+  check?: string;
+  groups: string;
+}
+
 interface DashboardData {
   currentYear?: string;
   currentMonth?: string;
   wGauges?: Record<string, { empNorm?: number; conNorm?: number; empOT?: number; conOT?: number }>;
   groupStats?: Record<string, any>;
   w_all?: { entrance?: number };
-  statusData?: { total?: number; sap?: number; pending?: number; finish?: number };
+  statusData?: { total?: number; sap?: number; pending?: number; finish?: number; check?: number; allCheckTotal?: number };
   equipmentData?: { name: string; values: number[]; total: number }[];
+  statusDetails?: StatusDetailRow[];
+  allCheckDetails?: StatusDetailRow[];
   error?: string;
 }
+
+const getStatusStyle = (status: string) => {
+  if (!status) return 'bg-slate-100 text-slate-400';
+  const s = status.trim().toLowerCase();
+  if (s === 'pending') return 'bg-red-500 text-white font-bold border border-red-600 shadow-xs';
+  if (s === 'finish') return 'bg-emerald-500 text-white font-bold border border-emerald-600 shadow-xs';
+  if (s.includes('sap')) return 'bg-[#658354] text-white font-bold border border-[#536d44] shadow-xs';
+  return 'bg-[#FFD100] text-[#4A4A49] font-bold';
+};
 
 const DEFAULT_YEAR = "2025";
 
@@ -180,6 +215,50 @@ export default function DashboardPage() {
   const [month, setMonth] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedStatusTab, setSelectedStatusTab] = useState<'pending' | 'finish' | 'sap' | 'check' | null>(null);
+  const [tableSearchQuery, setTableSearchQuery] = useState('');
+
+  const statusDetails = data?.statusDetails;
+  const allCheckDetails = data?.allCheckDetails;
+  const activeStatusRows = useMemo(() => {
+    if (!selectedStatusTab) return [];
+    
+    // For Check False, use allCheckDetails (all records across whole dataset) if available
+    const rowsToFilter = selectedStatusTab === 'check'
+      ? (allCheckDetails && allCheckDetails.length > 0 ? allCheckDetails : statusDetails || [])
+      : (statusDetails || []);
+    
+    return rowsToFilter.filter((row) => {
+      const s = (row.status || '').trim().toLowerCase();
+      const target = selectedStatusTab.toLowerCase();
+      const checkVal = (row.check || '').trim().toUpperCase();
+      
+      const matchesStatus =
+        target === 'check'
+          ? checkVal === 'FALSE'
+          : target === 'sap'
+          ? s.includes('sap')
+          : s === target;
+      
+      if (!matchesStatus) return false;
+      
+      if (!tableSearchQuery.trim()) return true;
+      const q = tableSearchQuery.toLowerCase().trim();
+      return (
+        row.no.toLowerCase().includes(q) ||
+        row.ecm.toLowerCase().includes(q) ||
+        row.wo.toLowerCase().includes(q) ||
+        row.description.toLowerCase().includes(q) ||
+        row.equipment.toLowerCase().includes(q) ||
+        row.date.toLowerCase().includes(q) ||
+        row.dept.toLowerCase().includes(q) ||
+        row.contact.toLowerCase().includes(q) ||
+        row.groups.toLowerCase().includes(q) ||
+        (row.check || '').toLowerCase().includes(q) ||
+        row.notify.toLowerCase().includes(q)
+      );
+    });
+  }, [selectedStatusTab, statusDetails, allCheckDetails, tableSearchQuery]);
 
   const loadDashboard = useCallback((y: string | null, m: string | null, isInitial = false, showLoading = true) => {
     setError("");
@@ -245,9 +324,9 @@ export default function DashboardPage() {
     accessibility: { enabled: false },
     plotOptions: { pie: { size: '78%', innerSize: '52%', depth: 38, dataLabels: { enabled: true, distance: 28, format: '{point.name}: {point.y} ({point.percentage:.0f}%)', style: { color: '#4b5563', fontWeight: 'bold' } } } },
     series: [{ name: 'Status', data: [
-        { name: 'SAP', y: statusData?.sap || 0, color: '#86efac' },
-        { name: 'Pending', y: statusData?.pending || 0, color: '#fca5a5' },
-        { name: 'Finish', y: statusData?.finish || 0, color: '#fde68a' }
+        { name: 'SAP', y: statusData?.sap || 0, color: '#658354' },
+        { name: 'Pending', y: statusData?.pending || 0, color: '#ef4444' },
+        { name: 'Finish', y: statusData?.finish || 0, color: '#22c55e' }
     ] }]
   }), [statusData]);
 
@@ -282,15 +361,17 @@ export default function DashboardPage() {
   const sapPct = Math.round(((statusData?.sap || 0) / totalWO) * 100);
   const pendingPct = Math.round(((statusData?.pending || 0) / totalWO) * 100);
   const finishPct = Math.round(((statusData?.finish || 0) / totalWO) * 100);
+  const checkTotalCount = statusData?.allCheckTotal || totalWO;
+  const checkPct = Math.round(((statusData?.check || 0) / checkTotalCount) * 100);
 
   if (error) return (
     <div className="p-10 text-center min-h-screen flex flex-col items-center justify-center bg-[#e2e2e2]">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white p-8 rounded-3xl shadow-xl border-b-4 border-red-500">
         <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
         <div className="font-black text-slate-800 text-2xl mb-4">{error}</div>
-        <button onClick={() => loadDashboard(year, month)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all active:scale-95 flex items-center gap-2 mx-auto">
+        <Button onClick={() => loadDashboard(year, month)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all active:scale-95 flex items-center gap-2 mx-auto">
           <RefreshCw size={18} /> ลองใหม่อีกครั้ง
-        </button>
+        </Button>
       </motion.div>
     </div>
   );
@@ -307,10 +388,10 @@ export default function DashboardPage() {
           <div className="flex flex-col">
             <h1 className="text-xl md:text-3xl font-black tracking-tight text-[#4A4A49] uppercase flex items-center gap-2 md:gap-3">
               <Image src="/picture/egat.png" alt="EGAT Logo" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
-              W10 Dashboard
-              <Image src="/picture/รูปภาพ14-Photoroom.png" alt="W10 Icon" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
+              <SplitText text="W10 Dashboard" className="inline-block" />
+              <Image src="/picture/cb760a91-e445-4d0d-ab79-279f822cc6f8_0-removebg-preview.png" alt="W10 Icon" width={56} height={56} className="w-10 h-10 md:w-14 md:h-14 object-contain" priority />
             </h1>
-            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">หสบ-ช.</p>
+            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">หสบ-ช. maintenance dashboard</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
@@ -327,27 +408,47 @@ export default function DashboardPage() {
                 </motion.span>
               )}
             </AnimatePresence>
-            <div className="flex gap-1.5 bg-slate-100 p-1 md:p-1.5 rounded-xl md:rounded-2xl border border-slate-200">
-              <select className="px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-white text-xs md:text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={year} onChange={handleYearChange}>
-                <option value="all">รวมทุกปี</option>
-                {["2023", "2024", "2025", "2026"].map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-              <select className="px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl bg-white text-xs md:text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 transition" value={month} onChange={handleMonthChange}>
-                <option value="all">รวมทุกเดือน</option>
-                {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-              </select>
+            <div className="flex items-center gap-2">
+              <Select value={year} onValueChange={(val) => handleYearChange({ target: { value: val } } as any)}>
+                <SelectTrigger className="w-[105px] h-10 md:h-12 bg-white rounded-xl md:rounded-2xl font-black text-slate-700 shadow-sm border-slate-200 hover:border-amber-400/60">
+                  <SelectValue placeholder="ปี" />
+                </SelectTrigger>
+                <SelectContent className="min-w-[120px]">
+                  <SelectItem value="all">รวมทุกปี</SelectItem>
+                  {["2023", "2024", "2025", "2026"].map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={month} onValueChange={(val) => handleMonthChange({ target: { value: val } } as any)}>
+                <SelectTrigger className="w-[125px] h-10 md:h-12 bg-white rounded-xl md:rounded-2xl font-black text-slate-700 shadow-sm border-slate-200 hover:border-amber-400/60">
+                  <SelectValue placeholder="เดือน" />
+                </SelectTrigger>
+                <SelectContent className="min-w-[140px]">
+                  <SelectItem value="all">รวมทุกเดือน</SelectItem>
+                  {THAI_MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
+            <Button
+              variant="outline"
+              size="icon"
               onClick={handleRefresh}
               disabled={isLoading}
-              className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black border border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 transition-all"
+              className="rounded-xl md:rounded-2xl border-slate-200 shadow-sm transition-all h-10 w-10 shrink-0"
+              aria-label="รีเฟรชข้อมูล"
             >
               <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-[#d4a300]' : 'text-slate-500'} />
-              รีเฟรชข้อมูล
-            </motion.button>
+            </Button>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1jvafC0Vvy9DqVDFNDzoBezXaccqKJEWhLWTRlglYnQE/edit?gid=0#gid=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="เปิดชีท Dashboard"
+              className="inline-flex h-10 md:h-12 items-center gap-1.5 rounded-xl md:rounded-2xl border border-sky-200 bg-sky-50 px-3 md:px-3.5 text-xs md:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span className="hidden sm:inline">เปิดชีท Dashboard</span>
+              <span className="sm:hidden">เปิดชีท</span> ↗
+            </a>
             <NavigationMenu
               buttonClassName="bg-[#ffe08a] text-[#4A4A49] hover:bg-[#ffd56a]"
               accentClassName="text-[#d4a300]"
@@ -367,12 +468,13 @@ export default function DashboardPage() {
             <RefreshCw size={24} className="animate-spin mr-3 text-[#d4a300]" /> กำลังโหลดข้อมูล...
           </motion.div>
         ) : (
-          <motion.div 
-            key="content"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <BlurFade delay={0.1}>
+            <motion.div 
+              key="content"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
             {/* Section 1: Operation Status */}
             <motion.div variants={itemVariants} className="bg-[#e8f5ff]/95 border-b-4 border-[#b9dcff] p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm shadow-sky-100/60 relative overflow-hidden flex flex-col mb-6 md:mb-8">
                 <div className="flex items-center justify-between mb-6 md:mb-8">
@@ -384,12 +486,12 @@ export default function DashboardPage() {
                   </h3>
                   <Info className="text-slate-300 w-4 h-4 md:w-5 h-5 cursor-help" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 items-stretch">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5 items-stretch">
                     {/* Block 1: Chart & Total */}
                     <div className="flex flex-col rounded-2xl p-5 bg-[#5c607f] border-2 border-[#858bb5] shadow-md relative overflow-hidden transition-all hover:shadow-lg h-full">
                       <Activity className="absolute -right-4 -bottom-4 w-32 h-32 text-white/5 pointer-events-none" />
                       <div className="text-[12px] font-black text-[#ffef9a] uppercase tracking-widest mb-1.5 z-10">Total W/O</div>
-                      <div className="text-5xl font-black text-white mb-2 z-10">{statusData?.total || 0}</div>
+                      <div className="text-5xl font-black text-white mb-2 z-10"><NumberTicker value={statusData?.total || 0} /></div>
                       <div className="flex-1 flex items-center justify-center min-h-[200px]">
                         <div className="w-full h-full scale-110 origin-center">
                           <HighchartsClient
@@ -410,15 +512,45 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Block 2: Pending */}
-                    <motion.div whileHover={{ y: -5 }} className="flex flex-col rounded-3xl p-6 bg-white border-2 border-rose-100 shadow-sm relative overflow-hidden h-full group">
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'pending' ? null : 'pending');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'pending'}
+                      aria-label="ดูตารางรายการ Pending"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'pending' ? null : 'pending');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'pending'
+                          ? 'border-rose-500 ring-4 ring-rose-200/80 shadow-md'
+                          : 'border-rose-100 hover:border-rose-300'
+                      }`}
+                    >
                       <div className="flex items-center justify-between mb-4 z-10">
-                        <div className="text-xl md:text-2xl font-black text-rose-700 uppercase tracking-tighter">Pending</div>
-                        <div className="p-2.5 bg-rose-100 rounded-2xl text-rose-600 group-hover:scale-110 transition-transform">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-rose-700 uppercase tracking-tighter">Pending</div>
+                          <div className="text-[10px] font-bold text-rose-400">
+                            {selectedStatusTab === 'pending' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'pending' ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-600'
+                        }`}>
                           <Clock size={32} />
                         </div>
                       </div>
                       <div className="mt-auto z-10">
-                        <div className="text-5xl font-black text-slate-800 mb-2">{statusData?.pending || 0}</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.pending || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
                             <motion.div initial={{ width: 0 }} animate={{ width: `${pendingPct}%` }} transition={{ duration: 1 }} className="h-full bg-rose-500 rounded-full"></motion.div>
@@ -429,43 +561,305 @@ export default function DashboardPage() {
                     </motion.div>
 
                     {/* Block 3: Finish */}
-                    <motion.div whileHover={{ y: -5 }} className="flex flex-col rounded-3xl p-6 bg-white border-2 border-amber-100 shadow-sm relative overflow-hidden h-full group">
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'finish' ? null : 'finish');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'finish'}
+                      aria-label="ดูตารางรายการ Finish"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'finish' ? null : 'finish');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'finish'
+                          ? 'border-emerald-500 ring-4 ring-emerald-200/80 shadow-md'
+                          : 'border-emerald-100 hover:border-emerald-300'
+                      }`}
+                    >
                       <div className="flex items-center justify-between mb-4 z-10">
-                        <div className="text-xl md:text-2xl font-black text-amber-700 uppercase tracking-tighter">Finish</div>
-                        <div className="p-2.5 bg-amber-100 rounded-2xl text-amber-600 group-hover:scale-110 transition-transform">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-emerald-700 uppercase tracking-tighter">Finish</div>
+                          <div className="text-[10px] font-bold text-emerald-500">
+                            {selectedStatusTab === 'finish' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'finish' ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-600'
+                        }`}>
                           <AlertCircle size={32} />
                         </div>
                       </div>
                       <div className="mt-auto z-10">
-                        <div className="text-5xl font-black text-slate-800 mb-2">{statusData?.finish || 0}</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.finish || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${finishPct}%` }} transition={{ duration: 1 }} className="h-full bg-amber-500 rounded-full"></motion.div>
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${finishPct}%` }} transition={{ duration: 1 }} className="h-full bg-emerald-500 rounded-full"></motion.div>
                           </div>
-                          <span className="text-[12px] font-black text-amber-600">{finishPct}%</span>
+                          <span className="text-[12px] font-black text-emerald-600">{finishPct}%</span>
                         </div>
                       </div>
                     </motion.div>
 
                     {/* Block 4: SAP */}
-                    <motion.div whileHover={{ y: -5 }} className="flex flex-col rounded-3xl p-6 bg-white border-2 border-emerald-100 shadow-sm relative overflow-hidden h-full group">
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'sap' ? null : 'sap');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'sap'}
+                      aria-label="ดูตารางรายการ SAP"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'sap' ? null : 'sap');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'sap'
+                          ? 'border-[#658354] ring-4 ring-[#658354]/25 shadow-md'
+                          : 'border-[#e2ebd8] hover:border-[#b8d1a3]'
+                      }`}
+                    >
                       <div className="flex items-center justify-between mb-4 z-10">
-                        <div className="text-xl md:text-2xl font-black text-emerald-700 uppercase tracking-tighter">SAP</div>
-                        <div className="p-2.5 bg-emerald-100 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-[#48603c] uppercase tracking-tighter">SAP</div>
+                          <div className="text-[10px] font-bold text-[#658354]">
+                            {selectedStatusTab === 'sap' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'sap' ? 'bg-[#658354] text-white' : 'bg-[#eef5e8] text-[#536d44]'
+                        }`}>
                           <CheckCircle2 size={32} />
                         </div>
                       </div>
                       <div className="mt-auto z-10">
-                        <div className="text-5xl font-black text-slate-800 mb-2">{statusData?.sap || 0}</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.sap || 0} /></div>
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${sapPct}%` }} transition={{ duration: 1 }} className="h-full bg-emerald-500 rounded-full"></motion.div>
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${sapPct}%` }} transition={{ duration: 1 }} className="h-full bg-[#658354] rounded-full"></motion.div>
                           </div>
-                          <span className="text-[12px] font-black text-emerald-600">{sapPct}%</span>
+                          <span className="text-[12px] font-black text-[#536d44]">{sapPct}%</span>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Block 5: Check False */}
+                    <motion.div
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedStatusTab(prev => prev === 'check' ? null : 'check');
+                        setTableSearchQuery('');
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={selectedStatusTab === 'check'}
+                      aria-label="ดูตารางรายการ Check False"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedStatusTab(prev => prev === 'check' ? null : 'check');
+                          setTableSearchQuery('');
+                        }
+                      }}
+                      className={`flex flex-col rounded-3xl p-6 bg-white border-2 shadow-sm relative overflow-hidden h-full group cursor-pointer transition-all ${
+                        selectedStatusTab === 'check'
+                          ? 'border-rose-500 ring-4 ring-rose-200/80 shadow-md'
+                          : 'border-rose-100 hover:border-rose-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-4 z-10">
+                        <div>
+                          <div className="text-xl md:text-2xl font-black text-rose-700 uppercase tracking-tighter">Check False</div>
+                          <div className="text-[10px] font-bold text-rose-500">
+                            {selectedStatusTab === 'check' ? '▲ กดเพื่อปิดตาราง' : '▼ กดเพื่อดูตาราง'}
+                          </div>
+                        </div>
+                        <div className={`p-2.5 rounded-2xl transition-transform group-hover:scale-110 ${
+                          selectedStatusTab === 'check' ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-600'
+                        }`}>
+                          <ClipboardCheck size={32} />
+                        </div>
+                      </div>
+                      <div className="mt-auto z-10">
+                        <div className="text-5xl font-black text-slate-800 mb-2"><NumberTicker value={statusData?.check || 0} /></div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${checkPct}%` }} transition={{ duration: 1 }} className="h-full bg-rose-500 rounded-full"></motion.div>
+                          </div>
+                          <span className="text-[12px] font-black text-rose-600">{checkPct}%</span>
                         </div>
                       </div>
                     </motion.div>
                 </div>
+
+                {/* Expandable Table for PENDING / FINISH / SAP / CHECK */}
+                <AnimatePresence>
+                  {selectedStatusTab && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, y: -10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                      className="mt-6 overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-md"
+                    >
+                      {/* Table Header Bar */}
+                      <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center bg-slate-50/90">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-8 rounded-full ${
+                            selectedStatusTab === 'pending'
+                              ? 'bg-rose-500'
+                              : selectedStatusTab === 'finish'
+                              ? 'bg-emerald-500'
+                              : selectedStatusTab === 'sap'
+                              ? 'bg-[#658354]'
+                              : 'bg-rose-500'
+                          }`}></div>
+                          <div>
+                            <h4 className="text-base sm:text-lg font-black text-[#4A4A49] uppercase flex items-center gap-2">
+                              รายการ W/O สถานะ: 
+                              <span className={`px-2.5 py-0.5 rounded-lg text-white font-bold text-xs ${
+                                selectedStatusTab === 'pending'
+                                  ? 'bg-rose-600'
+                                  : selectedStatusTab === 'finish'
+                                  ? 'bg-emerald-600'
+                                  : selectedStatusTab === 'sap'
+                                  ? 'bg-[#658354]'
+                                  : 'bg-rose-600'
+                              }`}>
+                                {selectedStatusTab === 'check' ? 'CHECK FALSE' : selectedStatusTab.toUpperCase()}
+                              </span>
+                            </h4>
+                            <p className="text-xs font-bold text-slate-400 mt-0.5">
+                              แสดง {activeStatusRows.length} รายการ {tableSearchQuery ? `(กรองจากคำค้นหา)` : ''}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="relative min-w-[220px] flex-1 sm:flex-initial">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                              type="text"
+                              value={tableSearchQuery}
+                              onChange={(e) => setTableSearchQuery(e.target.value)}
+                              placeholder="ค้นหาในตาราง..."
+                              className="w-full h-10 pl-9 pr-8 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 bg-white"
+                            />
+                            {tableSearchQuery && (
+                              <button
+                                onClick={() => setTableSearchQuery('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                aria-label="ล้างคำค้นหาในตาราง"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedStatusTab(null)}
+                            className="h-10 px-3.5 rounded-xl border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-rose-600 shadow-sm shrink-0"
+                            aria-label="ปิดตาราง"
+                          >
+                            <X className="w-4 h-4 mr-1.5 text-slate-500" /> ปิดตาราง
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Table Content */}
+                      <div className="overflow-x-auto max-h-[500px]">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead className="sticky top-0 z-10 bg-[#eef6ff] text-[#4A4A49] font-black border-b border-slate-200 shadow-sm">
+                            <tr>
+                              <th className="p-3 whitespace-nowrap text-center">ลำดับ</th>
+                              <th className="p-3 whitespace-nowrap">ECM</th>
+                              <th className="p-3 whitespace-nowrap">W/O</th>
+                              <th className="p-3 min-w-[240px]">รายการ</th>
+                              <th className="p-3 min-w-[160px]">Equipment</th>
+                              <th className="p-3 whitespace-nowrap">Date เข้า</th>
+                              <th className="p-3 whitespace-nowrap">แผนก</th>
+                              <th className="p-3 min-w-[140px]">ติดต่อประสานงาน</th>
+                              <th className="p-3 whitespace-nowrap text-center">หมวด</th>
+                              <th className="p-3 text-center whitespace-nowrap">สถานะ</th>
+                              <th className="p-3 text-center whitespace-nowrap">Check</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {activeStatusRows.length === 0 ? (
+                              <tr>
+                                <td colSpan={11} className="p-10 text-center text-slate-400 font-bold">
+                                  {tableSearchQuery ? 'ไม่พบรายการที่ตรงกับคำค้นหา' : 'ไม่พบข้อมูลรายการในสถานะนี้'}
+                                </td>
+                              </tr>
+                            ) : (
+                              activeStatusRows.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-amber-50/40 transition-colors">
+                                  <td className="p-3 font-semibold text-slate-500 text-center whitespace-nowrap">{row.no || idx + 1}</td>
+                                  <td className="p-3 font-semibold text-slate-700 whitespace-nowrap">
+                                    {row.ecm_url ? (
+                                      <a
+                                        href={row.ecm_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-bold text-blue-600 hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-500 inline-flex items-center gap-1"
+                                      >
+                                        {row.ecm || 'เปิด ECM'} ↗
+                                      </a>
+                                    ) : (
+                                      row.ecm || '-'
+                                    )}
+                                  </td>
+                                  <td className="p-3 font-bold text-slate-800 whitespace-nowrap">{row.wo || '-'}</td>
+                                  <td className="p-3 font-medium text-slate-800">{row.description || '-'}</td>
+                                  <td className="p-3 font-medium text-slate-600">{row.equipment || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.date || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium whitespace-nowrap">{row.dept || '-'}</td>
+                                  <td className="p-3 text-slate-600 font-medium">{row.contact || '-'}</td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px]">
+                                      {row.groups || '-'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold shadow-xs ${getStatusStyle(row.status)}`}>
+                                      {row.status || '-'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-center whitespace-nowrap">
+                                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                      (row.check || '').toUpperCase() === 'TRUE'
+                                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                        : 'bg-rose-100 text-rose-700 border border-rose-200'
+                                    }`}>
+                                      {(row.check || '').toUpperCase() === 'TRUE' ? 'TRUE' : 'FALSE'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
             </motion.div>
 
             {/* Section 2: W Group Blocks */}
@@ -486,7 +880,7 @@ export default function DashboardPage() {
 
             <motion.div variants={itemVariants} className="bg-[#cdc1ff] p-6 rounded-3xl border border-[#c4b5fd] shadow-sm shadow-purple-100/50 mb-6 md:mb-8 text-center">
                 <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-1">รวม W/O ทั้งหมด</div>
-                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-6xl font-black text-slate-900">{w_all?.entrance || 0}</motion.div>
+                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="text-6xl font-black text-slate-900"><NumberTicker value={w_all?.entrance || 0} /></motion.div>
             </motion.div>
 
             {/* Section 3: Work by Group */}
@@ -581,6 +975,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </motion.div>
+          </BlurFade>
         )}
       </AnimatePresence>
     </div>

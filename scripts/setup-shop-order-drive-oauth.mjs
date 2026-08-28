@@ -1,8 +1,45 @@
 import { randomBytes } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { google } from 'googleapis';
+
+function tryLoadEnvFiles() {
+  const candidates = [
+    resolve(process.cwd(), '.env.local'),
+    resolve(process.cwd(), '.env'),
+  ];
+  for (const file of candidates) {
+    if (!existsSync(file)) continue;
+    try {
+      const content = readFileSync(file, 'utf-8');
+      for (const line of content.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIndex = trimmed.indexOf('=');
+        if (eqIndex > 0) {
+          const key = trimmed.slice(0, eqIndex).trim();
+          let val = trimmed.slice(eqIndex + 1).trim();
+          if (
+            (val.startsWith('"') && val.endsWith('"')) ||
+            (val.startsWith("'") && val.endsWith("'"))
+          ) {
+            val = val.slice(1, -1);
+          }
+          if (process.env[key] === undefined) {
+            process.env[key] = val;
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+
+tryLoadEnvFiles();
 
 const DRIVE_FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const CALLBACK_PATH = '/oauth2/callback';
@@ -14,7 +51,7 @@ export function generateOAuthState() {
 
 function requiredEnvironment(env, name) {
   const value = env[name]?.trim();
-  if (!value) throw new Error(`กรุณาตั้งค่า ${name} ก่อนรันคำสั่งนี้`);
+  if (!value) throw new Error(`กรุณาตั้งค่า ${name} ใน .env.local ก่อนรันคำสั่งนี้`);
   return value;
 }
 

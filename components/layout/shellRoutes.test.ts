@@ -7,7 +7,7 @@ import {
 } from './shellRoutes';
 
 describe('shell route foundation', () => {
-  it('knows all seven public console paths', () => {
+  it('knows all public console paths', () => {
     expect(publicRoutes).toEqual([
       '/',
       '/purchasing',
@@ -16,6 +16,7 @@ describe('shell route foundation', () => {
       '/ot-summary',
       '/ot-employee',
       '/shop-order',
+      '/consumables',
     ]);
   });
 

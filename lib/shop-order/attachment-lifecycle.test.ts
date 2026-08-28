@@ -59,6 +59,20 @@ describe('Shop Order attachment lifecycle', () => {
     ).toBe('shoporder-20260727-123456.jpg');
   });
 
+  it('builds a sanitized storage name for consumable attachments', () => {
+    expect(
+      buildAttachmentStorageName(
+        {
+          orderNumber: 'CONSUMABLE',
+          name: 'item-photo.png',
+          mimeType: 'image/png',
+          size: 8,
+        },
+        new Date('2026-07-27T08:09:10.000Z'),
+      ),
+    ).toBe('consumable-20260727-consumable.png');
+  });
+
   it.each([
     ['invalid order number', '12345'],
   ])('rejects %s when building a storage name', (_, orderNumber) => {
@@ -171,7 +185,7 @@ describe('Shop Order attachment lifecycle', () => {
         'https://drive.google.com/file/d/1AbC_def-234/view?usp=sharing',
       ),
     ).toBe(
-      'https://drive.google.com/uc?export=view&id=1AbC_def-234',
+      'https://lh3.googleusercontent.com/d/1AbC_def-234',
     );
   });
 

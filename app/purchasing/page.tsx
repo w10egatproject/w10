@@ -1,16 +1,21 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ClipboardList, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle } from 'lucide-react';
+import { CalendarDays, ClipboardList, FileSpreadsheet, Filter, RefreshCw, Search, ShoppingCart, ShoppingBag, Package, Truck, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
+import { SplitText } from "@/components/reactbits/split-text";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type GaugeData = { empNorm?: number; empOT?: number; w11_1?: number; };
 type NameValue = { name: string; value: number; };
 type PairRow = { col1: string; col2: string | number; };
-type PurchaseRow = { ecm_buy: string; ecm: string; wo: string; item: string; equip: string; date_in: string; date_start: string; date_out: string; status: string; action: string; };
+type PurchaseRow = { ecm_buy: string; ecm: string; wo: string; item: string; equip: string; date_in: string; date_start: string; date_out: string; status: string; action: string; ecm_buy_url?: string; ecm_url?: string; };
 type PurchasingData = { gauges?: GaugeData; chartData?: NameValue[]; summaryTableData?: PairRow[]; secondChartData?: NameValue[]; secondTableData?: PairRow[]; purchaseList?: PurchaseRow[]; currentYear?: string; currentMonth?: string; error?: string; };
 type ChartPointContext = {
   category?: string;
@@ -262,7 +267,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, tone = 'slate', theme
     >
       {iconMap[label]}
       <div className="whitespace-nowrap text-[13px] font-black uppercase tracking-wide text-slate-500 z-10">{label}</div>
-      <div className="flex items-center justify-center text-5xl font-black z-10 text-[#4A4A49] group-hover:scale-105 transition-transform">{value}</div>
+      <div className="flex items-center justify-center text-5xl font-black z-10 text-[#4A4A49] group-hover:scale-105 transition-transform"><NumberTicker value={Number(value) || 0} /></div>
     </motion.div>
   );
 };
@@ -293,6 +298,10 @@ type PurchasingPageContentProps = {
   showSummaryPanel?: boolean;
   tableColumnCount?: 9 | 10;
   colorTheme?: ColorTheme;
+  dateStartLabel?: string;
+  showEcmLinks?: boolean;
+  sheetUrl?: string;
+  sheetName?: string;
 };
 
 export function PurchasingPageContent({
@@ -304,6 +313,10 @@ export function PurchasingPageContent({
   showSummaryPanel = true,
   tableColumnCount = 10,
   colorTheme = 'gold',
+  dateStartLabel = 'Date เริ่มงาน',
+  showEcmLinks = false,
+  sheetUrl = 'https://docs.google.com/spreadsheets/d/1gAFNW67DyQjzPUBRLclT3fG-QvMVop-msOguZCEw-JY/edit?gid=0#gid=0',
+  sheetName = 'จัดซื้อจัดจ้าง',
 }: PurchasingPageContentProps = {}) {
   const t = themeTokens[colorTheme];
 
@@ -469,6 +482,25 @@ export function PurchasingPageContent({
     if (statusName) togglePurchaseStatusFilter(statusName);
   };
   
+  const renderEcmLink = useCallback((value: string, url?: string) => {
+    const trimmed = value.trim();
+    const linkUrl = (url || trimmed).trim();
+    const isUrl = /^https?:\/\//i.test(linkUrl);
+    if (showEcmLinks && isUrl) {
+      return (
+        <a
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-all font-bold text-blue-600 underline decoration-blue-300 underline-offset-2 transition-colors hover:text-blue-800 hover:decoration-blue-500"
+        >
+          {trimmed || linkUrl}
+        </a>
+      );
+    }
+    return trimmed || '-';
+  }, [showEcmLinks]);
+
   const getStatusStyle = (status: string) => {
     if (!status) return 'bg-slate-100 text-slate-400';
     const s = status.trim();
@@ -484,6 +516,87 @@ export function PurchasingPageContent({
     if (s.includes('เสร็จ')) return 'bg-yellow-400 text-slate-900'; // เหลือง
     if (s.includes('ยกเลิก') || s.toLowerCase().includes('help me')) return 'bg-white text-slate-400 border border-slate-200'; // ขาว
     return 'bg-[#FFD100] text-[#4A4A49]'; // default
+  };
+
+  const getDueDateBadgeStyle = (dateStr?: string, status?: string): { className: string; text: string } => {
+    const trimmed = (dateStr || '').trim();
+    if (!trimmed || trimmed === '-') {
+      return {
+        className: 'bg-slate-100 text-slate-500 border border-slate-200',
+        text: '-',
+      };
+    }
+
+    // If status is completed/delivered, show neutral/green
+    const isCompleted = (status || '').includes('เสร็จ') || (status || '').includes('ส่งของ');
+    if (isCompleted) {
+      return {
+        className: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+        text: trimmed,
+      };
+    }
+
+    // Parse date (supports D/M/YYYY, D/M/BBBB, YYYY-MM-DD, DD-MM-YYYY)
+    let targetDate: Date | null = null;
+    if (trimmed.includes('/')) {
+      const parts = trimmed.split('/').map((p) => parseInt(p.trim(), 10));
+      if (parts.length === 3 && !parts.some(isNaN)) {
+        let [d, m, y] = parts;
+        if (y > 2400) y -= 543; // Convert Thai Buddhist Year to AD
+        targetDate = new Date(y, m - 1, d);
+      }
+    } else if (trimmed.includes('-')) {
+      const parts = trimmed.split('-').map((p) => parseInt(p.trim(), 10));
+      if (parts.length === 3 && !parts.some(isNaN)) {
+        if (parts[0] > 1000) {
+          let [y, m, d] = parts;
+          if (y > 2400) y -= 543;
+          targetDate = new Date(y, m - 1, d);
+        } else {
+          let [d, m, y] = parts;
+          if (y > 2400) y -= 543;
+          targetDate = new Date(y, m - 1, d);
+        }
+      }
+    }
+
+    if (!targetDate || isNaN(targetDate.getTime())) {
+      return {
+        className: 'bg-slate-100 text-slate-600 border border-slate-200',
+        text: trimmed,
+      };
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const daysUntil = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysUntil <= 0) {
+      // วันนี้จนถึงไปเรื่อยๆ สีแดงเข้ม
+      return {
+        className: 'bg-red-800 text-white shadow-sm font-black',
+        text: trimmed,
+      };
+    } else if (daysUntil <= 3) {
+      // 3 วัน แดงอ่อน
+      return {
+        className: 'bg-red-200 text-red-900 border border-red-300 font-black',
+        text: trimmed,
+      };
+    } else if (daysUntil <= 7) {
+      // เมื่อใกล้จะถึงใน 7 วัน สีแดง
+      return {
+        className: 'bg-red-600 text-white shadow-sm font-black',
+        text: trimmed,
+      };
+    } else {
+      // นอกนั้น สีเขียว
+      return {
+        className: 'bg-emerald-600 text-white shadow-sm font-black',
+        text: trimmed,
+      };
+    }
   };
 
   const chartOptions = useMemo(() => ({ chart: { type: 'pie', backgroundColor: 'transparent', options3d: { enabled: true, alpha: 45 }, height: 300 }, colors: chartColors, credits: { enabled: false }, title: { text: '' }, plotOptions: { pie: { innerSize: '58%', depth: 38, colorByPoint: true, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.0f}%', style: { fontWeight: '800', textOutline: 'none', color: '#4b5563' } } } }, series: [{ name: 'Purchasing', data: primaryChartData }] }), [primaryChartData]);
@@ -545,8 +658,8 @@ export function PurchasingPageContent({
 
   const totalSummary = useMemo(() => summaryTableData.reduce((sum, row) => sum + (parseFloat(row.col2?.toString().replace(/[^0-9.-]/g, '')) || 0), 0), [summaryTableData]);
   const tableHeaders = tableColumnCount === 9
-    ? ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ']
-    : ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', 'Date เริ่มงาน', 'Date ออกงาน', 'สถานะ', 'การดำเนินการ'];
+    ? ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', dateStartLabel, 'Date ออกงาน', 'สถานะ']
+    : ['ECM ซื้อจ้าง', 'ECM', 'W/O', 'รายการ', 'Equip', 'Date เข้า', dateStartLabel, 'Date ออกงาน', 'สถานะ', 'การดำเนินการ'];
   const overviewGridClass = showGaugePanel
     ? (showSummaryPanel ? 'xl:grid-cols-[280px_minmax(0,1fr)_minmax(0,1fr)]' : 'xl:grid-cols-[280px_minmax(0,1fr)]')
     : (showSummaryPanel ? 'xl:grid-cols-2' : 'xl:grid-cols-1');
@@ -581,7 +694,7 @@ export function PurchasingPageContent({
             </motion.div>
             <div>
               <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-[#4A4A49] flex items-center gap-3">
-                {pageTitle}
+                <SplitText text={pageTitle} className="inline-block" />
                 <Image src="/picture/First-Photoroom.png" alt="Purchasing Icon" width={64} height={64} className="w-12 h-12 md:w-16 md:h-16 object-contain" priority />
               </h1>
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-0.5">{pageSubtitle}</p>
@@ -602,28 +715,46 @@ export function PurchasingPageContent({
               </motion.span>
             )}
           </AnimatePresence>
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
-            <Filter size={16} className="ml-2 text-slate-400" />
-            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-80 transition" value={year} onChange={handleYearChange} disabled={fixedFilters}>
-              <option value="all">รวมทุกปี</option>
-              {['2023', '2024', '2025', '2026'].map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-            <select className="h-10 rounded-xl bg-white px-4 text-sm font-black text-[#4A4A49] outline-none shadow-sm cursor-pointer hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 disabled:opacity-80 transition" value={month} onChange={handleMonthChange} disabled={fixedFilters}>
-              <option value="all">รวมทุกเดือน</option>
-              {THAI_MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-            </select>
+          <div className="flex items-center gap-2">
+            <Select value={year} onValueChange={(val) => handleYearChange({ target: { value: val } } as any)} disabled={fixedFilters}>
+              <SelectTrigger className="w-[105px] h-10 md:h-12 rounded-xl md:rounded-2xl bg-white px-3.5 text-xs md:text-sm font-black text-slate-700 shadow-sm border-slate-200 hover:border-amber-400/60">
+                <SelectValue placeholder="ปี" />
+              </SelectTrigger>
+              <SelectContent className="min-w-[120px]">
+                <SelectItem value="all">รวมทุกปี</SelectItem>
+                {['2023', '2024', '2025', '2026'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={month} onValueChange={(val) => handleMonthChange({ target: { value: val } } as any)} disabled={fixedFilters}>
+              <SelectTrigger className="w-[125px] h-10 md:h-12 rounded-xl md:rounded-2xl bg-white px-3.5 text-xs md:text-sm font-black text-slate-700 shadow-sm border-slate-200 hover:border-amber-400/60">
+                <SelectValue placeholder="เดือน" />
+              </SelectTrigger>
+              <SelectContent className="min-w-[140px]">
+                <SelectItem value="all">รวมทุกเดือน</SelectItem>
+                {THAI_MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
+          <Button
+            variant="outline"
             onClick={handleRefresh}
             disabled={isLoading}
-            className="px-3 md:px-4 py-2 md:py-3 bg-white text-[#4A4A49] rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:bg-slate-50 border border-slate-200 shadow-sm transition-all flex items-center gap-2 disabled:opacity-60"
+            className="rounded-xl md:rounded-2xl text-xs md:text-sm font-black border-slate-200 shadow-sm flex items-center gap-2 disabled:opacity-60 h-10 md:h-12"
           >
             <RefreshCw size={16} strokeWidth={3} className={isLoading ? `animate-spin ${t.accent}` : 'text-slate-500'} />
-            รีเฟรชข้อมูล
-          </motion.button>
+            <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
+          </Button>
+          <a
+            href={sheetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`เปิดชีท ${sheetName}`}
+            className="inline-flex h-10 md:h-12 items-center gap-1.5 rounded-xl md:rounded-2xl border border-sky-200 bg-sky-50 px-3 md:px-3.5 text-xs md:text-sm font-bold text-sky-800 hover:bg-sky-100 shadow-sm transition-colors whitespace-nowrap"
+          >
+            <FileSpreadsheet size={16} />
+            <span className="hidden sm:inline">เปิดชีท {sheetName}</span>
+            <span className="sm:hidden">เปิดชีท</span> ↗
+          </a>
           <NavigationMenu
             buttonClassName={t.menuBtn}
             accentClassName={t.accent}
@@ -644,12 +775,13 @@ export function PurchasingPageContent({
             <RefreshCw size={24} className={`animate-spin ${t.accent}`} /> กำลังโหลดข้อมูล...
           </motion.div>
         ) : (
-          <motion.div 
-            key="content"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <BlurFade delay={0.1}>
+            <motion.div 
+              key="content"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
             <div className={`mb-10 grid grid-cols-1 gap-8 ${overviewGridClass}`}>
               {showGaugePanel && (
               <section className="grid grid-cols-1 gap-4">
@@ -737,7 +869,7 @@ export function PurchasingPageContent({
                     รายละเอียดรายการจัดซื้อจัดจ้าง
                   </h2>
                   <p className="mt-2 text-[13px] font-black uppercase text-slate-500 tracking-wide">
-                    Summary Total: <span className="text-[#4A4A49]">{totalSummary}</span>
+                    Summary Total: <span className="text-[#4A4A49]"><NumberTicker value={totalSummary} /></span>
                     <AnimatePresence>
                       {hoveredPurchaseStatus && (
                         <motion.span 
@@ -790,13 +922,22 @@ export function PurchasingPageContent({
                           transition={{ delay: index * 0.005 }}
                           className={`${t.dtTblRowBg} ${t.dtTblRowHover} transition-colors`}
                         >
-                          <td className={`px-6 py-5 font-black text-[#4A4A49] border ${t.dtTblBorder}`}>{row.ecm_buy || '-'}</td>
-                          <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.ecm || '-'}</td>
+<td className={`px-6 py-5 font-black text-[#4A4A49] border ${t.dtTblBorder}`}>{renderEcmLink(row.ecm_buy, row.ecm_buy_url)}</td>
+<td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{renderEcmLink(row.ecm, row.ecm_url)}</td>
                           <td className={`px-6 py-5 font-bold text-slate-600 border ${t.dtTblBorder}`}>{row.wo || '-'}</td>
                           <td className={`max-w-[400px] px-6 py-5 font-bold text-[#4A4A49] leading-relaxed border ${t.dtTblBorder}`}>{row.item || '-'}</td>
                           <td className={`px-6 py-5 font-black text-slate-600 border ${t.dtTblBorder}`}>{row.equip || '-'}</td>
                           <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_in || '-'}</td>
-                          <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_start || '-'}</td>
+                          <td className={`px-6 py-5 whitespace-nowrap border ${t.dtTblBorder}`}>
+                            {(() => {
+                              const badge = getDueDateBadgeStyle(row.date_start, row.status);
+                              return (
+                                <span className={`inline-flex rounded-lg px-3 py-1.5 text-[12px] font-black uppercase tracking-wide shadow-sm ${badge.className}`}>
+                                  {badge.text}
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td className={`px-6 py-5 font-bold text-slate-600 whitespace-nowrap border ${t.dtTblBorder}`}>{row.date_out || '-'}</td>
                           <td className={`px-6 py-5 border ${t.dtTblBorder}`}>
                             <span className={`inline-flex rounded-lg px-3 py-1.5 text-[12px] font-black uppercase tracking-wide shadow-sm ${getStatusStyle(row.status)}`}>{row.status || '-'}</span>
@@ -812,7 +953,8 @@ export function PurchasingPageContent({
                   </table>
                 </div>
             </motion.section>
-          </motion.div>
+            </motion.div>
+          </BlurFade>
         )}
       </AnimatePresence>
     </div>
@@ -820,5 +962,5 @@ export function PurchasingPageContent({
 }
 
 export default function PurchasingPage() {
-  return <PurchasingPageContent />;
+  return <PurchasingPageContent dateStartLabel="คาดว่าจะเสร็จ" showEcmLinks />;
 }

@@ -13,7 +13,7 @@ export type AttachmentLifecycle =
       reason: 'replaced' | 'order_deleted';
     };
 
-const ORDER_NUMBER_PATTERN = /^\d{6}$/;
+const ORDER_NUMBER_PATTERN = /^(\d{6}|CONSUMABLE)$/i;
 const SHORT_ID_PATTERN = /^[a-z0-9]{8}$/;
 const DRIVE_FILE_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -47,7 +47,7 @@ export function buildAttachmentStorageName(
   shortId?: string,
 ): string {
   if (!ORDER_NUMBER_PATTERN.test(request.orderNumber)) {
-    throw new Error('เลข Shop Order ต้องเป็นตัวเลข 6 หลัก');
+    throw new Error('เลข Shop Order ต้องเป็นตัวเลข 6 หลัก หรือ CONSUMABLE');
   }
   if (shortId !== undefined && !SHORT_ID_PATTERN.test(shortId)) {
     throw new Error('Short ID ไม่ถูกต้อง');
@@ -63,8 +63,10 @@ export function buildAttachmentStorageName(
   }
 
   const date = now.toISOString().slice(0, 10).replaceAll('-', '');
+  const isConsumable = /^CONSUMABLE$/i.test(request.orderNumber);
+  const prefix = isConsumable ? 'consumable' : 'shoporder';
 
-  return `shoporder-${date}-${request.orderNumber}.${extension}`;
+  return `${prefix}-${date}-${request.orderNumber.toLowerCase()}.${extension}`;
 }
 
 export function parseAttachmentLifecycle(
@@ -128,7 +130,7 @@ export function deletionDate(now: Date): string {
 export function driveFileIdFromCanonicalUrl(url: string): string | null {
   try {
     const parsedUrl = new URL(url);
-    const match = parsedUrl.pathname.match(/^\/file\/d\/([^/]+)\/view$/);
+    const match = parsedUrl.pathname.match(/^\/file\/d\/([^/]+)(?:\/(?:view|edit|preview))?\/?$/);
     const fileId = match?.[1] ?? '';
 
     if (
@@ -153,6 +155,6 @@ export function driveFilePreviewUrlFromCanonicalUrl(
 ): string | null {
   const fileId = driveFileIdFromCanonicalUrl(url);
   return fileId
-    ? `https://drive.google.com/uc?export=view&id=${encodeURIComponent(fileId)}`
+    ? `https://lh3.googleusercontent.com/d/${encodeURIComponent(fileId)}`
     : null;
 }

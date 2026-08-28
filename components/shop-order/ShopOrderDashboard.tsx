@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { CheckCircle, ClipboardList, RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import NavigationMenu from '@/components/navigation/NavigationMenu';
-import { filterAndSortOrders, getOrderStatus, paginateOrders, summarizeOrders } from '@/lib/shop-order/domain';
+import { filterAndSortOrders, getOrderStatus, summarizeOrders } from '@/lib/shop-order/domain';
 import { inspectLocalFile } from '@/lib/shop-order/file-rules';
 import { uploadToDriveSession } from '@/lib/shop-order/upload-client';
 import type { ApiResult, ShopOrder, ShopOrderBootstrap, ShopOrderFilters, ShopOrderInput, ShopOrderMutationResult, UploadSession } from '@/lib/shop-order/types';
@@ -13,13 +13,15 @@ import { OrderFormDialog } from './OrderFormDialog';
 import { ShopOrderSummary } from './ShopOrderSummary';
 import { ShopOrderTable } from './ShopOrderTable';
 import { ShopOrderToolbar } from './ShopOrderToolbar';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { SplitText } from "@/components/reactbits/split-text";
 
 const EMPTY_FILTERS: ShopOrderFilters = { query: '', year: 'all', month: 'all', status: 'all' };
 
 export function ShopOrderDashboard() {
   const [data, setData] = useState<ShopOrderBootstrap | null>(null);
   const [filters, setFilters] = useState<ShopOrderFilters>(EMPTY_FILTERS);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<ShopOrder | null>(null);
@@ -51,13 +53,28 @@ export function ShopOrderDashboard() {
     const timer = window.setTimeout(() => void loadData(), 0);
     return () => window.clearTimeout(timer);
   }, [loadData]);
+  const periodFiltered = useMemo(() => {
+    return (data?.orders ?? []).filter((o) => {
+      if (filters.year !== 'all' && o.dateIn && String(Number(o.dateIn.slice(0, 4)) + 543) !== filters.year) return false;
+      if (filters.month !== 'all' && o.dateIn && String(Number(o.dateIn.slice(5, 7))) !== filters.month) return false;
+      return true;
+    });
+  }, [data, filters.year, filters.month]);
+
+  const periodSummary = useMemo(() => summarizeOrders(periodFiltered), [periodFiltered]);
   const baseFiltered = useMemo(() => filterAndSortOrders(data?.orders ?? [], { ...filters, status: 'all' }), [data, filters]);
-  const summary = useMemo(() => summarizeOrders(baseFiltered), [baseFiltered]);
+  const filteredSummary = useMemo(() => summarizeOrders(baseFiltered), [baseFiltered]);
+
+  const summary = useMemo(() => ({
+    ...filteredSummary,
+    popularUnits: periodSummary.popularUnits,
+    popularReceivers: periodSummary.popularReceivers,
+  }), [filteredSummary, periodSummary]);
+
   const filtered = useMemo(() => filters.status === 'all' ? baseFiltered : baseFiltered.filter((o) => getOrderStatus(o) === filters.status), [baseFiltered, filters.status]);
-  const pagination = useMemo(() => paginateOrders(filtered, page, 20), [filtered, page]);
   const years = useMemo(() => Array.from(new Set((data?.orders ?? []).flatMap((o) => o.dateIn ? [String(Number(o.dateIn.slice(0, 4)) + 543)] : []))).sort().reverse(), [data]);
 
-  const updateFilters = (next: ShopOrderFilters) => { setFilters(next); setPage(1); };
+  const updateFilters = (next: ShopOrderFilters) => { setFilters(next); };
 
   const requestJson = async <T,>(url: string, init: RequestInit): Promise<T> => {
     const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init.headers } });
@@ -158,39 +175,61 @@ export function ShopOrderDashboard() {
   };
 
   return (
+    <BlurFade delay={0.1}>
     <main className="min-h-screen bg-slate-200 p-3 text-slate-800 md:p-6">
       <header className="sticky top-0 z-30 mb-4 flex flex-col gap-3 rounded-2xl border-b-4 border-amber-300 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Image src="/picture/egat.png" alt="การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย" width={48} height={48} priority />
-          <div><h1 className="flex items-center gap-2 text-xl font-black md:text-2xl">Shop Order <ClipboardList className="h-6 w-6 text-indigo-600" /></h1>
-            <p className="text-xs font-bold text-slate-500">ระบบติดตามหนังสือสั่งการ · W10</p></div>
+          <div>
+            <div className="flex items-center gap-2">
+              <SplitText text="Shop Order" className="text-xl font-black md:text-2xl" />
+              <ClipboardList className="h-6 w-6 text-indigo-600" />
+            </div>
+            <p className="text-xs font-bold text-slate-500">ระบบติดตามหนังสือสั่งการ · W10</p>
+          </div>
         </div>
         <NavigationMenu buttonClassName="bg-amber-300 text-slate-900 hover:bg-amber-400" accentClassName="text-indigo-600" />
       </header>
 
       <ShopOrderToolbar filters={filters} years={years} loading={loading} onChange={updateFilters} onRefresh={() => void loadData()} onAdd={() => { setSelected(null); setFormMode('create'); }} />
-      {error && <div role="alert" className="mb-4 flex items-center justify-between rounded-xl bg-rose-50 p-4 text-sm font-bold text-rose-800">
-        <span>{error}</span><button onClick={() => { setLoading(true); void loadData(); }} className="flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5"><RefreshCw className="h-4 w-4" /> ลองใหม่</button>
-      </div>}
+      {error && (
+        <Alert variant="destructive" className="mb-4 flex items-center justify-between">
+          <AlertDescription className="font-bold">{error}</AlertDescription>
+          <button onClick={() => { setLoading(true); void loadData(); }} className="flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5"><RefreshCw className="h-4 w-4" /> ลองใหม่</button>
+        </Alert>
+      )}
       {attachmentWarning && <div role="status" className="mb-4 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-900 sm:flex-row sm:items-center sm:justify-between">
         <span>{attachmentWarning.message}</span>
         <button type="button" onClick={() => { setSelected(attachmentWarning.order); setFormMode('edit'); setAttachmentWarning(null); }} className="rounded-lg border border-amber-400 bg-white px-3 py-1.5">เพิ่มไฟล์อีกครั้ง</button>
       </div>}
-      {loading && !data ? <div aria-label="กำลังโหลดข้อมูล" className="grid animate-pulse gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
-        <div className="h-96 rounded-2xl bg-white/70" /><div className="h-72 rounded-2xl bg-white/70" />
-      </div> : <div data-testid="shop-order-layout" className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(280px,1fr)]">
-        <div className="order-2 min-w-0 lg:order-1"><ShopOrderTable orders={pagination.items} page={pagination.page} totalPages={pagination.totalPages} total={pagination.total} onPage={setPage} onSelect={setSelected} /></div>
-        <div className="order-1 lg:order-2">
-          <ShopOrderSummary
-            summary={summary}
-            activeStatus={filters.status}
-            onStatusSelect={(status) => updateFilters({ ...filters, status })}
+      <div data-testid="shop-order-layout" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+        <section className="min-w-0 flex flex-col h-[640px]">
+          <ShopOrderTable
+            orders={filtered}
+            onSelect={setSelected}
           />
-        </div>
-      </div>}
+        </section>
+        <ShopOrderSummary
+          summary={summary}
+          loading={loading}
+          activeStatus={filters.status}
+          onStatusSelect={(status) => updateFilters({ ...filters, status })}
+          selectedQuery={filters.query}
+          onQuerySelect={(query) => {
+            if (
+              filters.query &&
+              filters.query.trim().toLowerCase() === query.trim().toLowerCase()
+            ) {
+              updateFilters({ ...filters, query: '' });
+            } else {
+              updateFilters({ ...filters, query });
+            }
+          }}
+        />
+      </div>
       {data && <p className="mt-4 text-right text-xs text-slate-500">อัปเดตล่าสุด {new Date(data.generatedAt).toLocaleString('th-TH')}</p>}
       {selected && !formMode && <OrderDetailDialog order={selected} pending={mutationPending} onClose={() => setSelected(null)} onEdit={() => setFormMode('edit')} onDelete={() => void deleteOrder()} />}
-      {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}
+      {formMode && data && <OrderFormDialog mode={formMode} order={formMode === 'edit' ? selected ?? undefined : undefined} departments={data.departments} receivers={data.receivers} pending={mutationPending} progress={uploadProgress} error={error} onClose={() => { if (!mutationPending) setFormMode(null); }} onSubmit={(value) => void saveOrder(value)} />}
 
       {/* Save Success Modal */}
       {showSaveSuccess && (
@@ -272,5 +311,6 @@ export function ShopOrderDashboard() {
         </div>
       )}
     </main>
+    </BlurFade>
   );
 }

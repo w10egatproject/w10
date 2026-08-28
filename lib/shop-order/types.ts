@@ -29,6 +29,7 @@ export interface ShopOrderSummary {
   wait: number;
   done: number;
   popularUnits: Array<{ name: string; count: number }>;
+  popularReceivers?: Array<{ name: string; count: number }>;
 }
 
 export interface ShopOrderBootstrap {
