@@ -9,9 +9,7 @@
    ───────────────────────────────────────── */
 @font-face {
   font-family: 'CMU Font';
-  src: url('/fonts/cmu/CMU-Light.woff2') format('woff2'),
-       url('/fonts/cmu/CMU-Light.otf') format('opentype'),
-       url('/fonts/cmu/CMU-Light.ttf') format('truetype');
+  src: url('/fonts/cmu/CMU-Light.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -19,9 +17,7 @@
 
 @font-face {
   font-family: 'CMU Font';
-  src: url('/fonts/cmu/CMU-Regular.woff2') format('woff2'),
-       url('/fonts/cmu/CMU-Regular.otf') format('opentype'),
-       url('/fonts/cmu/CMU-Regular.ttf') format('truetype');
+  src: url('/fonts/cmu/CMU-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,9 +25,7 @@
 
 @font-face {
   font-family: 'CMU Font';
-  src: url('/fonts/cmu/CMU-Bold.woff2') format('woff2'),
-       url('/fonts/cmu/CMU-Bold.otf') format('opentype'),
-       url('/fonts/cmu/CMU-Bold.ttf') format('truetype');
+  src: url('/fonts/cmu/CMU-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -39,9 +33,7 @@
 
 @font-face {
   font-family: 'CMU Font';
-  src: url('/fonts/cmu/CMU-Italic.woff2') format('woff2'),
-       url('/fonts/cmu/CMU-Italic.otf') format('opentype'),
-       url('/fonts/cmu/CMU-Italic.ttf') format('truetype');
+  src: url('/fonts/cmu/CMU-Italic.woff2') format('woff2');
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -49,9 +41,7 @@
 
 @font-face {
   font-family: 'CMU Font';
-  src: url('/fonts/cmu/CMU-BoldItalic.woff2') format('woff2'),
-       url('/fonts/cmu/CMU-BoldItalic.otf') format('opentype'),
-       url('/fonts/cmu/CMU-BoldItalic.ttf') format('truetype');
+  src: url('/fonts/cmu/CMU-BoldItalic.woff2') format('woff2');
   font-weight: 700;
   font-style: italic;
   font-display: swap;

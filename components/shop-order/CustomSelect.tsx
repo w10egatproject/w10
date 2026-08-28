@@ -43,7 +43,6 @@ export function CustomSelect({
 
   useEffect(() => {
     if (isOpen) {
-      setSearch('');
       setTimeout(() => searchInputRef.current?.focus(), 50);
     }
   }, [isOpen]);
@@ -87,7 +86,12 @@ export function CustomSelect({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => {
+          setIsOpen((prev) => {
+            if (!prev) setSearch('');
+            return !prev;
+          });
+        }}
         className={`mt-1 flex h-10 w-full items-center justify-between rounded-xl border bg-white px-3 font-normal text-slate-800 transition-all ${
           isOpen
             ? 'border-indigo-600 ring-2 ring-indigo-500/20'

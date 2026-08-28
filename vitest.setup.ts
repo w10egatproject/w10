@@ -21,8 +21,8 @@ if (typeof window !== 'undefined') {
     }
   }
 
-  window.IntersectionObserver = MockIntersectionObserver as any;
-  global.IntersectionObserver = MockIntersectionObserver as any;
+  window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+  global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
   class MockResizeObserver implements ResizeObserver {
     observe() {}
@@ -30,8 +30,8 @@ if (typeof window !== 'undefined') {
     disconnect() {}
   }
 
-  window.ResizeObserver = MockResizeObserver as any;
-  global.ResizeObserver = MockResizeObserver as any;
+  window.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+  global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
 
   Object.defineProperty(window, 'matchMedia', {
     writable: true,

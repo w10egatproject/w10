@@ -4,39 +4,30 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-function getSheetsClient() {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+let cachedAuth: InstanceType<typeof google.auth.JWT> | null = null;
+let cachedAuthKey = '';
+const cachedClientsBySheetId = new Map<string, { sheetId: string; sheets: ReturnType<typeof google.sheets> }>();
 
-  if (!clientEmail || !privateKey || !sheetId) {
-    console.error('Missing Google Sheets environment variables');
-    return null;
+function getOrCreateAuth(clientEmail: string, privateKey: string) {
+  const cacheKey = `${clientEmail}:::${privateKey.slice(0, 30)}`;
+  if (cachedAuth && cachedAuthKey === cacheKey) {
+    return cachedAuth;
   }
 
   let sanitizedKey = privateKey.replace(/^"(.*)"$/, '$1');
-
   const keyStart = sanitizedKey.indexOf('-----BEGIN PRIVATE KEY-----');
-
   if (keyStart !== -1) {
     sanitizedKey = sanitizedKey.substring(keyStart);
   }
-
   sanitizedKey = sanitizedKey.replace(/\\n/g, '\n');
 
-  const auth = new google.auth.JWT({
+  cachedAuth = new google.auth.JWT({
     email: clientEmail,
     key: sanitizedKey,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
-
-  return {
-    sheetId,
-    sheets: google.sheets({
-      version: 'v4',
-      auth,
-    }),
-  };
+  cachedAuthKey = cacheKey;
+  return cachedAuth;
 }
 
 function getSheetsClientForSheet(sheetId: string) {
@@ -48,28 +39,27 @@ function getSheetsClientForSheet(sheetId: string) {
     return null;
   }
 
-  let sanitizedKey = privateKey.replace(/^"(.*)"$/, '$1');
-  const keyStart = sanitizedKey.indexOf('-----BEGIN PRIVATE KEY-----');
-
-  if (keyStart !== -1) {
-    sanitizedKey = sanitizedKey.substring(keyStart);
+  const existing = cachedClientsBySheetId.get(sheetId);
+  if (existing) {
+    return existing;
   }
 
-  sanitizedKey = sanitizedKey.replace(/\\n/g, '\n');
-
-  const auth = new google.auth.JWT({
-    email: clientEmail,
-    key: sanitizedKey,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-
-  return {
+  const auth = getOrCreateAuth(clientEmail, privateKey);
+  const client = {
     sheetId,
     sheets: google.sheets({
       version: 'v4',
       auth,
     }),
   };
+  cachedClientsBySheetId.set(sheetId, client);
+  return client;
+}
+
+function getSheetsClient() {
+  const sheetId = process.env.GOOGLE_SHEET_ID;
+  if (!sheetId) return null;
+  return getSheetsClientForSheet(sheetId);
 }
 
 export async function updateDashboardFilters(year: string, month: string) {
@@ -371,7 +361,7 @@ export async function getContractorOtErrorSheetData() {
   }
 }
 
-export async function getShopOrderSheetData(): Promise<{ data: any[][] | null; error: string | null }> {
+export async function getShopOrderSheetData(): Promise<{ data: unknown[][] | null; error: string | null }> {
   const sheetId = process.env.GOOGLE_BEML_INVENTORY_SHEET_ID;
   if (!sheetId) {
     return { data: null, error: 'Missing GOOGLE_BEML_INVENTORY_SHEET_ID' };

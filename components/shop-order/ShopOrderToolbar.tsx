@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   filters: ShopOrderFilters;
-  years: string[];
+  years?: string[];
   loading: boolean;
   onChange: (filters: ShopOrderFilters) => void;
   onRefresh: () => void;
@@ -21,7 +21,7 @@ interface Props {
 
 export function ShopOrderToolbar({
   filters,
-  years,
+  years: _years,
   loading,
   onChange,
   onRefresh,

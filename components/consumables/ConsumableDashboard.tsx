@@ -68,8 +68,8 @@ export function ConsumableDashboard() {
         throw new Error(result.ok ? '' : result.error.message);
       }
       setData(result.data);
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
         setError('การเชื่อมต่อกับ Google Sheets หมดเวลา (Timeout) กรุณากดปุ่มรีเฟรชข้อมูลเพื่อลองใหม่อีกครั้ง');
       } else {
         setError('ไม่สามารถโหลดข้อมูล Consumables ได้ กรุณาลองใหม่');
@@ -177,8 +177,8 @@ export function ConsumableDashboard() {
       setSelected(null);
       showToast(formMode === 'edit' ? 'แก้ไขข้อมูลสำเร็จ ✓' : 'บันทึกข้อมูลสำเร็จ ✓');
       await loadData();
-    } catch (err: any) {
-      showToast(`บันทึกไม่สำเร็จ: ${err.message || 'เกิดข้อผิดพลาด'}`, true);
+    } catch (err: unknown) {
+      showToast(`บันทึกไม่สำเร็จ: ${err instanceof Error ? err.message : 'เกิดข้อผิดพลาด'}`, true);
       throw err;
     } finally {
       setFormPending(false);
@@ -197,8 +197,8 @@ export function ConsumableDashboard() {
       setSelected(null);
       showToast('ลบรายการสำเร็จ ✓');
       await loadData();
-    } catch (err: any) {
-      showToast(`ลบไม่สำเร็จ: ${err.message || 'เกิดข้อผิดพลาด'}`, true);
+    } catch (err: unknown) {
+      showToast(`ลบไม่สำเร็จ: ${err instanceof Error ? err.message : 'เกิดข้อผิดพลาด'}`, true);
     }
   };
 
@@ -282,7 +282,7 @@ export function ConsumableDashboard() {
         item={selected}
         isOpen={Boolean(selected) && !formMode}
         onClose={() => setSelected(null)}
-        onEdit={(item) => setFormMode('edit')}
+        onEdit={() => setFormMode('edit')}
         onDelete={handleDeleteItem}
       />
 

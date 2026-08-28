@@ -1,11 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { Edit, ExternalLink, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { ConsumableItem } from '@/lib/consumables/types';
 import { getDriveImageThumbnailUrl, getDriveThumbnailFallbackUrl } from '@/lib/utils/drive-images';
 
@@ -24,13 +23,15 @@ export function ConsumableDetailDialog({
   onEdit,
   onDelete,
 }: Props) {
+  const [prevItemNo, setPrevItemNo] = useState<number | string | null>(null);
   const [showLightbox, setShowLightbox] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 
-  useEffect(() => {
+  if (item && item.no !== prevItemNo) {
+    setPrevItemNo(item.no);
     setImgSrc(null);
     setShowLightbox(false);
-  }, [item]);
+  }
 
   if (!isOpen || !item) return null;
 

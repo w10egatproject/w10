@@ -5,7 +5,6 @@ import type { ShopOrder } from '@/lib/shop-order/types';
 import { Card } from '@/components/ui/card';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 interface Props {
   orders: ShopOrder[];

@@ -116,8 +116,8 @@ export function ConsumableFormDialog({
         file,
         existingPicUrl: initialItem?.picUrl,
       });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'บันทึกข้อมูลไม่สำเร็จ');
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'บันทึกข้อมูลไม่สำเร็จ');
     }
   };
 

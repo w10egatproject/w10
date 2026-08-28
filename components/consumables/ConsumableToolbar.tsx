@@ -14,7 +14,7 @@ import type { ConsumableFilters } from '@/lib/consumables/types';
 
 interface Props {
   filters: ConsumableFilters;
-  years: string[];
+  years?: string[];
   loading: boolean;
   onChange: (filters: ConsumableFilters) => void;
   onRefresh: () => void;
@@ -23,7 +23,7 @@ interface Props {
 
 export function ConsumableToolbar({
   filters,
-  years,
+  years: _years,
   loading,
   onChange,
   onRefresh,
