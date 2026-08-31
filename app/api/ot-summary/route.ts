@@ -32,6 +32,16 @@ const toNumber = (value: unknown) => {
   return parseFloat(normalized) || 0;
 };
 
+const toNullableNumber = (value: unknown): number | null => {
+  if (value === null || value === undefined) return null;
+  const str = value.toString().trim();
+  if (str === '') return null;
+  const normalized = str.replace(/[^0-9.-]/g, '');
+  if (normalized === '' || normalized === '-' || normalized === '.') return null;
+  const parsed = parseFloat(normalized);
+  return isNaN(parsed) ? null : parsed;
+};
+
 const getGroup = (sequence: number, isEmployee: boolean) => {
   const config = isEmployee ? GROUP_BY_SEQUENCE : CONTRACTOR_GROUP_BY_SEQUENCE;
   return config.find((item) => sequence >= item.start && sequence <= item.end)?.group || 'อื่น';
@@ -59,8 +69,8 @@ const parseOtRows = (rows: (string | number | boolean | null | undefined)[][], t
       // สำหรับพนักงาน: วันที่ 1 เริ่มที่ Column F (index 4)
       // สำหรับลูกจ้าง: วันที่ 1 เริ่มที่ Column E (index 3)
       const dayStartIndex = isEmployee ? 4 : 3;
-      const days = Array.from({ length: 31 }, (_, index) => toNumber(row[index + dayStartIndex]));
-      const dayTotal = days.reduce((sum, value) => sum + value, 0);
+      const days = Array.from({ length: 31 }, (_, index) => toNullableNumber(row[index + dayStartIndex]));
+      const dayTotal = days.reduce<number>((sum, value) => sum + (value || 0), 0);
 
       // พนักงาน: Column AJ (index 34) คือรวมชม.
       // ลูกจ้าง: Column AK (index 35) คือรวมชม1.5
@@ -120,8 +130,8 @@ const parseContractorEtasRows = (rows: (string | number | boolean | null | undef
       if (!sequence) return null;
       contractorIndex += 1;
 
-      const days = Array.from({ length: 31 }, (_, index) => toNumber(row[index + 4]));
-      const dayTotal = days.reduce((sum, value) => sum + value, 0);
+      const days = Array.from({ length: 31 }, (_, index) => toNullableNumber(row[index + 4]));
+      const dayTotal = days.reduce<number>((sum, value) => sum + (value || 0), 0);
 
       return {
         sequence,
@@ -146,8 +156,8 @@ const parseEmployeeEtasRows = (rows: (string | number | boolean | null | undefin
       const sequence = toNumber(row[0]);
       if (!sequence) return null;
 
-      const days = Array.from({ length: 31 }, (_, index) => toNumber(row[index + 4]));
-      const dayTotal = days.reduce((sum, value) => sum + value, 0);
+      const days = Array.from({ length: 31 }, (_, index) => toNullableNumber(row[index + 4]));
+      const dayTotal = days.reduce<number>((sum, value) => sum + (value || 0), 0);
 
       return {
         sequence,
@@ -297,11 +307,11 @@ export async function GET(request: Request) {
     });
 
     const employeeDailyTotals = Array.from({ length: 31 }, (_, index) => (
-      employees.reduce((sum: number, employee: { days: number[] }) => sum + employee.days[index], 0)
+      employees.reduce((sum: number, employee: { days: (number | null)[] }) => sum + (employee.days[index] || 0), 0)
     ));
 
     const contractorDailyTotals = Array.from({ length: 31 }, (_, index) => (
-      contractors.reduce((sum: number, contractor: { days: number[] }) => sum + contractor.days[index], 0)
+      contractors.reduce((sum: number, contractor: { days: (number | null)[] }) => sum + (contractor.days[index] || 0), 0)
     ));
 
     return NextResponse.json({

@@ -18,7 +18,7 @@ type EmployeeOtRow = {
   name: string;
   position: string;
   group: string;
-  days: number[];
+  days: (number | null)[];
   holidayHours?: number;
   total: number;
   oneTime?: number;
@@ -43,7 +43,7 @@ type EtasRow = {
   name: string;
   position?: string;
   group: string;
-  days: number[];
+  days: (number | null)[];
   total: number;
 };
 
@@ -237,7 +237,7 @@ const renderEmployeeTable = (rows: EmployeeOtRow[], group: string, title?: strin
               <td className="border border-slate-700 px-0.5 py-1 font-bold">{employee.position}</td>
               {employee.days.map((value, dayIndex) => (
                 <td key={`${group}-${employee.employeeId}-${dayIndex}`} className="border border-slate-700 px-0.5 py-1 font-bold">
-                  {value ? formatNumber(value) : '-'}
+                  {value !== null && value !== undefined ? formatNumber(value) : '-'}
                 </td>
               ))}
               <td className="border border-slate-700 bg-[#ffd119] px-0.5 py-1 font-black text-[#4A4A49]">{formatNumber(employee.total)}</td>
@@ -302,7 +302,7 @@ const renderContractorTable = (
             <td className="truncate border border-slate-700 px-1 py-1 text-left font-bold" title={contractor.name}>{contractor.name}</td>
             {contractor.days.map((value, dayIndex) => (
               <td key={`${group}-${contractor.sequence}-${dayIndex}`} className="border border-slate-700 px-0.5 py-1 font-bold">
-                {value ? formatNumber(value) : '-'}
+                {value !== null && value !== undefined ? formatNumber(value) : '-'}
               </td>
             ))}
             <td className="border border-slate-700 bg-[#ffd6d6] px-0.5 py-1 font-black text-[#4A4A49]">{formatNumber(contractor.holidayHours || 0)}</td>
@@ -374,7 +374,7 @@ const renderEtasTable = (
               {options.showPosition && <td className="border border-slate-700 px-0.5 py-1 font-bold">{row.position}</td>}
               {row.days.map((value, dayIndex) => (
                 <td key={`${group}-etas-${row.sequence}-${dayIndex}`} className="border border-slate-700 px-0.5 py-1 font-bold">
-                  {value ? formatNumber(value) : '-'}
+                  {value !== null && value !== undefined ? formatNumber(value) : '-'}
                 </td>
               ))}
               <td className="border border-slate-700 bg-[#bae6fd] px-0.5 py-1 font-black text-[#075985]">{formatNumber(row.total)}</td>

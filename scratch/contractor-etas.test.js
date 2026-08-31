@@ -18,7 +18,7 @@ assert.match(page, /renderEtasTable/, 'contractor page must render ETAS tables')
 assert.ok(page.indexOf('renderContractorTable(rows, totals, group)') < page.indexOf('renderEtasTable(etasRows, etasTotals'), 'group ETAS table must appear after the group contractor OT table');
 assert.ok(page.indexOf('renderEtasTable(etasRows, etasTotals') < page.indexOf("renderOtErrorTable(errors, 'contractor')"), 'group ETAS table must appear before the group contractor error table');
 assert.ok(page.indexOf('ALL-CONTRACTORS') < page.indexOf('ALL-CONTRACTOR-ETAS'), 'all ETAS table must appear after the final contractor OT table');
-assert.ok(page.indexOf('ALL-CONTRACTOR-ETAS') < page.indexOf("renderOtErrorTable(contractorErrors, 'contractor')"), 'all ETAS table must appear before the final contractor error table');
+assert.ok(page.indexOf('ALL-CONTRACTOR-ETAS') < page.indexOf("renderOtErrorTable(contractorErrors"), 'all ETAS table must appear before the final contractor error table');
 assert.match(page, /ALL-CONTRACTOR-ETAS/, 'contractor page must render the all-contractors ETAS table');
 const etasTableSource = page.slice(page.indexOf('const renderEtasTable'), page.indexOf('/**\n * renderOtErrorTable'));
 assert.doesNotMatch(etasTableSource, /เลขประจำตัว/, 'ETAS table should not display employee id column');
